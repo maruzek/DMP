@@ -1,10 +1,10 @@
 {
-    "name": "sterzik/php-runtime-env",
+    "name": "ruzek/dmp",
     "description": "PHP Docker Runtime Environment",
     "authors": [
         {
-            "name": "Marek Sterzik",
-            "email": "marek@milimetr.org"
+            "name": "Martin Růžek",
+            "email": "me@martinruzek.cz"
         }
     ],
     "type": "project",
@@ -42,6 +42,7 @@
         "symfony/translation": "5.1.*",
         "symfony/twig-bundle": "^5.1",
         "symfony/validator": "5.1.*",
+        "symfony/var-dumper": "5.1.*",
         "symfony/web-link": "5.1.*",
         "symfony/yaml": "5.1.*",
         "twig/extra-bundle": "^2.12|^3.0",
@@ -54,7 +55,6 @@
         "symfony/maker-bundle": "^1.0",
         "symfony/phpunit-bridge": "^5.1",
         "symfony/stopwatch": "^5.1",
-        "symfony/var-dumper": "^5.1",
         "symfony/web-profiler-bundle": "^5.1"
     },
     "config": {

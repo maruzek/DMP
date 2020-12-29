@@ -1,0 +1,8 @@
+Notice: Undefined index: mail in /srv/www/titan/www/ssogw/www/functions.php on line 291
+Notice: Undefined index: description in /srv/www/titan/www/ssogw/www/functions.php on line 304
+login:ruzema
+name:Martin Růžek
+group:users
+group_name:
+auth_by:credentials
+ou_simple:s17i
