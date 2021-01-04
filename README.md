@@ -12,6 +12,20 @@
 * Psaní aktualit správci 
 * Tvorba kalendáře s možností vkládání událostí a notifikací na e-maily členů projektu.
 
+## TODO
+
+* [] Search
+* [] Knihovna obrázků
+* [] Profilové obrázky
+* [] Zmeškané notifikace
+* [] Autodetekce linků
+* [] Content jen pro členy
+* [] Logout
+* [] Role
+* [] Absolutní admin
+* [] Zobrazeno
+* [] Koš
+
 ### Představa
 
 *Zatím nic*
