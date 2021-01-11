@@ -1,0 +1,15 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+	Login
+{% endblock %}
+
+{% block body %}
+	<h1>{{ session.get('role').0 }}</h1>
+	<h1>
+		{{ session.get('class') }}
+	</h1>
+
+	<h1>cou:
+		{{ cou }}</h1>
+{% endblock %}

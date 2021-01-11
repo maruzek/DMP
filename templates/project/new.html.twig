@@ -1,0 +1,21 @@
+{% extends "base.html.twig" %}
+
+{% block body %}
+	<h1 class="m-2 text-center">Nový projekt/kroužek</h1>
+
+	<hr>
+
+	{% if fileError != ""%}
+		<div class="alert alert-danger mt-3" role="alert">
+			Nahrávaný soubor je nepodporovaného formátu.
+			<hr>
+			<p class="mb-0">Podporované formáty:
+				<b>jpg, jpeg, png, gif</b>
+			</p>
+		</div>
+	{% endif %}
+
+	<div class="new-project-form-div">
+		{{ form(form) }}
+		</div>
+	{% endblock %}

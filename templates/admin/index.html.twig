@@ -1,0 +1,36 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+	Admin
+{% endblock %}
+
+{% block fluid %}
+
+	<h1 class="text-center m-2">Administrátorské prostředí</h1>
+	<hr>
+
+	<ul class="nav flex-column">
+		<li class="nav-item">
+			<a class="nav-link active" aria-current="page" href="#">Domů</a>
+		</li>
+		<li class="nav-item">
+			<a class="nav-link" href="#">Statistiky</a>
+		</li>
+		<li class="nav-item">
+			<a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">Projekty</a>
+			<ul class="dropdown-menu">
+				<li>
+					<a class="dropdown-item" href="{{ path('admin.projects') }}">Spravovat projekty</a>
+				</li>
+				<li>
+					<a class="dropdown-item" href="#">Nový projekt</a>
+				</li>
+			</ul>
+
+		</li>
+		<li class="nav-item">
+			<a class="nav-link" href="#" tabindex="-1">Uživatelé</a>
+		</li>
+	</ul>
+
+{% endblock %}

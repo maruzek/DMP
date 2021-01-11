@@ -1,0 +1,12 @@
+.admin-project-card-deck {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.admin-project-card {
+    background-color: rgb(235, 235, 235);
+    border-radius: 1rem;
+    padding: 20px;
+}

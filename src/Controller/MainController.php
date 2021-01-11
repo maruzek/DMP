@@ -7,19 +7,32 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 class MainController extends AbstractController
 {
+    private $session;
+
     /**
      * @Route("/", name="main")
      */
-    public function index()
+    public function index(SessionInterface $session)
     {
+        $this->session = $session;
+
+        $userProfile = "";
+
+        if ($this->session->get('username') != "") {
+            $userProfile = $this->generateUrl('user.profile', [
+                'username' => $this->session->get('username')
+            ]);
+        }
+
         return $this->render('main.html.twig', [
             'controller_name' => 'MainController',
-            'name' => 'Jane Doe',
-            'role' => 'student',
-            'username' => 'ruzema'
+            'session' => $session,
+            'userprofile' => $userProfile
+
         ]);
     }
 

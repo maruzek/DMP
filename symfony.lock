@@ -1,4 +1,7 @@
 {
+    "composer/package-versions-deprecated": {
+        "version": "1.11.99.1"
+    },
     "doctrine/annotations": {
         "version": "1.0",
         "recipe": {
@@ -64,7 +67,7 @@
         "version": "1.2.1"
     },
     "doctrine/migrations": {
-        "version": "3.0.1"
+        "version": "3.0.2"
     },
     "doctrine/orm": {
         "version": "2.8.1"
@@ -94,7 +97,7 @@
         "version": "2.2.0"
     },
     "nikic/php-parser": {
-        "version": "v4.10.2"
+        "version": "v4.10.4"
     },
     "php": {
         "version": "7.4"
@@ -139,7 +142,7 @@
         "version": "v5.1.10"
     },
     "symfony/browser-kit": {
-        "version": "v5.1.6"
+        "version": "v5.1.10"
     },
     "symfony/cache": {
         "version": "v5.1.10"
@@ -163,7 +166,7 @@
         ]
     },
     "symfony/css-selector": {
-        "version": "v5.1.6"
+        "version": "v5.1.10"
     },
     "symfony/debug-bundle": {
         "version": "4.1",
@@ -187,7 +190,7 @@
         "version": "v5.1.10"
     },
     "symfony/dom-crawler": {
-        "version": "v5.1.6"
+        "version": "v5.1.10"
     },
     "symfony/dotenv": {
         "version": "v5.1.10"
@@ -485,7 +488,7 @@
         "version": "v5.1.10"
     },
     "twig/extra-bundle": {
-        "version": "v3.0.5"
+        "version": "v3.1.1"
     },
     "twig/twig": {
         "version": "v3.1.1"

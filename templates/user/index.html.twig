@@ -1,0 +1,87 @@
+{% extends "base.html.twig" %}
+
+{% block body %}
+	<div class="row mt-3">
+		<div class="col-sm-4 profile-col">
+			<img src="/img/userimg/{{ user.image }}" alt="" class="img-fluid project-img mb-3 mx-auto d-block">
+			<h3 class="m-0">{{ user.firstname ~ ' ' ~ user.lastname }}</h3>
+			<span class="badge bg-primary">{{ user.tag }}</span>
+			<h5 class="m-0 mt-1" style="font-weight: normal">{{ user.class }}</h5>
+			{% if user.description != null %}
+				<p class="profile-desc">{{ user.description }}</p>
+			{% else %}
+				<p class="profile-desc" style="color: #aaa">
+					<i>Tento uživatel si zatím nevytvořil své bio</i>
+				</p>
+			{% endif %}
+
+			{% if user.id == session.get('id') %}
+				<button class="btn btn-outline-dark w-100" data-bs-toggle="modal" data-bs-target="#exampleModal">Nastevení profilu</button>
+				<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+					<div class="modal-dialog modal-dialog-centered">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal-title" id="exampleModalLabel">Nastevení profilu</h5>
+								<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+							</div>
+							<div class="modal-body">
+								{{ form_start(form) }}
+								{{ form_row(form.description) }}
+								{{ form_row(form.attach) }}
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zavřít</button>
+								<!--<button type="button" class="btn btn-primary">Save changes</button>-->
+								{{ form_row(form.submit) }}
+								{{ form_end(form) }}
+							</div>
+						</div>
+					</div>
+				</div>
+			{% endif %}
+
+		</div>
+
+		<div class="col-sm-8 profile-content">
+			<ul class="nav nav-tabs" id="profileTab" role="tablist">
+				<li class="nav-item" role="presentation">
+					<a class="nav-link active" id="prispevky-tab" data-bs-toggle="tab" href="#prispevky" role="tab" aria-controls="prispevky" aria-selected="true">Příspěvky</a>
+				</li>
+				<li class="nav-item" role="presentation">
+					<a class="nav-link" id="projekty-tab" data-bs-toggle="tab" href="#projekty" role="tab" aria-controls="projekty" aria-selected="false">Projekty</a>
+				</li>
+			</ul>
+			<div class="tab-content" id="profileTabContent">
+				<div class="tab-pane fade show active" id="prispevky" role="tabpanel" aria-labelledby="prispevky-tab"></div>
+				<div class="tab-pane fade" id="projekty" role="tabpanel" aria-labelledby="projekty-tab">
+
+					<a href="#" class="profile-projects-link">
+						<div class="profile-projects-card">
+							<div class="profile-projects-card-image">
+								<img src="http://localhost:8081/img/logo1.jpg" alt="logo">
+							</div>
+
+							<div class="profile-projects-card-text">
+								<h5>Florbalový kroužek</h5>
+							</div>
+						</div>
+					</a>
+
+					{% for project in user.projects %}
+						<a href="{{ path('project.project', {id: project.id}) }}" class="profile-projects-link">
+							<div class="profile-projects-card">
+								<div class="profile-projects-card-image">
+									<img src="/img/projectimg/{{ project.image }}" alt="logo">
+								</div>
+
+								<div class="profile-projects-card-text">
+									<h5>{{ project.name }}</h5>
+								</div>
+							</div>
+						</a>
+					{% endfor %}
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}

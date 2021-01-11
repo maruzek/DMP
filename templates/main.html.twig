@@ -5,9 +5,18 @@
 
 {% block body %}
 	<div class="landing">
-		<h1 class="text-center">Prosím přihlaste se pro přístup k aplikaci</h1>
-		<a href="/ssologin">
-			<button type="button" class="btn btn-outline-danger m-2">Přihlásit se</button>
-		</a>
+		{% if session.get('username') != "" %}
+			<h1 class="text-center">Přihlášen</h1>
+
+			<h4>
+				{{ session.get('username') }}
+			</h4>
+		{% else %}
+
+			<h1 class="text-center">Prosím přihlaste se pro přístup k aplikaci</h1>
+			<a href="/login">
+				<button type="button" class="btn btn-outline-danger m-2">Přihlásit se</button>
+			</a>
+		{% endif %}
 	</div>
 {% endblock %}

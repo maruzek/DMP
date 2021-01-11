@@ -1,0 +1,23 @@
+{% extends "base.html.twig" %}
+
+{% block body %}
+
+	<h1 class="text-center m-2">Správa projektů</h1>
+	<hr>
+	<div class="admin-project-card-deck">
+		{% for project in projects|reverse %}
+
+			<div class="admin-project-card m-4">
+				<h3 class="text-center">{{ project.name }}</h3>
+				<hr>
+				<p>Hlavní správce: Václav Klečka ml.</p>
+				<a href="{{ path('admin.project', {id: project.id}) }}" class="btn btn-danger">Nastavení</a>
+				<a href="{{ path('project.project', {id: project.id}) }}" target="_blank" class="btn btn-success">Zobrazit</a>
+			</div>
+
+		{% endfor %}
+	</div>
+
+{% endblock %}
+
+{% block footer %}{% endblock %}

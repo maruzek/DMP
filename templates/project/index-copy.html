@@ -1,0 +1,204 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+	{% if project is defined %}
+		{{ project.name }}
+	{% else %}
+		Projekt neexistuje
+	{% endif %}
+{% endblock %}
+
+{% block style %}
+	{% if palette is defined %}
+		background-color:
+		{{ palette.background }}
+	{% endif %}
+{% endblock %}
+
+{% block body %}
+	{% if project is defined %}
+		{% if followStatus != ''%}
+			{% if followStatus == "success" %}
+				<div class="alert alert-success" role="alert">
+					Začali jste sledovat
+					{{ project.name }}
+				</div>
+
+			{% elseif followStatus == "unfollowed" %}
+				<div class="alert alert-success" role="alert">
+					Přestali jste sledovat
+					{{ project.name }}
+				</div>
+			{% endif %}
+		{% endif %}
+
+		{% if memberStatus != ''%}
+			{% if memberStatus == "newmember" %}
+				<div class="alert alert-success" role="alert">
+					Požádali jste o členství v
+					{{ project.name }}
+				</div>
+
+			{% elseif memberStatus == "unmember" %}
+				<div class="alert alert-success" role="alert">
+					Už nejste členem
+					{{ project.name }}
+				</div>
+			{% endif %}
+		{% endif %}
+		<div class="row project-body pt-3">
+			<div class="col-lg-4 project-info-col">
+				<div class="profile-col" style="background-color: {{ palette.row }}">
+					<img src="/img/projectimg/{{ project.image }}" alt="" class="img-fluid project-img mb-3 mx-auto d-block">
+					<h3 class="m-0">{{ project.name }}</h3>
+					<span class="badge bg-dark">
+						{{ project.tag }}
+					</span>
+					<h5 class="mt-2 mb-2" style="font-weight: normal">
+						<i class="fas fa-crown"></i>
+						{{ project.admin.firstName ~ ' ' ~ project.admin.lastName}}
+					</h5>
+
+					<p class="profile-desc">{{ project.description }}</p>
+					{% if project.link != null %}
+						<p>
+							<i class="fas fa-link"></i>
+							<a href="http://{{ project.link }}" target="_blank">{{ project.link }}</a>
+						</p>
+					{% endif %}
+					<p class="m-0">
+						<i class="fas fa-user-check"></i>
+						{{ project.members|length }}
+						{% if project.members|length > 1 and project.members|length < 5 %}
+							členové
+						{% elseif project.members|length == 0 or project.members|length > 4 %}
+							členů
+						{% elseif project.members|length == 1 %}
+							člen
+						{% endif %}
+					</p>
+
+					<p>
+						<i class="fas fa-users"></i>
+						{{ project.members|length }}
+						{% if project.members|length > 0 and project.members|length < 5 %}
+							sledující
+						{% elseif project.members|length > 4 or project.members|length == 0 %}
+							sledujících
+						{% endif %}
+					</p>
+					{% if followForm is defined %}
+						{{ form(followForm) }}
+							{{ form(memberForm) }}
+								{% if project.admin.id == session.get('id') %}
+									<a href="{{ path('project.settings', {id: project.id}) }}" class="btn btn-outline-dark w-100">Spravovat
+										{{ project.tag }}</a>
+								{% endif %}
+							{% endif %}
+						</div>
+					</div>
+
+					<div class="col-lg-8 profile-content" style="background-color:{{ palette.row }}">
+						<ul class="nav nav-tabs" id="projectTab" role="tablist">
+							<li class="nav-item" role="presentation">
+								<a class="nav-link active {{ palette.nav }}" id="prispevky-tab" data-bs-toggle="tab" href="#prispevky" role="tab" aria-controls="prispevky" aria-selected="true">Příspěvky</a>
+							</li>
+							<li class="nav-item" role="presentation">
+								<a class="nav-link {{ palette.nav }}" id="clenove-tab" data-bs-toggle="tab" href="#clenove" role="tab" aria-controls="clenove" aria-selected="false">Členové</a>
+							</li>
+							<li class="nav-item" role="presentation">
+								<a class="nav-link {{ palette.nav }}" id="udalosti-tab" data-bs-toggle="tab" href="#udalosti" role="tab" aria-controls="udalosti" aria-selected="false">Události</a>
+							</li>
+							<li class="nav-item" role="presentation">
+								<a class="nav-link {{ palette.nav }}" id="media-tab" data-bs-toggle="tab" href="#media" role="tab" aria-controls="media" aria-selected="false">Média</a>
+							</li>
+						</ul>
+						<div class="tab-content" id="profileTabContent">
+							<div class="tab-pane fade show active project-posts" id="prispevky" role="tabpanel" aria-labelledby="prispevky-tab">
+								<div class="project-post-wrapper {{ palette.post }}">
+									<div class="project-post-profilepic">
+										<img src="http://localhost:8081/img/logo1.jpg" alt="">
+									</div>
+									<div class="project-post-content">
+										<p class="project-post-author">Martin Růžek
+											<br>
+											<span class="badge bg-primary">student</span>
+											<span class="badge bg-light text-dark">I4</span>
+										</p>
+										<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed gravida efficitur quam et sodales. Sed ac ipsum ac purus maximus fringilla. Etiam lobortis velit at sodales luctus. Mauris ut sollicitudin metus, a ultrices neque. Cras faucibus quis nulla ultrices tristique. Nulla in consequat elit. Integer quis nunc sodales, elementum erat aliquet, ornare nibh. Quisque lacinia mollis purus, sed maximus turpis. Aliquam vehicula mollis risus, quis euismod dui imperdiet sed. Nam cursus, quam nec tincidunt aliquam, nulla tellus accumsan est, eget semper odio diam in dui. Proin pharetra pellentesque justo, sed rutrum sapien ultricies ac.</p>
+									</div>
+								</div>
+								<div class="project-post-wrapper {{ palette.post }}">
+									<div class="project-post-profilepic">
+										<img src="http://localhost:8081/img/logo1.jpg" alt="">
+									</div>
+									<div class="project-post-content">
+										<p class="project-post-author">Václav Klečka ml.
+											<span class="badge bg-danger">správce koroužku</span>
+										</p>
+										<p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Maiores velit, consequatur eos dolore, eum nihil atque eius reprehenderit fuga veritatis, id perferendis placeat fugit dolores. Doloremque ipsum excepturi impedit. Minus.</p>
+									</div>
+								</div>
+								<div class="project-post-wrapper">
+									<div class="project-post-profilepic">
+										<img src="http://localhost:8081/img/logo1.jpg" alt="">
+									</div>
+									<div class="project-post-content">
+										<p class="project-post-author">Martin Růžek
+											<span class="badge bg-primary">student</span>
+											<span class="badge bg-light text-dark">I4</span>
+										</p>
+										<p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Maiores velit, consequatur eos dolore, eum nihil atque eius reprehenderit fuga veritatis, id perferendis placeat fugit dolores. Doloremque ipsum excepturi impedit. Minus.</p>
+									</div>
+								</div>
+								<div class="project-post-wrapper">
+									<div class="project-post-profilepic">
+										<img src="http://localhost:8081/img/logo1.jpg" alt="">
+									</div>
+									<div class="project-post-content">
+										<p class="project-post-author">Martin Růžek
+											<span class="badge bg-primary">student</span>
+											<span class="badge bg-light text-dark">I4</span>
+										</p>
+										<p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Maiores velit, consequatur eos dolore, eum nihil atque eius reprehenderit fuga veritatis, id perferendis placeat fugit dolores. Doloremque ipsum excepturi impedit. Minus.</p>
+									</div>
+								</div>
+								<div class="project-post-wrapper">
+									<div class="project-post-profilepic">
+										<img src="http://localhost:8081/img/logo1.jpg" alt="">
+									</div>
+									<div class="project-post-content">
+										<p class="project-post-author">Martin Růžek
+											<span class="badge bg-primary">student</span>
+											<span class="badge bg-light text-dark">I4</span>
+										</p>
+										<p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Maiores velit, consequatur eos dolore, eum nihil atque eius reprehenderit fuga veritatis, id perferendis placeat fugit dolores. Doloremque ipsum excepturi impedit. Minus.</p>
+									</div>
+								</div>
+							</div>
+							<div class="tab-pane fade" id="clenove" role="tabpanel" aria-labelledby="clenove-tab">
+								<div class="project-members m-2">
+									{% for member in project.members %}
+										<a class="project-member" href="{{ path('user.profile', {username: member.member.username}) }}">
+											<div class="project-member-div {{ palette.post }} ">
+												{{ member.member.firstName ~ ' ' ~ member.member.lastName }}
+											</div>
+										</a>
+									{% endfor %}
+								</div>
+							</div>
+							<div class="tab-pane fade" id="udalosti" role="tabpanel" aria-labelledby="udalosti-tab">
+								Události
+							</div>
+							<div class="tab-pane fade" id="media" role="tabpanel" aria-labelledby="media-tab">
+								Média
+							</div>
+						</div>
+					</div>
+				</div>
+
+
+			{% else %}
+				<h1 class="text-center m-5">Požadovaný Projekt neexistuje</h1>
+			{% endif %}
+		{% endblock %}

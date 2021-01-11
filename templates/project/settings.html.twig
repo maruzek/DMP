@@ -1,0 +1,27 @@
+{% extends "base.html.twig" %}
+
+{% block title %}
+	Nastavení projektu
+{% endblock %}
+
+{% block body %}
+	{% if auth == "nonlog" %}
+		<h1 class="text-center m-5">Nejste přihlášeni</h1>
+	{% elseif auth == "no" %}
+		<h1 class="text-center m-5">Na tuto stránku nemáte přístup</h1>
+	{% elseif auth == "yes" %}
+		<h1 class="text-center m-2">Nastavení projektu</h1>
+		<hr>
+		{% if status == "success" %}
+			<div class="alert alert-success" role="alert">
+				{{ project.tag|capitalize }}
+				byl upraven.
+				<a href="{{ path("project.project", {id: project.id }) }}" class="alert-link">Vrátit se zpět na stránku
+				</a>
+			</div>
+		{% endif %}
+		<div class="new-project-form-div">
+			{{ form(form) }}
+			</div>
+		{% endif %}
+	{% endblock %}

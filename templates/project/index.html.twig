@@ -1,0 +1,321 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+	{% if project is defined %}
+		{{ project.name }}
+	{% else %}
+		Projekt neexistuje
+	{% endif %}
+{% endblock %}
+
+{% block style %}
+	{% if palette is defined %}
+		background-color:
+		{{ palette.background }}
+	{% endif %}
+{% endblock %}
+
+{% block fluid %}
+	{% if project is defined %}
+		<div class="carousel slide hero-slider" data-bs-ride="carousel" data-bs-interval="4000">
+			<div class="carousel-inner">
+				<div class="carousel-item active">
+					<img src="/img/skola1.jpg" class="d-block w-100" alt="">
+				</div>
+				{% for img in project.media %}
+					<div class="carousel-item">
+						<img src="/img/media/{{ img.name }}" class="d-block w-100" alt="">
+					</div>
+				{% endfor %}
+			</div>
+		</div>
+	{% endif %}
+{% endblock %}
+
+{% block body %}
+	{% if project is defined %}
+
+		<div class="project-content">
+
+			{% if followStatus is defined %}
+
+				{% if followStatus != ''%}
+					{% if followStatus == "success" %}
+						<div class="alert alert-success alert-dismissible fade show" role="alert">
+							Začali jste sledovat
+							{{ project.name }}
+							<button type="button" class="btn-close" aria-label="Close" data-bs-dismiss="alert"></button>
+						</div>
+
+					{% elseif followStatus == "unfollowed" %}
+						<div class="alert alert-success alert-dismissible fade show" role="alert">
+							Přestali jste sledovat
+							{{ project.name }}
+							<button type="button" class="btn-close" aria-label="Close" data-bs-dismiss="alert"></button>
+
+						</div>
+					{% endif %}
+				{% endif %}
+
+				{% if memberStatus != ''%}
+					{% if memberStatus == "newmember" %}
+						<div class="alert alert-success alert-dismissible fade show" role="alert">
+							Požádali jste o členství v
+							{{ project.name }}
+							<button type="button" class="btn-close" aria-label="Close" data-bs-dismiss="alert"></button>
+
+						</div>
+
+					{% elseif memberStatus == "unmember" %}
+						<div class="alert alert-success alert-dismissible fade show" role="alert">
+							Už nejste členem
+							{{ project.name }}
+							<button type="button" class="btn-close" aria-label="Close" data-bs-dismiss="alert"></button>
+
+						</div>
+					{% endif %}
+				{% endif %}
+
+				{% if mediaError != '' %}
+					{% if mediaError == "badext" %}
+						<div class="alert alert-danger alert-dismissible fade show" role="alert">
+							Nahrávaný obrázek není podporovaného formátu. Podporované formáty:
+							<b>jpg, jpeg, png, gif</b>.
+							<button type="button" class="btn-close" aria-label="Close" data-bs-dismiss="alert"></button>
+
+						</div>
+					{% endif %}
+
+					{% if mediaError == "badheight" %}
+						<div class="alert alert-danger alert-dismissible fade show" role="alert">
+							Nahrávaný obrázek nemá požadovanou velikost. Obrázek musí být vysoký přesně
+							<b>480px</b>.
+							<button type="button" class="btn-close" aria-label="Close" data-bs-dismiss="alert"></button>
+
+						</div>
+					{% endif %}
+				{% endif %}
+			{% endif %}
+
+			<div class="row project-body pt-3">
+				<div class="col-lg-4">
+					<div class="profile-col" style="background-color: {{ palette.row }}">
+						<img src="/img/projectimg/{{ project.image }}" alt="" class="img-fluid project-img mb-3 mx-auto d-block">
+						<h3 class="m-0">{{ project.name }}</h3>
+						<span class="badge bg-dark">
+							{{ project.tag }}
+						</span>
+						<h5 class="mt-2 mb-2" style="font-weight: normal">
+							<i class="fas fa-crown"></i>
+							{{ project.admin.firstName ~ ' ' ~ project.admin.lastName}}
+						</h5>
+
+						<p class="profile-desc">{{ project.description }}</p>
+						{% if project.link != null %}
+							<p>
+								<i class="fas fa-link"></i>
+								<a href="http://{{ project.link }}" target="_blank">{{ project.link }}</a>
+							</p>
+						{% endif %}
+						<p class="m-0">
+							<i class="fas fa-user-check"></i>
+							{{ project.members|length }}
+							{% if project.members|length > 1 and project.members|length < 5 %}
+								členové
+							{% elseif project.members|length == 0 or project.members|length > 4 %}
+								členů
+							{% elseif project.members|length == 1 %}
+								člen
+							{% endif %}
+						</p>
+
+						<p>
+							<i class="fas fa-users"></i>
+							{{ project.follows|length }}
+							{% if project.follows|length > 0 and project.follows|length < 5 %}
+								sledující
+							{% elseif project.follows|length > 4 or project.follows|length == 0 %}
+								sledujících
+							{% endif %}
+						</p>
+						{% if followForm is defined %}
+							{{ form(followForm) }}
+								{{ form(memberForm) }}
+									{% if project.admin.id == session.get('id') %}
+										<button class="btn btn-outline-dark w-100" data-bs-toggle="modal" data-bs-target="#settingsModal">Spravovat
+											{{ project.tag }}</button>
+									{% endif %}
+								{% endif %}
+							</div>
+						</div>
+
+						<div class="col-lg-8 profile-content" style="background-color:{{ palette.row }}">
+							<ul class="nav nav-tabs" id="projectTab" role="tablist">
+								<li class="nav-item" role="presentation">
+									<a class="nav-link active {{ palette.nav }}" id="prispevky-tab" data-bs-toggle="tab" href="#prispevky" role="tab" aria-controls="prispevky" aria-selected="true">Příspěvky</a>
+								</li>
+								<li class="nav-item" role="presentation">
+									<a class="nav-link {{ palette.nav }}" id="clenove-tab" data-bs-toggle="tab" href="#clenove" role="tab" aria-controls="clenove" aria-selected="false">Členové</a>
+								</li>
+								<li class="nav-item" role="presentation">
+									<a class="nav-link {{ palette.nav }}" id="udalosti-tab" data-bs-toggle="tab" href="#udalosti" role="tab" aria-controls="udalosti" aria-selected="false">Události</a>
+								</li>
+								<li class="nav-item" role="presentation">
+									<a class="nav-link {{ palette.nav }}" id="media-tab" data-bs-toggle="tab" href="#media" role="tab" aria-controls="media" aria-selected="false">Média</a>
+								</li>
+							</ul>
+							<div class="tab-content" id="profileTabContent">
+								<div class="tab-pane fade show active project-posts" id="prispevky" role="tabpanel" aria-labelledby="prispevky-tab">
+
+									<div class="project-new-post form-inline mt-3 w-100">
+										{% if session.get('username') != '' %}
+											{{ form_start(postForm) }}
+
+											<div class="form-floating">
+												{{ form_widget(postForm.text) }}
+												<label for="floatingTextarea2">{{ form_label(postForm.text)}}</label>
+											</div>
+
+											<div class="row">
+												<div class="col d-flex align-items-center">
+													<div class="form-check form-switch mt-2">
+														{{ form_widget(postForm.privacy) }}
+														<label class="form-check-label" for="flexSwitchCheckDefault">{{ form_label(postForm.privacy) }}</label>
+													</div>
+												</div>
+												<div class="col d-flex justify-content-end">
+													<div class="mt-2 ml-2">
+														{{ form_widget(postForm.submit) }}
+													</div>
+												</div>
+											</div>
+
+
+											{{ form_end(postForm) }}
+										{% endif %}
+
+									</div>
+
+									{% for post in project.posts|reverse %}
+										<div class="project-post-wrapper {{ palette.post }}">
+											<div class="project-post-profilepic">
+												<img src="http://localhost:8081/img/logo1.jpg" alt="">
+											</div>
+											<div class="project-post-content w-100">
+												<p class="project-post-author w-100">{{ post.author.firstName ~ ' ' ~ post.author.lastName }}
+													<br>
+													<span class="badge bg-primary">{{ post.author.tag }}</span>
+													<span class="badge bg-light text-dark">{{ post.author.class }}</span>
+												</p>
+												<p>{{ post.text }}</p>
+											</div>
+											{% if post.author.id == session.get('id')%}
+												<p data-bs-toggle="modal" data-bs-target="#exampleModal">
+													<i class="fas fa-pen"></i>
+												</p>
+											{% endif %}
+										</div>
+									{% endfor %}
+
+									<div class="project-post-wrapper {{ palette.post }}">
+										<div class="project-post-profilepic">
+											<img src="http://localhost:8081/img/logo1.jpg" alt="">
+										</div>
+										<div class="project-post-content">
+											<p class="project-post-author">Václav Klečka ml.
+												<span class="badge bg-danger">správce koroužku</span>
+											</p>
+											<p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Maiores velit, consequatur eos dolore, eum nihil atque eius reprehenderit fuga veritatis, id perferendis placeat fugit dolores. Doloremque ipsum excepturi impedit. Minus.</p>
+										</div>
+									</div>
+								</div>
+								<div class="tab-pane fade" id="clenove" role="tabpanel" aria-labelledby="clenove-tab">
+									<div class="project-members m-3">
+										{% for member in project.members %}
+											<a class="project-member" href="{{ path('user.profile', {username: member.member.username}) }}">
+												<div class="project-member-div {{ palette.post }} ">
+													<img src="/img/userimg/{{ member.member.image }}" alt="profile" class="img-fluid">
+													{{ member.member.firstName ~ ' ' ~ member.member.lastName }}
+												</div>
+											</a>
+										{% endfor %}
+									</div>
+								</div>
+								<div class="tab-pane fade" id="udalosti" role="tabpanel" aria-labelledby="udalosti-tab">
+									Události
+								</div>
+								<div class="tab-pane fade" id="media" role="tabpanel" aria-labelledby="media-tab">
+									Média
+								</div>
+							</div>
+						</div>
+					</div>
+
+				</div>
+
+				{% if project.admin.id == session.get('id') %}
+					<!-- Modal -->
+					<div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsModal" aria-hidden="true">
+						<div class="modal-dialog modal-dialog-centered">
+							<div class="modal-content">
+								<div class="modal-header">
+									<h5 class="modal-title" id="settingsModalLabel">Upravit profil</h5>
+									<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+								</div>
+								<div class="modal-body modal-project-settings modal-dialog-scrollable">
+									<div class="mb-3">
+										{{ form_start(projectSettingsForm) }}
+									</div>
+									<div class="mb-3">
+										{{ form_row(projectSettingsForm.name) }}
+									</div>
+									<div class="mb-3">
+										{{ form_row(projectSettingsForm.description) }}
+									</div>
+									<div class="mb-3">
+										{{ form_row(projectSettingsForm.link) }}
+									</div>
+									<div class="mb-3">
+										{{ form_row(projectSettingsForm.tag) }}
+									</div>
+									<div class="mb-3">
+										{{ form_row(projectSettingsForm.color) }}
+									</div>
+									<div class="mb-3">
+										{{ form_row(projectSettingsForm.attach) }}
+									</div>
+									<div class="mb-3">
+										{{ form_row(projectSettingsForm.medias) }}
+									</div>
+									<h4>Obrázky v pozadí</h4>
+									{% if projectSettingsForm.media|length > 0 %}
+										<div class="mb-2 mt-3 project-settings-bg-imgs">
+											<div class="img-del">
+												{% for media in project.media %}
+													<img src="/img/media/{{ media.name }}" alt="" class="img-fluid">
+												{% endfor %}
+											</div>
+											<div class="img-del-ico">
+												{% for mediap in projectSettingsForm.media %}
+													{{ form_row(mediap.submit)}}
+												{% endfor %}
+											</div>
+										</div>
+
+									{% else %}
+										<p>Zatím v pozadí není žádný obrázek. Přidat je můžete zde
+											<i class="fas fa-arrow-up"></i>
+										</p>
+									{% endif %}
+								</div>
+								<div class="modal-footer">
+									<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zrušit</button>
+									{{ form_row(projectSettingsForm.submit) }}
+									{{ form_end(projectSettingsForm) }}
+								</div>
+							</div>
+						</div>
+					</div>
+				{% endif %}
+			{% endif %}
+		{% endblock %}
