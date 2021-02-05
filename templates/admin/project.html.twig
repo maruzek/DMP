@@ -1,9 +1,27 @@
 {% extends "base.html.twig" %}
 
+{% block abs %}
+	<div aria-live="polite" aria-atomic="true" class="bg-dark position-relative bd-example-toasts">
+		<div class="toast position-absolute mt-5 top-0 start-0" id="toast-deladmin-fromproj-success">
+			<div class="toast-header">
+				<strong class="me-auto">Správce</strong>
+				<button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+			</div>
+			<div class="toast-body">
+				Vámi vybraný uživatel již není správcem tohoto projektu
+			</div>
+		</div>
+	</div>
+{% endblock %}
+
 {% block body %}
 
 	<h1 class="text-center">{{ project.name }}</h1>
+	<a href="{{ path('project.project', {id: project.id}) }}" class="text-center" target="_blank">
+		<p>Zobrazit</p>
+	</a>
 	<hr>
+	<p class="project-id d-none" id="{{ project.id }}"></p>
 	{% if status != '' %}
 		{% if status == "badext" %}
 			<div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -30,7 +48,19 @@
 
 			</div>
 		{% endif %}
+
+		{% if status == "alreadyadmin" %}
+			<div class="alert alert-danger alert-dismissible fade show" role="alert">
+				Vámi vybraný uživatel již správcem tohoto projektu je
+				<button type="button" class="btn-close" aria-label="Close" data-bs-dismiss="alert"></button>
+			</div>
+		{% endif %}
 	{% endif %}
+
+	<div id="del-succes-div" class="alert alert-danger alert-dismissible fade show" role="alert" style="display:none">
+		Vámi vybraný uživatel již není správcem tohoto projektu
+		<button type="button" class="btn-close" aria-label="Close" data-bs-dismiss="alert"></button>
+	</div>
 
 	<ul class="nav nav-tabs" id="myTab" role="tablist">
 		<li class="nav-item" role="presentation">
@@ -92,8 +122,124 @@
 			{% endif %}
 			{{ form_end(basicSettingsForm) }}
 		</div>
-		<div class="tab-pane fade" id="admins" role="tabpanel" aria-labelledby="profile-tab">...</div>
-		<div class="tab-pane fade" id="members" role="tabpanel" aria-labelledby="contact-tab">...</div>
-	</div>
 
+		<div class="tab-pane fade" id="admins" role="tabpanel" aria-labelledby="profile-tab">
+			<h3 class="mt-3 mb-3">Přidat správce</h3>
+
+			{{ form_start(newAdminForm) }}
+			<div class="mb-3">
+				{{ form_label(newAdminForm.user) }}
+				{{ form_widget(newAdminForm.user) }}
+			</div>
+			{{ form_widget(newAdminForm.submit) }}
+			{{ form_end(newAdminForm) }}
+
+			<h3 class="mt-3 mb-3">Správci</h3>
+
+			<h4 class="mt-3 mb-3">Hlavní správce:</h4>
+
+			<div class="table-responsive">
+				<table class="table table-striped table-hover text-center">
+					<thead>
+						<tr>
+							<th scope="col">ID</th>
+							<th scope="col">Jméno</th>
+							<th scope="col">Třída</th>
+							<th scope="col">Tag</th>
+							<th scope="col">Zobrazit profil</th>
+							<th scope="col">Změnit</th>
+						</tr>
+					</thead>
+					<tbody class="align-middle" id="projects-tbody">
+						<tr id="admin-{{ project.admin.id }}">
+							<th scope="row">{{ project.admin.id }}</th>
+							<td>{{ project.admin.firstName ~ ' ' ~ project.admin.lastName }}</td>
+							<td>{{ project.admin.class }}</td>
+							<td>{{ project.admin.tag }}</td>
+							<td>
+								<a class="btn btn-success" href="{{ path('user.profile', {username: project.admin.username}) }}" target="_blank">Zobrazit</a>
+							</td>
+							<td>
+								<a class="btn btn-danger change-mainadmin" data-del-admin-id="{{ project.admin.id }}">Změnit</a>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+
+			<div id="change-admin-panel">
+				<form>
+					<div class="mb-3">
+						<label for="">Hledat uživatele</label>
+						<input type="text" class="form-control" id="change-mainadmin-input">
+					</div>
+					<button type="button" class="btn btn-success mb-3" id="change-mainadmin-btn">Změnit</button>
+				</form>
+			</div>
+
+			<h4 class="mt-3 mb-3">Ostatní správci:</h4>
+
+			<div class="table-responsive">
+				<table class="table table-striped table-hover text-center">
+					<thead>
+						<tr>
+							<th scope="col">ID</th>
+							<th scope="col">Jméno</th>
+							<th scope="col">Třída</th>
+							<th scope="col">Tag</th>
+							<th scope="col">Zobrazit profil</th>
+							<th scope="col">Smazat</th>
+						</tr>
+					</thead>
+					<tbody class="align-middle" id="projects-tbody">
+						{% for admin in project.ProjectAdmins %}
+
+							<tr id="admin-{{ admin.user.id }}">
+								<th scope="row">{{ admin.user.id }}</th>
+								<td>{{ admin.user.firstName ~ ' ' ~ admin.user.lastName }}</td>
+								<td>{{ admin.user.class }}</td>
+								<td>{{ admin.user.tag }}</td>
+								<td>
+									<a class="btn btn-success" href="{{ path('user.profile', {username: admin.user.username}) }}" target="_blank">Zobrazit</a>
+								</td>
+								<td>
+									<a class="btn btn-danger deladmin-from-proj" data-del-admin-id="{{ admin.user.id }}">Smazat</a>
+								</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<div class="tab-pane fade" id="members" role="tabpanel" aria-labelledby="contact-tab">
+			<div class="project-members m-3 table-responsive">
+
+				<table class="table table-striped table-hover text-center">
+					<thead>
+						<tr>
+							<th scope="col">ID</th>
+							<th scope="col">Jméno</th>
+							<th scope="col">Třída</th>
+							<th scope="col">Tag</th>
+							<th scope="col">Zobrazit profil</th>
+						</tr>
+					</thead>
+					<tbody class="align-middle" id="projects-tbody">
+						{% for member in project.members %}
+
+							<tr id="member-{{ member.id }}">
+								<th scope="row">{{ member.member.id }}</th>
+								<td>{{ member.member.firstName ~ ' ' ~ member.member.lastName }}</td>
+								<td>{{ member.member.class }}</td>
+								<td>{{ member.member.tag }}</td>
+								<td>
+									<a class="btn btn-success" href="{{ path('user.profile', {username: member.member.username}) }}" target="_blank">Zobrazit</a>
+								</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
 {% endblock %}

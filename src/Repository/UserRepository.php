@@ -36,6 +36,33 @@ class UserRepository extends ServiceEntityRepository
     }
     */
 
+    /**
+     * @return User[]
+     */
+    public function searchUser($value)
+    {
+        $q = $this->createQueryBuilder('u');
+
+        foreach (preg_split('/\s+/', trim($value)) as $parsedPhrase) {
+            if ($parsedPhrase != '') {
+                if (!preg_match('/%/', $parsedPhrase)) {
+                    $q->where(
+                        $q->expr()->andX(
+                            $q->expr()->orX(
+                                $q->expr()->like('u.firstname', ':val'),
+                                $q->expr()->like('u.lastname', ':val'),
+                                $q->expr()->like('u.class', ':val')
+                            ),
+                        )
+                    )
+                        ->setParameter('val', '%' . $parsedPhrase . '%');
+                }
+            }
+        }
+
+        return $q->getQuery()->getResult();
+    }
+
     /*
     public function findOneBySomeField($value): ?User
     {

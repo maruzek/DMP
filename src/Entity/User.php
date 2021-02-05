@@ -77,12 +77,22 @@ class User
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private $image;
+    private $image = "default.png";
 
     /**
      * @ORM\OneToMany(targetEntity=Media::class, mappedBy="uploader")
      */
     private $media;
+
+    /**
+     * @ORM\Column(type="json", nullable=true)
+     */
+    private $admin;
+
+    /**
+     * @ORM\OneToMany(targetEntity=ProjectAdmin::class, mappedBy="user")
+     */
+    private $projectAdmins;
 
     public function __construct()
     {
@@ -91,6 +101,7 @@ class User
         $this->members = new ArrayCollection();
         $this->posts = new ArrayCollection();
         $this->media = new ArrayCollection();
+        $this->projectAdmins = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -342,6 +353,48 @@ class User
             // set the owning side to null (unless already changed)
             if ($medium->getUploader() === $this) {
                 $medium->setUploader(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getAdmin(): ?array
+    {
+        return $this->admin;
+    }
+
+    public function setAdmin(array $admin): self
+    {
+        $this->admin = $admin;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|ProjectAdmin[]
+     */
+    public function getProjectAdmins(): Collection
+    {
+        return $this->projectAdmins;
+    }
+
+    public function addProjectAdmin(ProjectAdmin $projectAdmin): self
+    {
+        if (!$this->projectAdmins->contains($projectAdmin)) {
+            $this->projectAdmins[] = $projectAdmin;
+            $projectAdmin->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeProjectAdmin(ProjectAdmin $projectAdmin): self
+    {
+        if ($this->projectAdmins->removeElement($projectAdmin)) {
+            // set the owning side to null (unless already changed)
+            if ($projectAdmin->getUser() === $this) {
+                $projectAdmin->setUser(null);
             }
         }
 

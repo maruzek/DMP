@@ -38,6 +38,28 @@
     }
 }
 
+.editPostModalTrigger {
+    i {
+        transition: .2s;
+
+        &:hover {
+            color: rgb(87, 87, 87);
+        }
+    }
+}
+
+.post-card-trash-icon {
+    margin-left: auto;
+
+    i {
+        transition: .2s;
+
+        &:hover {
+            color: rgb(153, 0, 0);
+        }
+    }
+}
+
 // COLORS
 .project-post-blue {
     background-color: #cce6ff;

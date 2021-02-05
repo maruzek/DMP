@@ -4,17 +4,38 @@
 	{% if session.get('username') == username %}
 		<h1 class="text-center m-2">Moje projekty</h1>
 		{% for project in projects %}
-			<a href="{{ path('project.project', {id: project.id}) }}" class="profile-projects-link">
-				<div class="profile-projects-card">
-					<div class="profile-projects-card-image">
-						<img src="http://localhost:8081/img/logo1.jpg" alt="logo">
-					</div>
-					<div class="profile-projects-card-text">
-						<h5>{{ project.name }}</h5>
-					</div>
-				</div>
-			</a>
+			<!--<a href="{{ path('project.project', {id: project.id}) }}" class="profile-projects-link">
+																			<div class="profile-projects-card">
+																				{% if project.image != null %}
+																					<div class="profile-projects-card-image">
+																						<img src="/img/projectimg/{{ project.image }}" alt="logo">
+																					</div>
+																				{% endif %}
+																				<div class="profile-projects-card-text">
+																					<h5>{{ project.name }}</h5>
+																				</div>
+																			</div>
+																		</a>-->
 		{% endfor %}
+		<div class="fw-card-deck">
+			{% for project in projects %}
+				<a href="{{ path('project.project', {id: project.id}) }}" class="fw-card-link">
+					<div class="fw-card">
+						{% if project.image != "" %}
+							<img src="/img/projectimg/{{ project.image }}" class="img-fluid" alt="logo">
+						{% else %}
+							<img src="/img/logo1.jpg" class="img-fluid" alt="logo">
+						{% endif %}
+						<h5>{{ project.name }}</h5>
+
+						<span class="user-project-trash-icon" data-del-project-id="{{ project.id }}">
+							<i class="fas fa-trash"></i>
+						</span>
+					</div>
+				</a>
+			{% endfor %}
+		</div>
+
 	{% else %}
 		<h1 class="text-center m-5">Pro přístup k této stránce nemáte oprávnění</h1>
 		<a href="/" class="btn btn-secondary mx-auto d-block" style="width:20%">Zpět na úvodní stránku</a>

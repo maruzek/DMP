@@ -40,7 +40,7 @@ class UserController extends AbstractController
                         $this->getParameter('user_pic'),
                         $filename
                     );
-                    if (touch($user->getImage())) {
+                    if (touch($user->getImage()) && $user->getImage() != 'default.png') {
                         unlink($this->getParameter('user_pic') . '/' . $user->getImage());
                     }
 

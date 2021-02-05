@@ -1,0 +1,38 @@
+{% extends "base.html.twig" %}
+
+{% block body %}
+
+	<h1 class="text-center m-3">Nový projekt</h1>
+	<hr>
+
+	{{ form_start(newProjectForm) }}
+
+	<div class="mb-3">
+		{{ form_row(newProjectForm.name) }}
+	</div>
+	<div class="mb-3">
+		{{ form_row(newProjectForm.description) }}
+	</div>
+	<div class="mb-3">
+		{{ form_row(newProjectForm.link) }}
+	</div>
+	<div class="mb-3">
+		{{ form_row(newProjectForm.tag) }}
+	</div>
+	<div class="mb-3">
+		{{ form_row(newProjectForm.color) }}
+	</div>
+	<div class="mb-3">
+		{{ form_row(newProjectForm.attach) }}
+	</div>
+	<div class="mb-3">
+		{{ form_row(newProjectForm.mainAdmin) }}
+	</div>
+	<div class="mb-3">
+		{{ form_row(newProjectForm.submit) }}
+	</div>
+
+	{{ form_end(newProjectForm) }}
+
+
+{% endblock %}

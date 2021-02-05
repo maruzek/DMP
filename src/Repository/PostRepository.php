@@ -36,6 +36,43 @@ class PostRepository extends ServiceEntityRepository
     }
     */
 
+    /**
+     * @return Post[]
+     */
+    public function searchPost($value)
+    {
+        $q = $this->createQueryBuilder('u');
+
+        foreach (preg_split('/\s+/', trim($value)) as $parsedPhrase) {
+            if ($parsedPhrase != '') {
+                if (!preg_match('/%/', $parsedPhrase)) {
+                    $q->where(
+                        $q->expr()->andX(
+                            $q->expr()->orX(
+                                $q->expr()->like('u.text', ':val'),
+                            ),
+                        )
+                    )
+                        ->andWhere("u.deleted='0'")
+                        ->andWhere("u.privacy='0'")
+                        ->setParameter('val', '%' . $parsedPhrase . '%');
+                }
+            }
+        }
+
+        return $q->getQuery()->getResult();
+    }
+
+    public function findPostLimit($limit, $project)
+    {
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.project = :project')
+            ->setParameter('project', $project)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
     /*
     public function findOneBySomeField($value): ?Post
     {

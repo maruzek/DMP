@@ -10,3 +10,36 @@
     border-radius: 1rem;
     padding: 20px;
 }
+
+.admin-project-admins-card {
+    background-color: rgb(230, 230, 230);
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    width: 100%;
+
+    margin: 10px 0px 10px 0px;
+    padding: 20px;
+
+    img {
+        border-radius: 50%;
+        max-width: 70px;
+        margin-right: 20px;
+    }
+
+    .admin-card-trash-icon {
+        margin-left: auto;
+
+        i {
+            transition: .2s;
+
+            &:hover {
+                color: rgb(153, 0, 0);
+            }
+        }
+    }
+}
+
+#change-admin-panel {
+    display: none;
+}

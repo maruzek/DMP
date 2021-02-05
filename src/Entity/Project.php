@@ -75,12 +75,23 @@ class Project
      */
     private $media;
 
+    /**
+     * @ORM\OneToMany(targetEntity=ProjectAdmin::class, mappedBy="project")
+     */
+    private $projectAdmins;
+
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private $deleted;
+
     public function __construct()
     {
         $this->follows = new ArrayCollection();
         $this->members = new ArrayCollection();
         $this->posts = new ArrayCollection();
         $this->media = new ArrayCollection();
+        $this->projectAdmins = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -288,6 +299,48 @@ class Project
                 $medium->setProject(null);
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|ProjectAdmin[]
+     */
+    public function getProjectAdmins(): Collection
+    {
+        return $this->projectAdmins;
+    }
+
+    public function addProjectAdmin(ProjectAdmin $projectAdmin): self
+    {
+        if (!$this->projectAdmins->contains($projectAdmin)) {
+            $this->projectAdmins[] = $projectAdmin;
+            $projectAdmin->setProject($this);
+        }
+
+        return $this;
+    }
+
+    public function removeProjectAdmin(ProjectAdmin $projectAdmin): self
+    {
+        if ($this->projectAdmins->removeElement($projectAdmin)) {
+            // set the owning side to null (unless already changed)
+            if ($projectAdmin->getProject() === $this) {
+                $projectAdmin->setProject(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getDeleted(): ?bool
+    {
+        return $this->deleted;
+    }
+
+    public function setDeleted(?bool $deleted): self
+    {
+        $this->deleted = $deleted;
 
         return $this;
     }

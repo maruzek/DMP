@@ -79,30 +79,45 @@ class LoginController extends AbstractController
             }
             $cou = 0;
 
-            if (count($ou) == 5) {
-                $cou = 4;
-                $classYear = (int)$ou[1] . $ou[2];
-                if (date('n') <= 12 && date('n') >= 9) {
+            if (trim($expName[1][0]) == "x") {
+                $userGroup = "ROLE_STUDENT";
+                $tag = "student";
+
+                $name = trim($expName[1]);
+                $name = explode('.', $name);
+
+                $username = trim($exp[1]);
+                $firstName = $name[0];
+                $lastName = $name[1];
+                $role = $userGroup;
+                $class = "AM3";
+            } else {
+                if (count($ou) == 5) {
+                    $cou = 4;
+                    $classYear = (int)$ou[1] . $ou[2];
+                    if (date('n') <= 12 && date('n') >= 9) {
+                        $classNum = (int)date('y') - ($classYear - 1);
+                    } else {
+                        $classNum = (int)date('y') - ($classYear);
+                    }
+                    $class = trim(strtoupper($ou[3]) . $classNum);
+                } elseif (count($ou) == 6) {
+                    $cou = 5;
+                    $classYear = (int)$ou[1] . $ou[2];
                     $classNum = (int)date('y') - ($classYear - 1);
-                } else {
-                    $classNum = (int)date('y') - ($classYear);
+                    $class = trim(strtoupper($ou[3]) . strtoupper($ou[4]) . $classNum);
                 }
-                $class = trim(strtoupper($ou[3]) . $classNum);
-            } elseif (count($ou) == 6) {
-                $cou = 5;
-                $classYear = (int)$ou[1] . $ou[2];
-                $classNum = (int)date('y') - ($classYear - 1);
-                $class = trim(strtoupper($ou[3]) . strtoupper($ou[4]) . $classNum);
+
+                $name = trim($expName[1]);
+                $name = explode(' ', $name);
+
+                $username = trim($exp[1]);
+                $firstName = $name[0];
+                $lastName = $name[1];
+                $role = $userGroup;
+                $role = "ROLE_ADMIN";
             }
 
-            $name = trim($expName[1]);
-            $name = explode(' ', $name);
-
-            $username = trim($exp[1]);
-            $firstName = $name[0];
-            $lastName = $name[1];
-            $role = $userGroup;
-            $role = "ROLE_ADMIN";
 
             $user = new User();
 
@@ -146,16 +161,11 @@ class LoginController extends AbstractController
             $this->session->set('id', $users[0]->getId());
             $this->session->set('user', $user);
 
-            //return $this->redirect('/');
+            return $this->redirect('/');
         } else {
-            //if the ticket parameter is not set, it means we are starting and we should
-            //redirect to the SSO Application
             $ssoUrl = $ssoUrlBase . "?service=" . urlencode($service);
 
-            //redirect to the SSO Application
-
             return $this->redirect($ssoUrl);
-            //header("Location: " . $ssoUrl);
         }
 
         if ($this->session->get('username') != "") {
@@ -167,8 +177,32 @@ class LoginController extends AbstractController
         return $this->render('login/index.html.twig', [
             'controller_name' => 'LoginController',
             'session' => $session,
-            'userprofile' => $userProfile,
-            'cou' => $cou
+            'userprofile' => $userProfile
         ]);
+    }
+
+    /**
+     * @Route("/logout", name="logout")
+     */
+    public function logout(SessionInterface $session, Request $request)
+    {
+        $session->remove('user');
+        $session->remove('username');
+        $session->remove('id');
+        $session->remove('class');
+        $session->remove('role');
+        $session->remove('tag');
+        $session->remove('lastName');
+        $session->remove('firstName');
+
+        /*$response = new Response();
+        $response->headers->clearCookie('PHPSESSID', '/', null);
+        unset($_COOKIE['PHPSESSID']);
+
+        return $this->render('login/logout.html.twig', [
+            'session' => $session
+        ], $response);*/
+
+        return $this->redirect('/');
     }
 }

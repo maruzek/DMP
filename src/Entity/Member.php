@@ -19,7 +19,7 @@ class Member
 
     /**
      * @ORM\ManyToOne(targetEntity=User::class, inversedBy="members")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
      */
     private $member;
 
@@ -30,7 +30,7 @@ class Member
     private $project;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="boolean", length=255)
      */
     private $accepted;
 

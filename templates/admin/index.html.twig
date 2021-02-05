@@ -4,33 +4,139 @@
 	Admin
 {% endblock %}
 
+{% block abs %}
+
+	<div class="toast position-absolute mt-5 top-0 start-0" id="toast-edituser-delimg-success">
+		<div class="toast-header">
+			<strong class="me-auto">Uživatel</strong>
+		</div>
+		<div class="toast-body">
+			Profilový obrázek uživatele úspěšně smazán!
+		</div>
+	</div>
+
+	<div class="toast position-absolute mt-5 top-0 start-0" id="toast-edituser-delimg-alreadydefault">
+		<div class="toast-header">
+			<strong class="me-auto">Uživatel</strong>
+		</div>
+		<div class="toast-body">
+			Tomuto uživateli nejde smazat profilový obrázek, jelikož ho nemá.
+		</div>
+	</div>
+
+	<div class="toast position-absolute mt-5 top-0 start-0" id="toast-edituser-deldesc-success">
+		<div class="toast-header">
+			<strong class="me-auto">Uživatel</strong>
+		</div>
+		<div class="toast-body">
+			Popisek uživatele úspěšně smazán!
+		</div>
+	</div>
+
+	<div class="toast position-absolute mt-5 top-0 start-0" id="toast-edituser-deldesc-alreadyclear">
+		<div class="toast-header">
+			<strong class="me-auto">Uživatel</strong>
+		</div>
+		<div class="toast-body">
+			Tomuto uživateli nejde smazat popisek, jelikož ho nemá.
+		</div>
+	</div>
+
+	<div class="toast position-absolute mt-5 top-0 start-0" id="toast-edituser-fail">
+		<div class="toast-header">
+			<strong class="me-auto">Uživatel</strong>
+		</div>
+		<div class="toast-body">
+			Někde se stala chyba, zkuste to prosím později.
+		</div>
+	</div>
+
+{% endblock %}
+
 {% block fluid %}
 
 	<h1 class="text-center m-2">Administrátorské prostředí</h1>
 	<hr>
 
-	<ul class="nav flex-column">
-		<li class="nav-item">
-			<a class="nav-link active" aria-current="page" href="#">Domů</a>
+	<ul class="nav nav-pills flex-column flex-sm-row" id="pills-tab" role="tablist">
+		<li class="nav-item flex-sm-fill" role="presentation">
+			<a class="text-sm-center nav-link active" data-bs-toggle="pill" href="#domu" role="tab" aria-controls="domu" aria-selected="true">
+				Domů
+			</a>
 		</li>
-		<li class="nav-item">
-			<a class="nav-link" href="#">Statistiky</a>
-		</li>
-		<li class="nav-item">
-			<a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">Projekty</a>
+		<li class="nav-item dropdown flex-sm-fill">
+			<a class=" text-sm-center nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">
+				Projekty
+			</a>
 			<ul class="dropdown-menu">
 				<li>
 					<a class="dropdown-item" href="{{ path('admin.projects') }}">Spravovat projekty</a>
 				</li>
 				<li>
-					<a class="dropdown-item" href="#">Nový projekt</a>
+					<a class="dropdown-item" href="{{ path('admin.newProject') }}">Nový projekt</a>
 				</li>
 			</ul>
-
 		</li>
-		<li class="nav-item">
-			<a class="nav-link" href="#" tabindex="-1">Uživatelé</a>
+		<li class="nav-item flex-sm-fill" role="presentation">
+			<a class=" text-sm-center nav-link" data-bs-toggle="pill" href="#statistiky" role="tab" aria-controls="statistiky" aria-selected="true">
+				Statistiky
+			</a>
+		</li>
+		<li class="nav-item flex-sm-fill" role="presentation">
+			<a class=" text-sm-center nav-link" data-bs-toggle="pill" href="#uzivatele" role="tab" aria-controls="uzivatele" aria-selected="true">
+				Uživatelé
+			</a>
 		</li>
 	</ul>
+	<main style="padding: 0px 20px 0px 20px">
+		<div class="tab-content" id="pills-tabContent">
+			<div class="tab-pane fade show active" id="domu" role="tabpanel" aria-labelledby="domu">...</div>
+			<div class="tab-pane fade" id="statistiky" role="tabpanel" aria-labelledby="statistiky">statistiky</div>
+			<div class="tab-pane fade" id="uzivatele" role="tabpanel" aria-labelledby="uzivatele">
+				<div class="form-floating mb-3 mt-3">
+					<input type="text" class="form-control" id="searchUserInput" placeholder="Hledat...">
+					<label for="searchUser">Hledat uživatele</label>
+				</div>
+				<div class="table-responsive mt-3">
+					<table class="table table-striped table-hover text-center">
+						<thead>
+							<tr>
+								<th scope="col">ID</th>
+								<th scope="col">Jméno</th>
+								<th scope="col">Třída</th>
+								<th scope="col">Uživatelské jméno</th>
+								<th scope="col">Tag</th>
+								<th scope="col">Zobrazit profil</th>
+								<th scope="col">Spravovat</th>
+								<th scope="col">Smazat</th>
+							</tr>
+						</thead>
+						<tbody class="align-middle" id="allUsers-tbody"></tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</main>
+
+	<!-- Edit User Modal -->
+	<div class="modal fade" id="editUserModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="staticBackdropLabel">Spravovat uživatele</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<button type="button" class="btn btn-danger m-3 admin-deluser-img">Smazat profilovou fotku</button>
+					<br>
+					<button type="button" class="btn btn-danger m-3 admin-deluser-desc">Smazat popisek</button>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zavřít</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
 
 {% endblock %}

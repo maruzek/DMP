@@ -21,7 +21,7 @@ class Post
 
     /**
      * @ORM\ManyToOne(targetEntity=User::class, inversedBy="posts")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
      */
     private $author;
 
@@ -37,7 +37,7 @@ class Post
     private $text;
 
     /**
-     * @ORM\Column(type="string", length=255, nullable=true)
+     * @ORM\Column(type="integer", nullable=true)
      */
     private $privacy;
 
@@ -46,9 +46,20 @@ class Post
      */
     private $media;
 
+    /**
+     * @ORM\OneToMany(targetEntity=Seen::class, mappedBy="post", orphanRemoval=true)
+     */
+    private $seens;
+
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    private $deleted;
+
     public function __construct()
     {
         $this->media = new ArrayCollection();
+        $this->seens = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -130,6 +141,48 @@ class Post
                 $medium->setPost(null);
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Seen[]
+     */
+    public function getSeens(): Collection
+    {
+        return $this->seens;
+    }
+
+    public function addSeen(Seen $seen): self
+    {
+        if (!$this->seens->contains($seen)) {
+            $this->seens[] = $seen;
+            $seen->setPost($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSeen(Seen $seen): self
+    {
+        if ($this->seens->removeElement($seen)) {
+            // set the owning side to null (unless already changed)
+            if ($seen->getPost() === $this) {
+                $seen->setPost(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getDeleted(): ?bool
+    {
+        return $this->deleted;
+    }
+
+    public function setDeleted(?bool $deleted): self
+    {
+        $this->deleted = $deleted;
 
         return $this;
     }

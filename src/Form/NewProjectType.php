@@ -69,6 +69,13 @@ class NewProjectType extends AbstractType
                 'label' => 'Profilový obrázek',
                 'mapped' => false
             ])
+            ->add('mainAdmin', TextType::class, [
+                'attr' => [
+                    'class' => 'form-control addProjectAdmin'
+                ],
+                'label' => 'Vyberte hlavního správce',
+                'mapped' => false
+            ])
             ->add('submit', SubmitType::class, [
                 'attr' => [
                     'class' => 'btn btn-primary mt-3'
