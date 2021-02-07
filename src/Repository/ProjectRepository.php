@@ -51,7 +51,6 @@ class ProjectRepository extends ServiceEntityRepository
                             $q->expr()->orX(
                                 $q->expr()->like('u.name', ':val'),
                                 $q->expr()->like('u.description', ':val'),
-                                $q->expr()->like('u.name', ':val'),
                             ),
                         )
                     )

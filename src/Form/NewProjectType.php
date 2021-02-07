@@ -40,14 +40,16 @@ class NewProjectType extends AbstractType
             ])
             ->add('tag', ChoiceType::class, [
                 'attr' => [
-                    'class' => 'form-select'
+                    'class' => 'form-select',
+                    'required' => true
                 ],
                 'label' => 'Typ (kroužek/projekt)',
                 'choices' => [
                     'Vyberte' => null,
                     'Kroužek' => 'kroužek',
                     'Projekt' => 'projekt'
-                ]
+                ],
+                'required' => true
             ])
             ->add('color', ChoiceType::class, [
                 'attr' => [

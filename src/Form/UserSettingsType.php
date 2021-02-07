@@ -25,11 +25,13 @@ class UserSettingsType extends AbstractType
             ])
             ->add('attach', FileType::class, [
                 'attr' => [
-                    'class' => 'form-control'
+                    'class' => 'form-control',
+                    'onchange' => 'previewFile()'
                 ],
                 'label' => 'Profilový obrázek',
                 'mapped' => false,
-                'required' => false
+                'required' => false,
+
             ])
             ->add('submit', SubmitType::class, [
                 'attr' => [

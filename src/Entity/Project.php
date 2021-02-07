@@ -83,7 +83,7 @@ class Project
     /**
      * @ORM\Column(type="boolean", nullable=true)
      */
-    private $deleted;
+    private $deleted = false;
 
     public function __construct()
     {

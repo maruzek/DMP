@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Form\SearchType;
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -19,32 +20,23 @@ class MainController extends AbstractController
     public function index(SessionInterface $session)
     {
         $this->session = $session;
+        $searchForm = $this->createForm(SearchType::class);
 
-        $userProfile = "";
-
-        if ($this->session->get('username') != "") {
-            $userProfile = $this->generateUrl('user.profile', [
-                'username' => $this->session->get('username')
-            ]);
-        }
 
         return $this->render('main.html.twig', [
             'controller_name' => 'MainController',
             'session' => $session,
-            'userprofile' => $userProfile
-
+            'searchForm' => $searchForm
         ]);
     }
 
     /**
-     * @Route("/logged", name="logged")
+     * @Route("/seznam", name="list")
      */
-    public function login()
+    public function list(SessionInterface $session)
     {
-        return $this->render('logged.html.twig', [
-            'controller_name' => 'MainController',
-            'name' => "Jane Doe",
-            'role' => 'ucitel'
+        return $this->render('list.html.twig', [
+            'session' => $session
         ]);
     }
 

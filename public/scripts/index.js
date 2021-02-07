@@ -63,10 +63,11 @@ if (delButton != null) {
           project: projectID
         }
       }).then((response) => {
+        console.log(response)
         if (response == "success") {
           $("#toast-deladmin-fromproj-success").toast('show')
 
-          const adminTr = document.querySelector('#admin-' + id).remove()
+          document.querySelector('#admin-' + id).remove()
         }
       })
     })
@@ -519,64 +520,85 @@ if(searchUserInput != null) {
 // Edit user as Admin 
 
 const editUserModal = document.getElementById('editUserModal')
-editUserModal.addEventListener('show.bs.modal', function (event) {
-  // Button that triggered the modal
-  const button = event.relatedTarget
-  // Extract info from data-bs-* attributes
-  const id = button.getAttribute('data-bs-userid')
-  // If necessary, you could initiate an AJAX request here
-  // and then do the updating in a callback.
-  //
-  // Update the modal's content.
-  const delimgBtn = editUserModal.querySelector('.admin-deluser-img')
-  const deldescBtn = editUserModal.querySelector('.admin-deluser-desc')
-
-  delimgBtn.addEventListener('click', ()=>{
-    $.ajax({
-      type: "POST",
-      url: "/admin/editUser",
-      data: {
-        id: id,
-        type: "delimg"
-      }
-    }).then((response) => {
-      console.log(response)
-
-      if(response == "success") {
-        $('#toast-edituser-delimg-success').toast('show')
-      } else if(response == "alreadydefault") {
-        $('#toast-edituser-delimg-alreadydefault').toast('show')
-      } else if(response == "badrequest") {
-        $('#toast-edituser-fail').toast('show')
-      } 
-
-      
-    }).catch((error) => {
-      console.error(error)
+if(editUserModal != null) {
+  editUserModal.addEventListener('show.bs.modal', function (event) {
+    // Button that triggered the modal
+    const button = event.relatedTarget
+    // Extract info from data-bs-* attributes
+    const id = button.getAttribute('data-bs-userid')
+    // If necessary, you could initiate an AJAX request here
+    // and then do the updating in a callback.
+    //
+    // Update the modal's content.
+    const delimgBtn = editUserModal.querySelector('.admin-deluser-img')
+    const deldescBtn = editUserModal.querySelector('.admin-deluser-desc')
+  
+    delimgBtn.addEventListener('click', ()=>{
+      $.ajax({
+        type: "POST",
+        url: "/admin/editUser",
+        data: {
+          id: id,
+          type: "delimg"
+        }
+      }).then((response) => {
+        console.log(response)
+  
+        if(response == "success") {
+          $('#toast-edituser-delimg-success').toast('show')
+        } else if(response == "alreadydefault") {
+          $('#toast-edituser-delimg-alreadydefault').toast('show')
+        } else if(response == "badrequest") {
+          $('#toast-edituser-fail').toast('show')
+        } 
+  
+        
+      }).catch((error) => {
+        console.error(error)
+      })
     })
-  })
-
-  deldescBtn.addEventListener('click', ()=>{
-    $.ajax({
-      type: "POST",
-      url: "/admin/editUser",
-      data: {
-        id: id,
-        type: "deldesc"
-      }
-    }).then((response) => {
-      console.log(response)
-      if(response == "success") {
-        $('#toast-edituser-deldesc-success').toast('show')
-      } else if(response == "alreadyclear") {
-        $('#toast-edituser-deldesc-alreadyclear').toast('show')
-      } else if(response == "badrequest") {
-        $('#toast-edituser-fail').toast('show')
-      } 
-
-    }).catch((error) => {
-      console.error(error)
+  
+    deldescBtn.addEventListener('click', ()=>{
+      $.ajax({
+        type: "POST",
+        url: "/admin/editUser",
+        data: {
+          id: id,
+          type: "deldesc"
+        }
+      }).then((response) => {
+        console.log(response)
+        if(response == "success") {
+          $('#toast-edituser-deldesc-success').toast('show')
+        } else if(response == "alreadyclear") {
+          $('#toast-edituser-deldesc-alreadyclear').toast('show')
+        } else if(response == "badrequest") {
+          $('#toast-edituser-fail').toast('show')
+        } 
+  
+      }).catch((error) => {
+        console.error(error)
+      })
     })
+  
   })
+}
 
-})
+// User Profile edit photo
+
+let preview = document.querySelector('#avatar')
+let file_input = document.querySelector('#user_settings_attach')
+console.log(file_input)
+
+function previewFile() {
+let file = file_input.files[0]
+let reader = new FileReader()
+
+reader.addEventListener('load', () => {
+  preview.src = reader.result
+}, false)
+
+if(file) {
+  reader.readAsDataURL(file)
+}
+}

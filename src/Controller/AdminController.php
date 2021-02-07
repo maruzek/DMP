@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Authentication\Authentication;
 use App\Entity\Media;
+use App\Entity\Member;
 use App\Entity\Project;
 use App\Entity\ProjectAdmin;
 use App\Form\AddAdminType;
@@ -32,6 +33,12 @@ use Symfony\Component\Serializer\Serializer;
 class AdminController extends AbstractController
 {
     private $session;
+    private $auth;
+
+    public function __construct(SessionInterface $session, UserRepository $userRepository)
+    {
+        $this->auth = new Authentication($session, $userRepository);
+    }
 
     /**
      * @Route("/", name="index")
@@ -39,18 +46,11 @@ class AdminController extends AbstractController
     public function index(SessionInterface $session, ProjectRepository $projectRepository, UserRepository $userRepository, Request $request): Response
     {
         $this->session = $session;
-
-        $auth = new Authentication($session->get('id'));
-        if ($auth->isAbsAdmin($session, $userRepository)) {
+        //$auth = new Authentication($session->get('id'));
+        //$auth = new Authentication($session, $userRepository);
+        if ($this->auth->isAbsAdmin()) {
             $user = $userRepository->find($session->get('id'));
 
-            if (in_array('ROLE_ADMIN', $user->getRoles())) {
-            } else {
-                $response = new Response();
-                //$response->headers->set('Content-Type', 'text/plain');
-                $response->setStatusCode(403);
-                return $response;
-            }
             $allUsers = $userRepository->findAll();
             return $this->render('admin/index.html.twig', [
                 'session' => $session,
@@ -58,9 +58,9 @@ class AdminController extends AbstractController
             ]);
         }
 
-        return $this->render('error/404.html.twig', [
+        return $this->render('error/401.html.twig', [
             'session' => $session
-        ]);
+        ], new Response('', 401));
     }
 
     /**
@@ -70,8 +70,9 @@ class AdminController extends AbstractController
     {
         $this->session = $session;
 
-        $auth = new Authentication($session->get('id'));
-        if ($auth->isAbsAdmin($session, $userRepository)) {
+        //$auth = new Authentication($session->get('id'));
+        //$auth = new Authentication($session, $userRepository);
+        if ($this->auth->isAbsAdmin()) {
             $projects = $projectRepository->findAll();
 
 
@@ -81,9 +82,9 @@ class AdminController extends AbstractController
             ]);
         }
 
-        return $this->render('error/404.html.twig', [
+        return $this->render('error/401.html.twig', [
             'session' => $session
-        ]);
+        ], new Response('', 401));
     }
 
     /**
@@ -92,9 +93,11 @@ class AdminController extends AbstractController
     public function project($id, SessionInterface $session, ProjectRepository $projectRepository, UserRepository $userRepository, Request $request, ProjectAdminRepository $projectAdminRepository)
     {
         $this->session = $session;
-        $auth = new Authentication($session->get('id'));
-        if ($auth->isAbsAdmin($session, $userRepository)) {
-            $project = $projectRepository->find($id);
+        //$auth = new Authentication($session->get('id'));
+        //$auth = new Authentication($session, $userRepository);
+        $project = $projectRepository->find($id);
+        if ($this->auth->isAbsAdmin() && $project != null) {
+
             $user = $userRepository->find($session->get('id'));
             $basicSettingsForm = $this->createForm(ProjectSettingsType::class, $project);
 
@@ -227,12 +230,15 @@ class AdminController extends AbstractController
                 'status' => $status,
                 'newAdminForm' => $addAdminForm->createView(),
             ]);
+        } else if ($project == null) {
+            return $this->render('error/404.html.twig', [
+                'session' => $session
+            ], new Response('', 404));
         }
 
-        $response = new Response('', 401);
-        return $this->render('error/404.html.twig', [
+        return $this->render('error/401.html.twig', [
             'session' => $session
-        ], $response);
+        ], new Response('', 401));
     }
 
     /**
@@ -241,8 +247,9 @@ class AdminController extends AbstractController
     public function newProject(SessionInterface $session, ProjectRepository $projectRepository, UserRepository $userRepository, Request $request)
     {
         $this->session = $session;
-        $auth = new Authentication($session->get('id'));
-        if ($auth->isAbsAdmin($session, $userRepository)) {
+        //$auth = new Authentication($session->get('id'));
+        //$auth = new Authentication($session, $userRepository);
+        if ($this->auth->isAbsAdmin()) {
             $project = new Project();
             $form = $this->createForm(NewProjectType::class, $project);
 
@@ -277,10 +284,16 @@ class AdminController extends AbstractController
                 $newAdmin = $userRepository->findOneBy(['username' => $newAdminUsername]);
                 $project->setAdmin($newAdmin);
 
+                $member = new Member();
+                $member->setProject($project);
+                $member->setMember($newAdmin);
+                $member->setAccepted(true);
+
                 if (!$fileError) {
                     // Zapsání do DB
                     $em = $this->getDoctrine()->getManager();
                     $em->persist($project);
+                    $em->persist($member);
                     $em->flush();
                     $formResponse = "success";
                     $id = $project->getId();
@@ -296,10 +309,9 @@ class AdminController extends AbstractController
             ]);
         }
 
-        $response = new Response('', 401);
-        return $this->render('error/404.html.twig', [
+        return $this->render('error/401.html.twig', [
             'session' => $session
-        ], $response);
+        ], new Response('', 401));
     }
 
     /**
@@ -307,7 +319,7 @@ class AdminController extends AbstractController
      */
     public function getPossibleAdmins(Request $request, UserRepository $userRepository, ProjectAdminRepository $projectAdminRepository, ProjectRepository $projectRepository)
     {
-        if ($request->isXmlHttpRequest()) {
+        if ($request->isXmlHttpRequest() && $this->auth->isAbsAdmin()) {
             $input = $request->request->get('input');
             $usersAll = $userRepository->searchUser($input);
             $projectID = $request->request->get('project');
@@ -338,12 +350,17 @@ class AdminController extends AbstractController
             $serializer = new Serializer($normalizers, $encoders);
             $response = $serializer->serialize($users, 'json');
             return new JsonResponse($response, 200, [], true);
+        } else if (!$this->auth->isAbsAdmin()) {
+            return new JsonResponse([
+                'type' => "error",
+                'message' => 'You are not an admin'
+            ], 401);
         }
 
         return new JsonResponse([
             'type' => "error",
             'message' => 'Not an AJAX request'
-        ]);
+        ], 500);
     }
 
     /**
@@ -351,7 +368,7 @@ class AdminController extends AbstractController
      */
     public function delAdminFromProject(Request $request, ProjectAdminRepository $projectAdminRepository)
     {
-        if ($request->isXmlHttpRequest()) {
+        if ($request->isXmlHttpRequest() && $this->auth->isAbsAdmin()) {
             $data = $request->request->get('data');
             $project = $request->request->get('project');
 
@@ -359,7 +376,12 @@ class AdminController extends AbstractController
 
             $em = $this->getDoctrine()->getManager();
             $em->remove($admin);
-            $em->flush();
+            if (!$em->flush()) {
+                $result = "success";
+            } else {
+                $result = "fail";
+            }
+
 
             $defaultContext = [
                 AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => function ($object, $format, $context) {
@@ -373,14 +395,19 @@ class AdminController extends AbstractController
                 new ObjectNormalizer(null, null, null, null, null, null, $defaultContext)
             ];
             $serializer = new Serializer($normalizers, $encoders);
-            $response = $serializer->serialize($data, 'json');
+            $response = $serializer->serialize($result, 'json');
             return new JsonResponse($response, 200, [], true);
+        } else if (!$this->auth->isAbsAdmin()) {
+            return new JsonResponse([
+                'type' => "error",
+                'message' => 'You are not an admin'
+            ], 401);
         }
 
         return new JsonResponse([
-            'type' => 'error',
-            'message' => 'Not AJAX request'
-        ], 403);
+            'type' => "error",
+            'message' => 'Not an AJAX request'
+        ], 500);
     }
 
     /**
@@ -388,7 +415,7 @@ class AdminController extends AbstractController
      */
     public function delProject(Request $request, ProjectRepository $projectRepository)
     {
-        if ($request->isXmlHttpRequest()) {
+        if ($request->isXmlHttpRequest() && $this->auth->isAbsAdmin()) {
             $data = $request->request->get('data');
 
             $project = $projectRepository->find($data);
@@ -418,12 +445,17 @@ class AdminController extends AbstractController
             $serializer = new Serializer($normalizers, $encoders);
             $response = $serializer->serialize($result, 'json');
             return new JsonResponse($response, 200, [], true);
+        } else if (!$this->auth->isAbsAdmin()) {
+            return new JsonResponse([
+                'type' => "error",
+                'message' => 'You are not an admin'
+            ], 401);
         }
 
         return new JsonResponse([
-            'type' => 'error',
-            'message' => 'Not AJAX request'
-        ]);
+            'type' => "error",
+            'message' => 'Not an AJAX request'
+        ], 500);
     }
 
     /**
@@ -431,7 +463,7 @@ class AdminController extends AbstractController
      */
     public function changeMainAdmin(Request $request, ProjectRepository $projectRepository, UserRepository $userRepository)
     {
-        if ($request->isXmlHttpRequest()) {
+        if ($request->isXmlHttpRequest() && $this->auth->isAbsAdmin()) {
             $input = $request->request->get('input');
 
             $project = $projectRepository->find($request->request->get('project'));
@@ -464,12 +496,17 @@ class AdminController extends AbstractController
             $serializer = new Serializer($normalizers, $encoders);
             $response = $serializer->serialize($result, 'json');
             return new JsonResponse($response, 200, [], true);
+        } else if (!$this->auth->isAbsAdmin()) {
+            return new JsonResponse([
+                'type' => "error",
+                'message' => 'You are not an admin'
+            ], 401);
         }
 
         return new JsonResponse([
-            'type' => 'error',
-            'message' => 'Not AJAX request'
-        ]);
+            'type' => "error",
+            'message' => 'Not an AJAX request'
+        ], 500);
     }
 
     /**
@@ -477,7 +514,7 @@ class AdminController extends AbstractController
      */
     public function searchAllUsers(Request $request, ProjectRepository $projectRepository, UserRepository $userRepository)
     {
-        if ($request->isXmlHttpRequest()) {
+        if ($request->isXmlHttpRequest() && $this->auth->isAbsAdmin()) {
             $input = $request->request->get('input');
             $usersAll = $userRepository->searchUser($input);
 
@@ -495,12 +532,17 @@ class AdminController extends AbstractController
             $serializer = new Serializer($normalizers, $encoders);
             $response = $serializer->serialize($usersAll, 'json');
             return new JsonResponse($response, 200, [], true);
+        } else if (!$this->auth->isAbsAdmin()) {
+            return new JsonResponse([
+                'type' => "error",
+                'message' => 'You are not an admin'
+            ], 401);
         }
 
         return new JsonResponse([
-            'type' => 'error',
-            'message' => 'Not AJAX request'
-        ]);
+            'type' => "error",
+            'message' => 'Not an AJAX request'
+        ], 500);
     }
 
     /**
@@ -508,7 +550,7 @@ class AdminController extends AbstractController
      */
     public function editUser(Request $request, UserRepository $userRepository)
     {
-        if ($request->isXmlHttpRequest()) {
+        if ($request->isXmlHttpRequest() && $this->auth->isAbsAdmin()) {
             $id = $request->request->get('id');
             $type = $request->request->get('type');
 
@@ -555,11 +597,16 @@ class AdminController extends AbstractController
             $serializer = new Serializer($normalizers, $encoders);
             $response = $serializer->serialize($result, 'json');
             return new JsonResponse($response, 200, [], true);
+        } else if (!$this->auth->isAbsAdmin()) {
+            return new JsonResponse([
+                'type' => "error",
+                'message' => 'You are not an admin'
+            ], 401);
         }
 
         return new JsonResponse([
-            'type' => 'error',
-            'message' => 'Not AJAX request'
-        ]);
+            'type' => "error",
+            'message' => 'Not an AJAX request'
+        ], 500);
     }
 }

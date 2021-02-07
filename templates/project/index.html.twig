@@ -141,29 +141,6 @@
 			</div>
 		{% endif %}
 	</div>
-
-	<!-- <div aria-live="polite" aria-atomic="true" class="bg-dark position-relative bd-example-toasts">
-																																																																																																																		<div class="toast-container position-absolute mt-5 pt-3 p-1 top-0 start-0" id="toastPlacement">
-																																																																																																																		<div class="toast" id="toast-editpost-success">
-																																																																																																																		<div class="toast-header">
-																																																																																																																		<strong class="me-auto">Příspěvek</strong>
-																																																																																																																		<button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-																																																																																																																		</div>
-																																																																																																																																						<div class="toast-body">
-																																																																																																																																							Váš příspěvek byl upraven
-																																																																																																																																						</div>
-																																																																																																																																					</div>
-																																																																																																																																					<div class="toast" id="toast-editpost-nochange">
-																																																																																																																																						<div class="toast-header">
-																																																																																																																																							<strong class="me-auto">Příspěvek</strong>
-																																																																																																																																							<button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-																																																																																																																																						</div>
-																																																																																																																																						<div class="toast-body">
-																																																																																																																																							Nic nebylo upraveno
-																																																																																																																																						</div>
-																																																																																																																																					</div>
-																																																																																																																																				</div>
-																																																																																																																																			</div> -->
 {% endblock %}
 
 {% block body %}
@@ -320,7 +297,7 @@
 						<div class="tab-pane fade show active project-posts" id="prispevky" role="tabpanel" aria-labelledby="prispevky-tab">
 
 							<div class="project-new-post form-inline mt-3 w-100">
-								{% if session.get('username') != '' %}
+								{% if session.get('id') in projectMembers %}
 									{{ form_start(postForm) }}
 
 									<div class="form-floating">

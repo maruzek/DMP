@@ -626,6 +626,57 @@ footer {
   height: 10vh;
 }
 
+.serach-users {
+  background: #eee;
+  width: 100%;
+  padding: 20px;
+  border-radius: 0.5rem;
+}
+
+.serach-users .search-user-link {
+  text-decoration: none;
+  color: black;
+}
+
+.serach-users .search-user-link:hover {
+  text-decoration: none;
+  color: black;
+}
+
+.serach-projects {
+  background: #eee;
+  width: 100%;
+  padding: 20px;
+  border-radius: 0.5rem;
+}
+
+.serach-projects .search-project-link {
+  text-decoration: none;
+  color: black;
+}
+
+.serach-projects .search-project-link:hover {
+  text-decoration: none;
+  color: black;
+}
+
+.serach-posts {
+  background: #eee;
+  width: 100%;
+  padding: 20px;
+  border-radius: 0.5rem;
+}
+
+.serach-posts .search-post-link {
+  text-decoration: none;
+  color: black;
+}
+
+.serach-posts .search-post-link:hover {
+  text-decoration: none;
+  color: black;
+}
+
 .landing {
   height: 92vh;
   display: -webkit-box;

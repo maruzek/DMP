@@ -382,273 +382,278 @@ class ProjectController extends AbstractController
     {
         $this->session = $session;
         $project = $projectRepository->findOneBy(['id' => $id]);
-        $projectCheck = new ProjectCheck($project->getId());
 
+        if ($project) {
+            $projectCheck = new ProjectCheck($project->getId(), $projectRepository);
+            if ($projectCheck->isAccessible()) {
+                $projectCheck = new ProjectCheck($project->getId(), $projectRepository);
+                if ($projectCheck->isAccessible()) {
+                }
+                $color = new ColorTheme();
+                $palette = $color->colorPallette($project->getColor());
 
-        if ($project && $projectCheck->isAccessible($projectRepository)) {
+                $followBtn = "";
+                $memberBtn = "";
 
-            $color = new ColorTheme();
-            $palette = $color->colorPallette($project->getColor());
-
-            $followBtn = "";
-            $memberBtn = "";
-
-            $projectAdminsArray = $this->getDoctrine()->getRepository(ProjectAdmin::class)->findBy(['project' => $project]);
-            $projectAdmins = [];
-            foreach ($projectAdminsArray as $admin) {
-                array_push($projectAdmins, $admin->getUser()->getId());
-            }
-
-            $projectMembersArray = $this->getDoctrine()->getRepository(Member::class)->findBy(['project' => $project]);
-
-            $projectMembers = [];
-            foreach ($projectMembersArray as $member) {
-                array_push($projectMembers, $member->getMember()->getId());
-            }
-
-
-            if ($session->get('username') != "") {
-                $user = $userRepository->find($session->get('id'));
-
-                /*
-                $follow = new Follow();
-                $follow->setFollower($user);
-                $follow->setProject($project);
-
-                $newMember = new Member();
-                $newMember->setProject($project);
-                $newMember->setMember($user);
-                $newMember->setAccepted("false");*/
-
-
-                if (!$followRepository->findOneBy(['follower' => $session->get('id'), 'project' => $project])) {
-                    //$followForm = $this->createForm(FollowType::class, $follow);
-                    $followBtn = "follow";
-                } else {
-                    //$followForm = $this->createForm(UnfollowType::class, $follow);
-                    $followBtn = "unfollow";
+                $projectAdminsArray = $this->getDoctrine()->getRepository(ProjectAdmin::class)->findBy(['project' => $project]);
+                $projectAdmins = [];
+                foreach ($projectAdminsArray as $admin) {
+                    array_push($projectAdmins, $admin->getUser()->getId());
                 }
 
-                if (!$memberRepository->findOneBy(['member' => $user, 'project' => $project])) {
+                $projectMembersArray = $this->getDoctrine()->getRepository(Member::class)->findBy(['project' => $project]);
 
-
-                    //$memberForm = $this->createForm(MemberType::class, $newMember);
-                    $memberBtn = "member";
-                } else {
-                    //$memberForm = $this->createForm(UnmemberType::class, $newMember);
-                    $memberBtn = "unmember";
-                }
-
-
-                /*
-                $followStatus = '';
-                $followForm->handleRequest($request);
-                if ($followForm->isSubmitted()) {
-                    $em = $this->getDoctrine()->getManager();
-                    $follower = $userRepository->find($session->get('id'));
-
-                    if ($followRepository->findOneBy(['follower' => $session->get('id'), 'project' => $project])) {
-                        $unfollow = $em->getRepository(Follow::class)->findOneBy([
-                            'project' => $project,
-                            'follower' => $follower
-                        ]);
-                        $em->remove($unfollow);
-                        $em->flush();
-                        $followStatus = 'unfollowed';
-                    } else {
-                        $em->persist($follow);
-                        $em->flush();
-                        $followStatus = 'success';
+                $projectMembers = [];
+                foreach ($projectMembersArray as $member) {
+                    if ($member->getAccepted()) {
+                        array_push($projectMembers, $member->getMember()->getId());
                     }
-                }*/
-                /*
-                $memberStatus = "";
-                $memberForm->handleRequest($request);
-                if ($memberForm->isSubmitted()) {
-                    $em = $this->getDoctrine()->getManager();
-                    if ($memberRepository->findOneBy(['member' => $user, 'project' => $project])) {
-                        $unmember = $em->getRepository(Member::class)->findOneBy([
-                            'project' => $project,
-                            'member' => $user
-                        ]);
-                        $em->remove($unmember);
-                        $em->flush();
-                        $memberStatus = "unmember";
-                    } else {
-                        $em->persist($member);
-                        $em->flush();
-                        $memberStatus = "newmember";
-                    }
-                }*/
-
-                /* if (!$followRepository->findOneBy(['follower' => $session->get('id'), 'project' => $project])) {
-                    $followForm = $this->createForm(FollowType::class, $follow);
-                } else {
-                    $followForm = $this->createForm(UnfollowType::class, $follow);
                 }
 
-                if (!$memberRepository->findOneBy(['member' => $user, 'project' => $project])) {
-                    $memberForm = $this->createForm(MemberType::class, $member);
-                } else {
-                    $memberForm = $this->createForm(UnmemberType::class, $member);
-                }*/
 
-                $settingsForm = $this->createForm(ProjectSettingsType::class, $project);
-                $fileError = "";
-                $mediaError = "";
-                $settingsForm->handleRequest($request);
-                if ($settingsForm->isSubmitted()) {
-                    // Zpracování profilového obrázku
-                    $file = $request->files->get('project_settings')["attach"];
-                    if ($file) {
-                        $ext = $file->guessClientExtension();
-                        if ($ext == "jpeg" || $ext == "jpg" || $ext == "jfif" || $ext == "png") {
-                            $filename = md5(uniqid()) . '.' . $file->guessClientExtension();
-                            $file->move(
-                                $this->getParameter('project_pic'),
-                                $filename
-                            );
-                            unlink($this->getParameter('project_pic') . '/' . $project->getImage());
-                            $project->setImage($filename);
+                if ($session->get('username') != "") {
+                    $user = $userRepository->find($session->get('id'));
+
+                    /*
+                        $follow = new Follow();
+                        $follow->setFollower($user);
+                        $follow->setProject($project);
+        
+                        $newMember = new Member();
+                        $newMember->setProject($project);
+                        $newMember->setMember($user);
+                        $newMember->setAccepted("false");*/
+
+
+                    if (!$followRepository->findOneBy(['follower' => $session->get('id'), 'project' => $project])) {
+                        //$followForm = $this->createForm(FollowType::class, $follow);
+                        $followBtn = "follow";
+                    } else {
+                        //$followForm = $this->createForm(UnfollowType::class, $follow);
+                        $followBtn = "unfollow";
+                    }
+
+                    if (!$memberRepository->findOneBy(['member' => $user, 'project' => $project])) {
+
+
+                        //$memberForm = $this->createForm(MemberType::class, $newMember);
+                        $memberBtn = "member";
+                    } else {
+                        //$memberForm = $this->createForm(UnmemberType::class, $newMember);
+                        $memberBtn = "unmember";
+                    }
+
+
+                    /*
+                        $followStatus = '';
+                        $followForm->handleRequest($request);
+                        if ($followForm->isSubmitted()) {
+                            $em = $this->getDoctrine()->getManager();
+                            $follower = $userRepository->find($session->get('id'));
+        
+                            if ($followRepository->findOneBy(['follower' => $session->get('id'), 'project' => $project])) {
+                                $unfollow = $em->getRepository(Follow::class)->findOneBy([
+                                    'project' => $project,
+                                    'follower' => $follower
+                                ]);
+                                $em->remove($unfollow);
+                                $em->flush();
+                                $followStatus = 'unfollowed';
+                            } else {
+                                $em->persist($follow);
+                                $em->flush();
+                                $followStatus = 'success';
+                            }
+                        }*/
+                    /*
+                        $memberStatus = "";
+                        $memberForm->handleRequest($request);
+                        if ($memberForm->isSubmitted()) {
+                            $em = $this->getDoctrine()->getManager();
+                            if ($memberRepository->findOneBy(['member' => $user, 'project' => $project])) {
+                                $unmember = $em->getRepository(Member::class)->findOneBy([
+                                    'project' => $project,
+                                    'member' => $user
+                                ]);
+                                $em->remove($unmember);
+                                $em->flush();
+                                $memberStatus = "unmember";
+                            } else {
+                                $em->persist($member);
+                                $em->flush();
+                                $memberStatus = "newmember";
+                            }
+                        }*/
+
+                    /* if (!$followRepository->findOneBy(['follower' => $session->get('id'), 'project' => $project])) {
+                            $followForm = $this->createForm(FollowType::class, $follow);
                         } else {
-                            $fileError = "badext";
+                            $followForm = $this->createForm(UnfollowType::class, $follow);
                         }
-                    }
+        
+                        if (!$memberRepository->findOneBy(['member' => $user, 'project' => $project])) {
+                            $memberForm = $this->createForm(MemberType::class, $member);
+                        } else {
+                            $memberForm = $this->createForm(UnmemberType::class, $member);
+                        }*/
 
-                    // Zavolání entitty managera
-                    $em = $this->getDoctrine()->getManager();
-                    // Zpracování obrázků v pozadí
-                    $media = $request->files->get('project_settings')["medias"];
-                    if ($media) {
-                        /** @var UploadedFile $file*/
-                        foreach ($media as $file) {
+                    $settingsForm = $this->createForm(ProjectSettingsType::class, $project);
+                    $fileError = "";
+                    $mediaError = "";
+                    $settingsForm->handleRequest($request);
+                    if ($settingsForm->isSubmitted()) {
+                        // Zpracování profilového obrázku
+                        $file = $request->files->get('project_settings')["attach"];
+                        if ($file) {
                             $ext = $file->guessClientExtension();
                             if ($ext == "jpeg" || $ext == "jpg" || $ext == "jfif" || $ext == "png") {
-                                $height = getimagesize($file)[1];
-                                if ($height) {
-                                    //TODO Přidat velikost 480 zpět do ifu
-                                    $filename = md5(uniqid()) . '.' . $file->guessClientExtension();
-                                    $file->move(
-                                        $this->getParameter('media'),
-                                        $filename
-                                    );
-                                    $newMedia = new Media();
-                                    $newMedia->setName($filename);
-                                    $newMedia->setProject($project);
-                                    $newMedia->setType('hero');
-                                    $newMedia->setUploader($user);
-                                    $em->persist($newMedia);
-                                } else {
-                                    $mediaError = "badheight";
-                                }
+                                $filename = md5(uniqid()) . '.' . $file->guessClientExtension();
+                                $file->move(
+                                    $this->getParameter('project_pic'),
+                                    $filename
+                                );
+                                unlink($this->getParameter('project_pic') . '/' . $project->getImage());
+                                $project->setImage($filename);
                             } else {
-                                $mediaError = "badext";
+                                $fileError = "badext";
                             }
                         }
-                    }
 
-                    // Mazání obrázků v pozadí
-
-                    $heroImages = $project->getMedia();
-                    $heroImagesArray = [];
-
-                    for ($i = 0; $i < count($heroImages); $i++) {
-                        if ($heroImages[$i]->getType('hero')) {
-                            array_push($heroImagesArray, $heroImages[$i]);
-                        }
-                    }
-                    for ($i = 0; $i < count($heroImagesArray); $i++) {
-                        if (isset($request->request->get('project_settings')['media'][$i])) {
-                            if (file_exists('img/media/' . $heroImagesArray[$i]->getName())) {
-                                unlink('img/media/' . $heroImagesArray[$i]->getName());
-                                echo 'penis';
-                            }
-                            $em->remove($heroImagesArray[$i]);
-                        }
-                    }
-
-                    // Pokud se vše podaří, zapíše do DB a refreshne stránku
-                    if ($fileError == "" && $mediaError == "") {
-                        $em->flush();
-                        $status = "success";
-                        return $this->redirect($request->getUri());
-                    }
-                }
-
-                // Zpracování nového příspěvku
-                $post = new Post();
-                $post->setProject($project);
-                $post->setAuthor($user);
-                $post->setDeleted(false);
-                $addPostForm = $this->createForm(AddPostType::class, $post);
-
-                $addPostForm->handleRequest($request);
-                if ($addPostForm->isSubmitted()) {
-                    $em = $this->getDoctrine()->getManager();
-                    $em->persist($post);
-                    $em->flush();
-                    unset($post);
-                    unset($addPostForm);
-                    $post = new Post();
-                    $addPostForm = $this->createForm(AddPostType::class, $post);
-                }
-
-                // Edit Post
-                /*
-                $editPost = new Post();
-                $editPostForm = $this->createForm(EditPostType::class);
-                $editPostForm->setData($postRepository->find(26));*/
-                $posts = $project->getPosts();
-
-                // SEEN
-                date_default_timezone_set('Europe/Prague');
-                $seenPosts = $postRepository->findPostLimit(10, $project);
-                foreach ($seenPosts as $post) {
-                    if (!$seenRepository->findOneBy(['user' => $user, 'post' => $post])) {
-                        $seen = new Seen();
-                        $seen->setPost($post);
-                        $seen->setUser($user);
-                        $seen->setDate(DateTime::createFromFormat('Y-m-d', date('Y-m-d')));
-
+                        // Zavolání entitty managera
                         $em = $this->getDoctrine()->getManager();
-                        $em->persist($seen);
-                        $em->flush();
-                    }
-                }
-            } else {
-            }
+                        // Zpracování obrázků v pozadí
+                        $media = $request->files->get('project_settings')["medias"];
+                        if ($media) {
+                            /** @var UploadedFile $file*/
+                            foreach ($media as $file) {
+                                $ext = $file->guessClientExtension();
+                                if ($ext == "jpeg" || $ext == "jpg" || $ext == "jfif" || $ext == "png") {
+                                    $height = getimagesize($file)[1];
+                                    if ($height) {
+                                        //TODO Přidat velikost 480 zpět do ifu
+                                        $filename = md5(uniqid()) . '.' . $file->guessClientExtension();
+                                        $file->move(
+                                            $this->getParameter('media'),
+                                            $filename
+                                        );
+                                        $newMedia = new Media();
+                                        $newMedia->setName($filename);
+                                        $newMedia->setProject($project);
+                                        $newMedia->setType('hero');
+                                        $newMedia->setUploader($user);
+                                        $em->persist($newMedia);
+                                    } else {
+                                        $mediaError = "badheight";
+                                    }
+                                } else {
+                                    $mediaError = "badext";
+                                }
+                            }
+                        }
 
-            if ($followBtn != "") {
-                return $this->render('project/index.html.twig', [
-                    'controller_name' => 'ProjectController',
-                    'session' => $session,
-                    'project' => $project,
-                    'followBtn' => $followBtn,
-                    'palette' => $palette,
-                    'pic' => $this->getParameter('project_pic'),
-                    'postForm' => $addPostForm->createView(),
-                    'projectSettingsForm' => $settingsForm->createView(),
-                    'mediaError' => $mediaError,
-                    'posts' => $posts,
-                    'projectAdmins' => $projectAdmins,
-                    'projectMembers' => $projectMembers,
-                    'memberBtn' => $memberBtn
-                ]);
-            } else {
-                return $this->render('project/index.html.twig', [
-                    'controller_name' => 'ProjectController',
-                    'session' => $session,
-                    'project' => $project,
-                    'palette' => $palette,
-                    'projectAdmins' => $projectAdmins,
-                    'projectMembers' => $projectMembers
-                ]);
+                        // Mazání obrázků v pozadí
+
+                        $heroImages = $project->getMedia();
+                        $heroImagesArray = [];
+
+                        for ($i = 0; $i < count($heroImages); $i++) {
+                            if ($heroImages[$i]->getType('hero')) {
+                                array_push($heroImagesArray, $heroImages[$i]);
+                            }
+                        }
+                        for ($i = 0; $i < count($heroImagesArray); $i++) {
+                            if (isset($request->request->get('project_settings')['media'][$i])) {
+                                if (file_exists('img/media/' . $heroImagesArray[$i]->getName())) {
+                                    unlink('img/media/' . $heroImagesArray[$i]->getName());
+                                    echo 'penis';
+                                }
+                                $em->remove($heroImagesArray[$i]);
+                            }
+                        }
+
+                        // Pokud se vše podaří, zapíše do DB a refreshne stránku
+                        if ($fileError == "" && $mediaError == "") {
+                            $em->flush();
+                            $status = "success";
+                            return $this->redirect($request->getUri());
+                        }
+                    }
+
+                    // Zpracování nového příspěvku
+                    $post = new Post();
+                    $post->setProject($project);
+                    $post->setAuthor($user);
+                    $post->setDeleted(false);
+                    $addPostForm = $this->createForm(AddPostType::class, $post);
+
+                    $addPostForm->handleRequest($request);
+                    if ($addPostForm->isSubmitted()) {
+                        $em = $this->getDoctrine()->getManager();
+                        $em->persist($post);
+                        $em->flush();
+                        unset($post);
+                        unset($addPostForm);
+                        $post = new Post();
+                        $addPostForm = $this->createForm(AddPostType::class, $post);
+                    }
+
+                    // Edit Post
+                    /*
+                        $editPost = new Post();
+                        $editPostForm = $this->createForm(EditPostType::class);
+                        $editPostForm->setData($postRepository->find(26));*/
+                    $posts = $project->getPosts();
+
+                    // SEEN
+                    date_default_timezone_set('Europe/Prague');
+                    $seenPosts = $postRepository->findPostLimit(10, $project);
+                    foreach ($seenPosts as $post) {
+                        if (!$seenRepository->findOneBy(['user' => $user, 'post' => $post])) {
+                            $seen = new Seen();
+                            $seen->setPost($post);
+                            $seen->setUser($user);
+                            $seen->setDate(DateTime::createFromFormat('Y-m-d', date('Y-m-d')));
+
+                            $em = $this->getDoctrine()->getManager();
+                            $em->persist($seen);
+                            $em->flush();
+                        }
+                    }
+                } else {
+                }
+
+                if ($followBtn != "") {
+                    return $this->render('project/index.html.twig', [
+                        'controller_name' => 'ProjectController',
+                        'session' => $session,
+                        'project' => $project,
+                        'followBtn' => $followBtn,
+                        'palette' => $palette,
+                        'pic' => $this->getParameter('project_pic'),
+                        'postForm' => $addPostForm->createView(),
+                        'projectSettingsForm' => $settingsForm->createView(),
+                        'mediaError' => $mediaError,
+                        'posts' => $posts,
+                        'projectAdmins' => $projectAdmins,
+                        'projectMembers' => $projectMembers,
+                        'memberBtn' => $memberBtn
+                    ]);
+                } else {
+                    return $this->render('project/index.html.twig', [
+                        'controller_name' => 'ProjectController',
+                        'session' => $session,
+                        'project' => $project,
+                        'palette' => $palette,
+                        'projectAdmins' => $projectAdmins,
+                        'projectMembers' => $projectMembers
+                    ]);
+                }
             }
-        } else {
-            return $this->render('project/index.html.twig', [
-                'controller_name' => 'ProjectController',
-                'session' => $session
-            ]);
         }
+
+        return $this->render('error/404.html.twig', [
+            'controller_name' => 'ProjectController',
+            'session' => $session
+        ], new Response('', 404));
     }
 }
