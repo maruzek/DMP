@@ -51,7 +51,12 @@ class Authentication
         }
     }*/
 
-    public function isLoggedUser()
+    public function isLoggedUser($id): bool
     {
+        if ($this->session->get('id') == $id) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }

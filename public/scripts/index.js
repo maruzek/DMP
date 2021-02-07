@@ -151,7 +151,7 @@ if (editPostModal != null) {
     let button = event.relatedTarget
     // Extract info from data-bs-* attributes
     let text = button.getAttribute('data-bs-editpost-text')
-    let private = button.getAttribute('data-bs-editpost-private')
+    let privatel = button.getAttribute('data-bs-editpost-private')
     let id = button.getAttribute('data-bs-editpost-id')
     console.log(text)
     // If necessary, you could initiate an AJAX request here
@@ -165,7 +165,7 @@ if (editPostModal != null) {
     submitBtn.setAttribute('data-editpost-submit-id', id)
 
 
-    if (private == 1) {
+    if (privatel == 1) {
       modalBodyCheck.setAttribute('checked', 'true')
       console.log('je true')
     } else {
@@ -586,11 +586,19 @@ if(editUserModal != null) {
 
 // User Profile edit photo
 
-let preview = document.querySelector('#avatar')
-let file_input = document.querySelector('#user_settings_attach')
-console.log(file_input)
 
-function previewFile() {
+//let preview = document.querySelector('#avatar')
+
+//image_demo
+let upl = document.querySelector('#uplimg')
+
+// upload_image
+let file_input = document.querySelector('#user_settings_attach')
+
+
+/*console.log(file_input)
+
+window.previewFile = function() {
 let file = file_input.files[0]
 let reader = new FileReader()
 
@@ -601,4 +609,87 @@ reader.addEventListener('load', () => {
 if(file) {
   reader.readAsDataURL(file)
 }
+}
+
+preview.addEventListener('load', () => {
+  let c = new Croppie(preview, {
+    viewport: {
+      width: 150,
+      height: 200
+    }
+  })
+})*/
+
+
+// Admin new block
+
+const newBlockBtn = document.querySelector('.newblockBtn')
+
+if(newBlockBtn != null) {
+  newBlockBtn.addEventListener('click', ()=> {
+    $('.newblockSettings').slideDown('slow')
+  })
+
+  const newBlockType = document.querySelector('#newblockType')
+  const newblockProject = document.querySelector('#newblockProject')
+  const newblockPost= document.querySelector('#newblockPostInput')
+  const newblockSubmit = document.querySelector('#newblockSubmit')
+
+  newBlockType.addEventListener('change', (e) => {
+    if(e.target.value == "project") {
+      if(newblockPost.style.display != "none") {
+      $('#newblockPost').slideUp('slow')
+      }
+      $('#newblockProject').slideDown('slow')
+      $('#newblockSubmit').slideDown('slow')
+    } else if (e.target.value == "post") {
+      if(newblockProject.style.display != "none") {
+        $('#newblockProject').slideUp('slow')
+        }
+      $('#newblockPost').slideDown('slow')
+      $('#newblockSubmit').slideDown('slow')
+    }
+
+    newblockSubmit.addEventListener('click', () => {
+      let newblockPostValue = newblockPost.value
+      let newblockProjectValue = newblockProject.value
+      let newBlockTypeValue = newBlockType.value
+      console.log(newblockPostValue)
+      if(newBlockTypeValue == "project") {
+        $.ajax({
+          type: "POST",
+          url: "/admin/addNewBlock",
+          data: {
+            id: newblockProjectValue,
+            type: "project"
+          }
+        }).then((response) => {
+          console.log(response)    
+          
+          if(response == "success") {
+            $('.newblockSettings').slideUp('slow')
+          }
+        }).catch((error) => {
+          console.error(error)
+        })
+      } else if (newBlockTypeValue == "post") {
+        $.ajax({
+          type: "POST",
+          url: "/admin/addNewBlock",
+          data: {
+            id: newblockPostValue,
+            type: "post"
+          }
+        }).then((response) => {
+          console.log(response)    
+          
+          if(response == "success") {
+            $('.newblockSettings').slideUp('slow')
+          }
+        }).catch((error) => {
+          console.error(error)
+        })
+      }
+    })
+  })
 }

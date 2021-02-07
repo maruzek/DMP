@@ -2,15 +2,21 @@
 
 namespace App\Controller;
 
+use App\Authentication\Authentication;
 use App\Entity\Project;
 use App\Form\UserSettingsType;
 use App\Repository\ProjectRepository;
 use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
+use Symfony\Component\Serializer\Serializer;
 
 /**
  * @Route("/user", name="user.")
@@ -18,6 +24,48 @@ use Symfony\Component\Routing\Annotation\Route;
 class UserController extends AbstractController
 {
     private $session;
+    private $userRepository;
+    private $auth;
+
+    public function __construct(SessionInterface $session, UserRepository $userRepository)
+    {
+        $this->session = $session;
+        $this->userRepository = $userRepository;
+        $this->auth = new Authentication($session, $userRepository);
+    }
+
+    /**
+     * @Route("/userSettings", name="userSettings", methods={"POST"})
+     */
+    public function userSettings(Request $request)
+    {
+        if ($request->isXmlHttpRequest()) {
+            $data = $request->request->get('image');
+
+            $em = $this->getDoctrine()->getManager()->flush();
+
+
+            $defaultContext = [
+                AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => function ($object, $format, $context) {
+                    return $object->getId();
+                },
+            ];
+            $encoders = [
+                new JsonEncoder()
+            ];
+            $normalizers = [
+                new ObjectNormalizer(null, null, null, null, null, null, $defaultContext)
+            ];
+            $serializer = new Serializer($normalizers, $encoders);
+            $response = $serializer->serialize($data, 'json');
+            return new JsonResponse($response, 200, [], true);
+        }
+
+        return new JsonResponse([
+            'type' => "error",
+            'message' => 'Not an AJAX request'
+        ]);
+    }
 
     /**
      * @Route("/{username}", name="profile")
@@ -61,6 +109,8 @@ class UserController extends AbstractController
             'form' => $form->createView()
         ]);
     }
+
+
 
     /**
      * @Route("/{username}/odebirane", name="odebirane")

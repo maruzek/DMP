@@ -43,3 +43,41 @@
 #change-admin-panel {
     display: none;
 }
+
+.newblockPanel {
+    display: flex;
+    flex-direction: column;
+}
+
+.newblockSettings {
+    display: none;
+
+    #newblockProject {
+        display: none;
+    }
+
+    #newblockPost {
+        display: none;
+    }
+
+    #newblockSubmit {
+        display: none;
+    }
+}
+
+.newblockBtn {
+    border-radius: 0.2rem;
+    padding: 8px;
+    transition: .4s;
+    cursor: pointer;
+
+    &:hover {
+        background-color: #ccc;
+    }
+}
+
+.indexblock {
+    background-color: #ccc;
+    border-radius: 0.2rem;
+    padding: 10px;
+}

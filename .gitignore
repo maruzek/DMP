@@ -21,3 +21,9 @@
 .phpunit.result.cache
 /phpunit.xml
 ###< symfony/phpunit-bridge ###
+
+### Node
+
+/node_modules
+package-lock.json
+

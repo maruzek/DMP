@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Authentication\Authentication;
+use App\Entity\IndexBlock;
 use App\Entity\Media;
 use App\Entity\Member;
 use App\Entity\Project;
@@ -11,6 +12,8 @@ use App\Form\AddAdminType;
 use App\Form\NewProjectType;
 use App\Form\ProjectSettingsType;
 use App\ProjectCheck\ProjectCheck;
+use App\Repository\IndexBlockRepository;
+use App\Repository\PostRepository;
 use App\Repository\ProjectAdminRepository;
 use App\Repository\ProjectRepository;
 use App\Repository\UserRepository;
@@ -43,7 +46,7 @@ class AdminController extends AbstractController
     /**
      * @Route("/", name="index")
      */
-    public function index(SessionInterface $session, ProjectRepository $projectRepository, UserRepository $userRepository, Request $request): Response
+    public function index(SessionInterface $session, ProjectRepository $projectRepository, UserRepository $userRepository, Request $request, IndexBlockRepository $indexBlockRepository): Response
     {
         $this->session = $session;
         //$auth = new Authentication($session->get('id'));
@@ -51,10 +54,26 @@ class AdminController extends AbstractController
         if ($this->auth->isAbsAdmin()) {
             $user = $userRepository->find($session->get('id'));
 
+            $allProjects = $projectRepository->findAll();
+            $allIndexBlocksArray = $indexBlockRepository->findAll();
+            $projectIndexBlocks = [];
+            $postIndexBlocks = [];
+            foreach ($allIndexBlocksArray as $block) {
+                if ($block->getType() == "project") {
+                    array_push($projectIndexBlocks, $block->getProject()->getId());
+                } else if ($block->getType() == "post") {
+                    array_push($postIndexBlocks, $block->getPost()->getId());
+                }
+            }
             $allUsers = $userRepository->findAll();
+
             return $this->render('admin/index.html.twig', [
                 'session' => $session,
-                'allUsers' => $allUsers
+                'allUsers' => $allUsers,
+                'allProjects' => $allProjects,
+                'projectIndexBlocks' => $projectIndexBlocks,
+                'postIndexBlocks' => $postIndexBlocks,
+                'allIndexBlocksArray' => $allIndexBlocksArray
             ]);
         }
 
@@ -582,6 +601,81 @@ class AdminController extends AbstractController
             } else {
                 $result = "badrequest";
             }
+
+            $defaultContext = [
+                AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => function ($object, $format, $context) {
+                    return $object->getId();
+                },
+            ];
+            $encoders = [
+                new JsonEncoder()
+            ];
+            $normalizers = [
+                new ObjectNormalizer(null, null, null, null, null, null, $defaultContext)
+            ];
+            $serializer = new Serializer($normalizers, $encoders);
+            $response = $serializer->serialize($result, 'json');
+            return new JsonResponse($response, 200, [], true);
+        } else if (!$this->auth->isAbsAdmin()) {
+            return new JsonResponse([
+                'type' => "error",
+                'message' => 'You are not an admin'
+            ], 401);
+        }
+
+        return new JsonResponse([
+            'type' => "error",
+            'message' => 'Not an AJAX request'
+        ], 500);
+    }
+
+    /**
+     * @Route("/addNewBlock", name="addNewBlock", methods={"POST"})
+     */
+    public function addNewBlock(Request $request, ProjectRepository $projectRepository, UserRepository $userRepository, IndexBlockRepository $indexBlockRepository, PostRepository $postRepository)
+    {
+        if ($request->isXmlHttpRequest() && $this->auth->isAbsAdmin()) {
+            $id = $request->request->get('id');
+            $type = $request->request->get('type');
+
+            $result = "";
+            if ($type == "project") {
+                $project = $projectRepository->find($id);
+                if (!$indexBlockRepository->findOneBy(['project' => $project])) {
+                    $newBlock = new IndexBlock();
+                    $newBlock->setProject($project);
+                    $newBlock->setType("project");
+
+                    $em = $this->getDoctrine()->getManager();
+                    $em->persist($newBlock);
+                    if (!$em->flush()) {
+                        $result = "success";
+                    } else {
+                        $result = "dbfail";
+                    }
+                } else {
+                    $result = "inuse";
+                }
+            } else if ($type == "post") {
+                $post = $postRepository->find($id);
+                if (!$indexBlockRepository->findOneBy(['post' => $post])) {
+                    $newBlock = new IndexBlock();
+                    $newBlock->setPost($post);
+                    $newBlock->setType("post");
+
+                    $em = $this->getDoctrine()->getManager();
+                    $em->persist($newBlock);
+                    if (!$em->flush()) {
+                        $result = "success";
+                    } else {
+                        $result = "dbfail";
+                    }
+                } else {
+                    $result = "inusepost";
+                }
+            }
+
+
 
             $defaultContext = [
                 AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => function ($object, $format, $context) {

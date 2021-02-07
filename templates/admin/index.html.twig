@@ -90,7 +90,61 @@
 	</ul>
 	<main style="padding: 0px 20px 0px 20px">
 		<div class="tab-content" id="pills-tabContent">
-			<div class="tab-pane fade show active" id="domu" role="tabpanel" aria-labelledby="domu">...</div>
+			<div class="tab-pane fade show active" id="domu" role="tabpanel" aria-labelledby="domu">
+				<h2 class="m-3">Nastavení domovské stránky</h2>
+				<div class="m-3 newblockPanel">
+					<h5 class="text-secondary newblockBtn">
+						Přidat nový blok
+						<i class="fas fa-plus"></i>
+					</h5>
+
+					<div class="newblockSettings w-50">
+						<label for="newblockType">Typ nového bloku</label>
+						<select id="newblockType" class="form-select mb-3" aria-label="Vybrat typ nového bloku">
+							<option selected>Typ nového bloku</option>
+							<option value="project">Projekt</option>
+							<option value="post">Příspěvek</option>
+						</select>
+
+						<select id="newblockProject" class="form-select mb-3" aria-label="Vybrat typ nového bloku">
+							<option selected>Vyberte projekt</option>
+							{% for project in allProjects %}
+								{% if project.id not in projectIndexBlocks %}
+									<option value="{{ project.id }}">{{ project.name ~ ' (' ~ project.id ~ ')' }}</option>
+								{% endif %}
+							{% endfor %}
+						</select>
+
+						<div class="mb-3" id="newblockPost">
+							<label for="newblockPostInput" class="form-label">ID Příspěvku</label>
+							<input type="text" class="form-control" id="newblockPostInput">
+						</div>
+
+						<button type="button" class="btn btn-success" id="newblockSubmit">Přidat nový blok</button>
+
+						<!--<select id="newblockPost" class="form-select mb-3" aria-label="Vybrat typ nového bloku">
+																																																																																																																																																																																											<option selected>Typ nového bloku</option>
+																																																																																																																																																																																											<option value="projekt">Projekt</option>
+																																																																																																																																																																																											<option value="post">Příspěvek</option>
+																																																																																																																																																																																										</select>-->
+					</div>
+					{% for block in allIndexBlocksArray %}
+						{% if block.type == "project" %}
+							<div class="alert alert-secondary alert-dismissible fade show" role="alert">
+								<strong>{{ block.project.name }}</strong>
+								({{ block.project.tag }})
+								<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+							</div>
+						{% elseif block.type == "post" %}
+							<div class="alert alert-secondary alert-dismissible fade show" role="alert">
+								<strong>{{ block.post.id }}</strong>
+								(příspěvek)
+								<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+							</div>
+						{% endif %}
+					{% endfor %}
+				</div>
+			</div>
 			<div class="tab-pane fade" id="statistiky" role="tabpanel" aria-labelledby="statistiky">statistiky</div>
 			<div class="tab-pane fade" id="uzivatele" role="tabpanel" aria-labelledby="uzivatele">
 				<div class="form-floating mb-3 mt-3">
