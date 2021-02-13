@@ -16,32 +16,7 @@
 			{% endif %}
 
 			{% if user.id == session.get('id') %}
-				<button class="btn btn-outline-dark w-100" data-bs-toggle="modal" data-bs-target="#exampleModal">Nastevení profilu</button>
-				<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-					<div class="modal-dialog modal-dialog-centered">
-						<div class="modal-content">
-							<div class="modal-header">
-								<h5 class="modal-title" id="exampleModalLabel">Nastevení profilu</h5>
-								<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-							</div>
-							<div class="modal-body">
-								{{ form_start(form) }}
-								{{ form_row(form.description) }}
-								{{ form_row(form.attach) }}
-								<div id="uplimg" class="w-100 mt-2"></div>
-								<img src="" alt="" id="avatar" class="img-fluid mt-2">
-							</div>
-							<div class="modal-footer">
-								<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zavřít</button>
-								<!--<button type="button" class="btn btn-primary">Save changes</button>-->
-								{{ form_row(form.submit) }}
-								{{ form_end(form) }}
-							</div>
-						</div>
-					</div>
-				</div>
-
-				<button class="btn btn-outline-dark w-100" data-bs-toggle="modal" data-bs-target="#userSettingsModal">Nastevení profiluuuuuu</button>
+				<button class="btn btn-outline-dark w-100" data-bs-toggle="modal" data-bs-target="#userSettingsModal">Nastevení profilu</button>
 				<div class="modal fade" id="userSettingsModal" tabindex="-1" aria-labelledby="userSettingsModalLabel" aria-hidden="true">
 					<div class="modal-dialog modal-dialog-centered">
 						<div class="modal-content">
@@ -50,24 +25,18 @@
 								<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 							</div>
 							<div class="modal-body">
-								<form method="POST" id="userSettingsForm">
-									<div class="mb-3">
-										<label for="userdesc">Popisek profilu</label>
-										<textarea name="userdesc" id="userdesc" class="form-control">{{ user.description }}</textarea>
-									</div>
-									<div class="mb-3">
-										<label for="">Profilový obrázek</label>
-										<input type="file" class="form-control" id="user_settings_attach2">
-									</div>
-
-									<div id="uplimg2" class="w-100 mt-2"></div>
-									<!--<img src="" alt="" id="avatar" class="img-fluid mt-2">-->
-								</div>
-								<div class="modal-footer">
-									<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zavřít</button>
-									<!--<button type="button" class="btn btn-primary">Save changes</button>-->
-									<button type="submit" id="user_settings_submit" name="user_settings_submit" class="btn btn-primary">Změnit</button>
-								</form>
+								{{ form_start(form) }}
+								{{ form_row(form.description) }}
+								{{ form_row(form.attach) }}
+								<p class="text-secondary mt-1">
+									<em>Doporučení: obrázek nahrávejte již ve formátu 1:1</em>
+								</p>
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zavřít</button>
+								<!--<button type="button" class="btn btn-primary">Save changes</button>-->
+								{{ form_row(form.submit) }}
+								{{ form_end(form) }}
 							</div>
 						</div>
 					</div>
@@ -86,33 +55,38 @@
 				</li>
 			</ul>
 			<div class="tab-content" id="profileTabContent">
-				<div class="tab-pane fade show active" id="prispevky" role="tabpanel" aria-labelledby="prispevky-tab"></div>
+				<div class="tab-pane fade show active" id="prispevky" role="tabpanel" aria-labelledby="prispevky-tab">
+					{% if publicPosts|length <= 0 %}
+						<p class="text-secondary mt-3">
+							<em>Tento uživatel zatím nepřispěl žádným příspěvkem</em>
+						</p>
+					{% endif %}
+					{% for post in user.posts %}
+						{% if post.privacy == false and post.deleted == false and post.project.deleted == false %}
+							<div class="user-post-card">
+								<img src="/img/projectimg/{{ post.project.image }}" alt="" class="img-fluid">
+								<div class="user-post-class-text">
+									<a href="{{ path('project.project', {id: post.project.id}) }}" class="nicelink">
+										<h5 class="m-0">{{ post.project.name }}</h5>
+									</a>
+									<p>{{ post.text }}</p>
+								</div>
+							</div>
+						{% endif %}
+					{% endfor %}
+				</div>
 				<div class="tab-pane fade" id="projekty" role="tabpanel" aria-labelledby="projekty-tab">
-
-					<a href="#" class="profile-projects-link">
-						<div class="profile-projects-card">
-							<div class="profile-projects-card-image">
-								<img src="http://localhost:8081/img/logo1.jpg" alt="logo">
-							</div>
-
-							<div class="profile-projects-card-text">
-								<h5>Florbalový kroužek</h5>
-							</div>
-						</div>
-					</a>
-
-					{% for project in user.projects %}
-						<a href="{{ path('project.project', {id: project.id}) }}" class="profile-projects-link">
-							<div class="profile-projects-card">
-								<div class="profile-projects-card-image">
-									<img src="/img/projectimg/{{ project.image }}" alt="logo">
+					{% for member in user.members %}
+						{% if member.project.deleted == false %}
+							<a href="{{ path('project.project', {id: member.project.id}) }}" class="nicelink">
+								<div class="user-project-card">
+									<img src="/img/projectimg/{{ member.project.image }}" alt="" class="img-fluid">
+									<div class="user-project-class-text">
+										<h3 class="m-0">{{ member.project.name }}</h3>
+									</div>
 								</div>
-
-								<div class="profile-projects-card-text">
-									<h5>{{ project.name }}</h5>
-								</div>
-							</div>
-						</a>
+							</a>
+						{% endif %}
 					{% endfor %}
 				</div>
 			</div>

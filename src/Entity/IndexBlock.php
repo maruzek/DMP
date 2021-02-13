@@ -19,11 +19,13 @@ class IndexBlock
 
     /**
      * @ORM\ManyToOne(targetEntity=Project::class)
+     * @ORM\JoinColumn(nullable=true, onDelete="CASCADE")
      */
     private $project;
 
     /**
      * @ORM\ManyToOne(targetEntity=Post::class)
+     * @ORM\JoinColumn(nullable=true, onDelete="CASCADE")
      */
     private $post;
 

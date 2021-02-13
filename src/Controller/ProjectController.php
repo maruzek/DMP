@@ -20,6 +20,7 @@ use App\Form\NewProjectType;
 use App\Form\ProjectSettingsType;
 use App\Form\UnfollowType;
 use App\Form\UnmemberType;
+use App\ImageCrop\ImageCrop;
 use App\ProjectCheck\ProjectCheck;
 use App\Repository\FollowRepository;
 use App\Repository\MemberRepository;
@@ -314,6 +315,58 @@ class ProjectController extends AbstractController
     }
 
     /**
+     * @Route("/deleteMember", name="deleteMember", methods={"POST"})
+     */
+    public function deleteMember(Request $request, ProjectRepository $projectRepository, SessionInterface $session, MemberRepository $memberRepository, UserRepository $userRepository, ProjectAdminRepository $projectAdminRepository)
+    {
+        if ($request->isXmlHttpRequest()) {
+            $memberID = $request->request->get('member');
+            $projectid = $request->request->get('project');
+            $project = $projectRepository->find((int)$projectid);
+            $user = $userRepository->find($memberID);
+            $member = $memberRepository->findOneBy(['member' => $user, 'project' => $project]);
+            $admin = $userRepository->find($session->get('id'));
+            $admins = $projectAdminRepository->findBy(['project' => $project]);
+
+            $result = "";
+
+
+            if (in_array($admin, $admins) || $project->getAdmin() == $admin) {
+                $em = $this->getDoctrine()->getManager();
+                $em->remove($member);
+                if (!$em->flush()) {
+                    $result = "success";
+                } else {
+                    $result = "dbfail";
+                }
+            } else {
+                $result = "nonadmin";
+            }
+
+            $defaultContext = [
+                AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => function ($object, $format, $context) {
+                    return $object->getId();
+                },
+            ];
+            $encoders = [
+                new JsonEncoder()
+            ];
+            $normalizers = [
+                new ObjectNormalizer(null, null, null, null, null, null, $defaultContext)
+            ];
+            $serializer = new Serializer($normalizers, $encoders);
+
+            $response = $serializer->serialize($result, 'json');
+            return new JsonResponse($response, 200, [], true);
+        }
+
+        return new JsonResponse([
+            'type' => 'error',
+            'message' => 'Not an AJAX request'
+        ], 401);
+    }
+
+    /**
      * @Route("/novy", name="new")
      */
     public function new(SessionInterface $session, Request $request, UserRepository $userRepository): Response
@@ -505,7 +558,10 @@ class ProjectController extends AbstractController
                         // Zpracování profilového obrázku
                         $file = $request->files->get('project_settings')["attach"];
                         if ($file) {
-                            $ext = $file->guessClientExtension();
+                            $img = new ImageCrop($file, $this->getParameter('project_pic'), $this->getDoctrine()->getManager());
+                            if ($img->cropProjectImage($project)) {
+                            }
+                            /*$ext = $file->guessClientExtension();
                             if ($ext == "jpeg" || $ext == "jpg" || $ext == "jfif" || $ext == "png") {
                                 $filename = md5(uniqid()) . '.' . $file->guessClientExtension();
                                 $file->move(
@@ -516,7 +572,7 @@ class ProjectController extends AbstractController
                                 $project->setImage($filename);
                             } else {
                                 $fileError = "badext";
-                            }
+                            }*/
                         }
 
                         // Zavolání entitty managera

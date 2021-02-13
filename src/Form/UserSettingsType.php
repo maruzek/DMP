@@ -21,7 +21,8 @@ class UserSettingsType extends AbstractType
                     'class' => 'form-control'
                 ],
                 'label' => 'Popisek profilu',
-                'required' => false
+                'required' => false,
+                'empty_data' => ''
             ])
             ->add('attach', FileType::class, [
                 'attr' => [

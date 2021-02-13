@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Authentication\Authentication;
 use App\Entity\Project;
 use App\Form\UserSettingsType;
+use App\ImageCrop\ImageCrop;
 use App\Repository\ProjectRepository;
 use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -74,40 +75,105 @@ class UserController extends AbstractController
     {
         $this->session = $session;
 
-        $user = $userRepository->findOneBy(['username' => $username]);
-
-        $form = $this->createForm(UserSettingsType::class, $user);
-        $form->handleRequest($request);
-        if ($form->isSubmitted()) {
-            $file = $request->files->get('user_settings')["attach"];
-            if ($file) {
-                $ext = $file->guessClientExtension();
-                if ($ext == "jpeg" || $ext == "jpg" || $ext == "jfif" || $ext == "png") {
-                    $filename = md5(uniqid()) . '.' . $file->guessClientExtension();
-                    $file->move(
-                        $this->getParameter('user_pic'),
-                        $filename
-                    );
-                    if (touch($user->getImage()) && $user->getImage() != 'default.png') {
-                        unlink($this->getParameter('user_pic') . '/' . $user->getImage());
+        if ($user = $userRepository->findOneBy(['username' => $username])) {
+            $form = $this->createForm(UserSettingsType::class, $user);
+            $form->handleRequest($request);
+            if ($form->isSubmitted()) {
+                $file = $request->files->get('user_settings')["attach"];
+                if ($file) {
+                    $img = new ImageCrop($file, $this->getParameter('user_pic'), $this->getDoctrine()->getManager());
+                    if ($img->cropUserImage($user)) {
+                        $filestatus = "success";
+                    } else {
+                        $filestatus = "fail";
                     }
+                    /*$ext = $file->guessClientExtension();
+                    if ($ext == "jpeg" || $ext == "jpg" || $ext == "png") {
+                        $ext = "jpeg";
+                        $filename = md5(uniqid()) . '.' . $ext;
+                        if ($ext == "jpeg" || $ext == "jpg") {
+                            //$im = imagecreatefromjpeg($file);
+                            $im = imagecreatefromjpeg($file);
+                            $x = imagesx($im);
+                            $y = imagesy($im);
+                            if ($x > $y) {
+                                $crop = imagecrop($im, ['x' => $x / 4, 'y' => 0, 'width' => $y, 'height' => $y]);
+                            } else if ($x < $y) {
+                                $crop = imagecrop($im, ['x' => 0, 'y' => $y / 4, 'width' => $x, 'height' => $x]);
+                            } else if ($x == $y) {
+                                $file->move(
+                                    $this->getParameter('user_pic'),
+                                    $filename
+                                );
+                            }
+    
+                            //$crop = imagecrop($im, ['x' => max(imagesx($im), imagesy($im)) / 4, 'y' => 0, 'width' => min(imagesx($im), imagesy($im)), 'height' => min(imagesx($im), imagesy($im))]);
+                            if ($crop !== false && $x !== $y) {
+                                imagedestroy($im);
+                                imagejpeg($crop, $this->getParameter('user_pic') . '/' . $filename);
+                            }
+                            imagedestroy($crop);
+                        } else if ($ext == "png") {
+                            $im = imagecreatefrompng($file);
+                            $x = imagesx($im);
+                            $y = imagesy($im);
+                            if ($x > $y) {
+                                $crop = imagecrop($im, ['x' => $x / 4, 'y' => 0, 'width' => $y, 'height' => $y]);
+                            } else if ($x < $y) {
+                                $crop = imagecrop($im, ['x' => 0, 'y' => $y / 4, 'width' => $x, 'height' => $x]);
+                            } else if ($x == $y) {
+                                $file->move(
+                                    $this->getParameter('user_pic'),
+                                    $filename
+                                );
+                            }
+    
+                            if ($crop !== false && $x !== $y) {
+                                imagedestroy($im);
+                                $file = imagepng($crop, $this->getParameter('user_pic') . '/' . $filename);
+                            }
+                        }
+    
+                        
+                        $file->move(
+                            $this->getParameter('user_pic'),
+                            $filename
+                        );
+                        if (file_exists('img/userimg/' . $user->getImage()) && $user->getImage() != 'default.png') {
+                            unlink($this->getParameter('user_pic') . '/' . $user->getImage());
+                        }
+    
+                        $user->setImage($filename);
+                    } else {
+                        $fileError = "badext";
+                    }*/
+                }
 
-                    $user->setImage($filename);
-                } else {
-                    $fileError = "badext";
+                $em = $this->getDoctrine()->getManager();
+                $em->flush();
+                $status = "success";
+            }
+
+            $publicPosts = [];
+            foreach ($user->getPosts() as $post) {
+                if ($post->getPrivacy() == false && $post->getDeleted() == false) {
+                    array_push($publicPosts, $post);
                 }
             }
-            $em = $this->getDoctrine()->getManager();
-            $em->flush();
-            $status = "success";
+
+            return $this->render('user/index.html.twig', [
+                'controller_name' => 'UserController',
+                'session' => $session,
+                'user' => $user,
+                'form' => $form->createView(),
+                'publicPosts' => $publicPosts
+            ]);
         }
 
-        return $this->render('user/index.html.twig', [
+        return $this->render('error/404.html.twig', [
             'controller_name' => 'UserController',
-            'session' => $session,
-            'user' => $user,
-            'form' => $form->createView()
-        ]);
+            'session' => $session
+        ], new Response('', 404));
     }
 
 

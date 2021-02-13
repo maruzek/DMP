@@ -11,6 +11,7 @@ use App\Entity\ProjectAdmin;
 use App\Form\AddAdminType;
 use App\Form\NewProjectType;
 use App\Form\ProjectSettingsType;
+use App\ImageCrop\ImageCrop;
 use App\ProjectCheck\ProjectCheck;
 use App\Repository\IndexBlockRepository;
 use App\Repository\PostRepository;
@@ -230,10 +231,15 @@ class AdminController extends AbstractController
                 $newAdminUsername = $newAdminUsername[0];
                 //echo $userdata;
                 $newAdminUser = $userRepository->findOneBy(['username' => trim($newAdminUsername)]);
-                if (!$projectAdminRepository->findOneBy(['user' => $newAdminUser])) {
+                if (!$projectAdminRepository->findOneBy(['user' => $newAdminUser, 'project' => $project])) {
                     $newAdmin->setUser($newAdminUser);
+                    $newMember = new Member;
+                    $newMember->setAccepted(true);
+                    $newMember->setMember($newAdminUser);
+                    $newMember->setProject($project);
                     $em = $this->getDoctrine()->getManager();
                     $em->persist($newAdmin);
+                    $em->persist($newMember);
                     $em->flush();
                     $status = "success";
                     return $this->redirect($request->getUri());
@@ -281,7 +287,9 @@ class AdminController extends AbstractController
                 /** @var UploadedFile $file*/
                 $file = $request->files->get('new_project')['attach'];
                 if ($file) {
-                    $ext = $file->guessClientExtension();
+                    $img = new ImageCrop($file, $this->getParameter('project_pic'), $this->getDoctrine()->getManager());
+                    $img->cropProjectImage($project, "new");
+                    /*ext = $file->guessClientExtension();
                     if ($ext == "jpeg" || $ext == "jpg" || $ext == "png" || $ext == "gif") {
                         $filename = md5(uniqid()) . '.' . $file->guessClientExtension();
                         $file->move(
@@ -291,7 +299,7 @@ class AdminController extends AbstractController
                         $project->setImage($filename);
                     } else {
                         $fileError = "badext";
-                    }
+                    }*/
                 }
 
                 $userdata = $request->request->get('new_project')['mainAdmin'];
@@ -442,9 +450,16 @@ class AdminController extends AbstractController
             $result = "";
             if (!$project->getDeleted()) {
                 $project->setDeleted(true);
+
+                foreach ($project->getPosts() as $post) {
+                    $post->setDeleted(true);
+                }
                 $result = "success";
             } else {
                 $project->setDeleted(false);
+                foreach ($project->getPosts() as $post) {
+                    $post->setDeleted(false);
+                }
                 $result = "recovered";
             }
 
@@ -702,5 +717,14 @@ class AdminController extends AbstractController
             'type' => "error",
             'message' => 'Not an AJAX request'
         ], 500);
+    }
+
+    /**
+     * @Route("/info", name="info")
+     */
+    public function info()
+    {
+        phpinfo();
+        print_r(gd_info());
     }
 }

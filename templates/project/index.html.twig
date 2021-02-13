@@ -442,6 +442,9 @@
 											<th scope="col">Jméno</th>
 											<th scope="col">Třída</th>
 											<th scope="col">Zobrazit profil</th>
+											{% if session.get('id') == project.admin.id or session.get('id') in projectAdmins %}
+												<th scope="col">Odebrat z členů</th>
+											{% endif %}
 										</tr>
 									</thead>
 									<tbody class="align-middle">
@@ -454,6 +457,13 @@
 													<td>
 														<a class="btn btn-primary" href="{{ path('user.profile', {username: member.member.username}) }}" target="_blank">Zobrazit</a>
 													</td>
+													{% if session.get('id') == project.admin.id or session.get('id') in projectAdmins %}
+														{% if member.member.id != project.admin.id and member.member.id not in projectAdmins %}
+															<td>
+																<button type="button" class="btn btn-danger delete-member" href="{{ path('project.deleteMember') }}" id="delete-member-{{ member.member.id }}-project-{{ project.id }}">Odebrat z členů</button>
+															</td>
+														{% endif %}
+													{% endif %}
 												</tr>
 											{% endif %}
 										{% endfor %}

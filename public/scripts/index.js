@@ -584,43 +584,6 @@ if(editUserModal != null) {
   })
 }
 
-// User Profile edit photo
-
-
-//let preview = document.querySelector('#avatar')
-
-//image_demo
-let upl = document.querySelector('#uplimg')
-
-// upload_image
-let file_input = document.querySelector('#user_settings_attach')
-
-
-/*console.log(file_input)
-
-window.previewFile = function() {
-let file = file_input.files[0]
-let reader = new FileReader()
-
-reader.addEventListener('load', () => {
-  preview.src = reader.result
-}, false)
-
-if(file) {
-  reader.readAsDataURL(file)
-}
-}
-
-preview.addEventListener('load', () => {
-  let c = new Croppie(preview, {
-    viewport: {
-      width: 150,
-      height: 200
-    }
-  })
-})*/
-
-
 // Admin new block
 
 const newBlockBtn = document.querySelector('.newblockBtn')
@@ -692,4 +655,34 @@ if(newBlockBtn != null) {
       }
     })
   })
+}
+
+// Delete member from project
+
+let delMemberBtn = document.querySelectorAll('.delete-member')
+
+if(delMemberBtn != null) {
+  for (let i = 0; i < delMemberBtn.length; i++) {
+    const element = delMemberBtn[i];
+    element.addEventListener('click', () => {
+      const id = element.getAttribute('id')
+      const userid = id.split('-')[2]
+      const projid = id.split('-')[4]
+      
+      $.ajax({
+        type: "POST",
+        url: "/projekt/deleteMember",
+        data: {
+          member: userid,
+          project: projid
+        }
+      }).then((response) => {
+        console.log(response)    
+        
+
+      }).catch((error) => {
+        console.error(error)
+      })
+    })
+  }
 }
