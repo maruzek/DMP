@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Form\SearchType;
+use App\Repository\ProjectRepository;
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -33,10 +34,12 @@ class MainController extends AbstractController
     /**
      * @Route("/seznam", name="list")
      */
-    public function list(SessionInterface $session)
+    public function list(SessionInterface $session, ProjectRepository $projectRepository)
     {
+        $allProjects = $projectRepository->findBy(['deleted' => false]);
         return $this->render('list.html.twig', [
-            'session' => $session
+            'session' => $session,
+            'allProjects' => $allProjects
         ]);
     }
 

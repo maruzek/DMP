@@ -79,13 +79,6 @@ class ProjectSettingsType extends AbstractType
                 'required' => false,
                 'multiple' => true
             ])
-            ->add('media', CollectionType::class, [
-                'entry_type' => DeleteMediaType::class,
-                'entry_options' => [
-                    'label' => false
-                ],
-                'label' => false
-            ])
             ->add('submit', SubmitType::class, [
                 'attr' => [
                     'class' => 'btn btn-primary'

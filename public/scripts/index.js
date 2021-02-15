@@ -664,6 +664,7 @@ let delMemberBtn = document.querySelectorAll('.delete-member')
 if(delMemberBtn != null) {
   for (let i = 0; i < delMemberBtn.length; i++) {
     const element = delMemberBtn[i];
+    
     element.addEventListener('click', () => {
       const id = element.getAttribute('id')
       const userid = id.split('-')[2]
@@ -678,11 +679,79 @@ if(delMemberBtn != null) {
         }
       }).then((response) => {
         console.log(response)    
+        if(response == "success") {
+          $('#toast-memberdel-success').toast('show');
         
+          element.parentElement.parentElement.remove()
+        } else if(response == "nonadmin" || response == "dbfail") {
+          $('#toast-memberdel-fail').toast('show');
+        }
 
       }).catch((error) => {
         console.error(error)
       })
     })
   }
+}
+
+// Delete Hero image
+
+const delherobtn = document.querySelectorAll('.delhero')
+
+if(delherobtn != null) {
+  for (let i = 0; i < delherobtn.length; i++) {
+    const element = delherobtn[i];
+    
+    element.addEventListener('click', () => {
+      const id = element.getAttribute('id').split('-')[1]
+      
+      $.ajax({
+        type: "POST",
+        url: "/projekt/deleteHero",
+        data: {
+          id: id,
+          project: projectID
+        }
+      }).then((response) => {
+        console.log(response)    
+        
+        element.parentElement.parentElement.remove()
+      }).catch((error) => {
+        console.error(error)
+      })
+    })
+  }
+}
+
+// Post seens
+
+var seensModal = document.getElementById('seensModal')
+
+if(seensModal != null) {
+  seensModal.addEventListener('show.bs.modal', function (event) {
+    // Button that triggered the modal
+    var button = event.relatedTarget
+    // Extract info from data-bs-* attributes
+    var postid = button.getAttribute('data-bs-postid')
+    // If necessary, you could initiate an AJAX request here
+    // and then do the updating in a callback.
+    //
+    $.ajax({
+      type: "POST",
+      url: "/projekt/getPostSeens",
+      data: {
+        id: postid
+      }
+    }).then((response) => {
+      console.log(response)    
+      
+    }).catch((error) => {
+      console.error(error)
+    })
+    // Update the modal's content.
+    var modalTitle = seensModal.querySelector('.modal-title')
+    var modalBodyInput = seensModal.querySelector('.modal-body input')
+  
+    modalTitle.textContent = 'Post ID: ' + postid
+  })
 }

@@ -1,12 +1,23 @@
 // POSTS
 .project-post-wrapper {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     background-color: #fff;
     border-radius: 1rem;
     padding: 1%;
     margin: 20px 0px 15px 0px;
     transition: .2s;
+
+    .post-textcontent {
+        display: flex;
+        flex-direction: row;
+    }
+
+    .post-media {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 
     &:hover {
         background-color: rgb(240, 240, 240);
@@ -287,13 +298,37 @@
 .project-content {
     transform: translateY(-100%);
 }*/
-
+/*
 .project-content {
     transform: translateY(-2%);
-}
+}*/
 
 .hero-slider {
     z-index: -5;
+}
+
+// POST SEENS 
+
+.post-seens {
+    transition: .2s;
+    cursor: pointer;
+
+    &:hover {
+        color: rgb(99, 99, 99);
+    }
+}
+
+// EVENTS
+
+.newEventBtn {
+    border-radius: 0.2rem;
+    padding: 8px;
+    transition: .4s;
+    cursor: pointer;
+
+    &:hover {
+        background-color: #ccc;
+    }
 }
 
 /*

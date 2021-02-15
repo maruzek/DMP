@@ -23,6 +23,7 @@ use App\Form\UnmemberType;
 use App\ImageCrop\ImageCrop;
 use App\ProjectCheck\ProjectCheck;
 use App\Repository\FollowRepository;
+use App\Repository\MediaRepository;
 use App\Repository\MemberRepository;
 use App\Repository\PostRepository;
 use App\Repository\ProjectAdminRepository;
@@ -330,7 +331,6 @@ class ProjectController extends AbstractController
 
             $result = "";
 
-
             if (in_array($admin, $admins) || $project->getAdmin() == $admin) {
                 $em = $this->getDoctrine()->getManager();
                 $em->remove($member);
@@ -342,6 +342,94 @@ class ProjectController extends AbstractController
             } else {
                 $result = "nonadmin";
             }
+
+            $defaultContext = [
+                AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => function ($object, $format, $context) {
+                    return $object->getId();
+                },
+            ];
+            $encoders = [
+                new JsonEncoder()
+            ];
+            $normalizers = [
+                new ObjectNormalizer(null, null, null, null, null, null, $defaultContext)
+            ];
+            $serializer = new Serializer($normalizers, $encoders);
+
+            $response = $serializer->serialize($result, 'json');
+            return new JsonResponse($response, 200, [], true);
+        }
+
+        return new JsonResponse([
+            'type' => 'error',
+            'message' => 'Not an AJAX request'
+        ], 401);
+    }
+
+    /**
+     * @Route("/deleteHero", name="deleteHero", methods={"POST"})
+     */
+    public function deleteHero(Request $request, ProjectRepository $projectRepository, SessionInterface $session, MemberRepository $memberRepository, UserRepository $userRepository, ProjectAdminRepository $projectAdminRepository, MediaRepository $mediaRepository)
+    {
+        if ($request->isXmlHttpRequest()) {
+            $heroid = $request->request->get('id');
+            $hero = $mediaRepository->find($heroid);
+            $projectid = $request->request->get('project');
+            $project = $projectRepository->find($projectid);
+            $admin = $userRepository->find($session->get('id'));
+            $admins = $projectAdminRepository->findBy(['project' => $project]);
+
+            $result = "";
+
+            if (in_array($admin, $admins) || $project->getAdmin() == $admin) {
+                $em = $this->getDoctrine()->getManager();
+                if (file_exists($this->getParameter('media') . $hero->getName())) {
+                    unlink($this->getParameter('media') . '/' . $hero->getName());
+                }
+                $em->remove($hero);
+                if (!$em->flush()) {
+                    $result = "success";
+                } else {
+                    $result = "dbfail";
+                }
+            } else {
+                $result = "nonadmin";
+            }
+
+            $defaultContext = [
+                AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => function ($object, $format, $context) {
+                    return $object->getId();
+                },
+            ];
+            $encoders = [
+                new JsonEncoder()
+            ];
+            $normalizers = [
+                new ObjectNormalizer(null, null, null, null, null, null, $defaultContext)
+            ];
+            $serializer = new Serializer($normalizers, $encoders);
+
+            $response = $serializer->serialize($result, 'json');
+            return new JsonResponse($response, 200, [], true);
+        }
+
+        return new JsonResponse([
+            'type' => 'error',
+            'message' => 'Not an AJAX request'
+        ], 401);
+    }
+
+    /**
+     * @Route("/getPostSeens", name="getPostSeens", methods={"POST"})
+     */
+    public function getPostSeens(Request $request, PostRepository $postRepository, SessionInterface $session, SeenRepository $seenRepository, UserRepository $userRepository, ProjectAdminRepository $projectAdminRepository, MediaRepository $mediaRepository)
+    {
+        if ($request->isXmlHttpRequest()) {
+            $postid = $request->request->get('id');
+            $post = $postRepository->find($postid);
+
+            $result = $seenRepository->findBy(['post' => $post]);
+
 
             $defaultContext = [
                 AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => function ($object, $format, $context) {
@@ -645,6 +733,30 @@ class ProjectController extends AbstractController
                     $addPostForm->handleRequest($request);
                     if ($addPostForm->isSubmitted()) {
                         $em = $this->getDoctrine()->getManager();
+                        $media = $request->files->get('add_post')['media'];
+                        if ($media) {
+                            /** @var UploadedFile $file */
+                            foreach ($media as $file) {
+                                $ext = $file->guessClientExtension();
+                                if ($ext == "jpg" || $ext == "jpeg" || $ext == "png") {
+                                    $filename = md5(uniqid()) . '.' . $file->guessClientExtension();
+                                    $file->move(
+                                        $this->getParameter('media'),
+                                        $filename
+                                    );
+                                    $newMedia = new Media();
+                                    $newMedia->setName($filename);
+                                    $newMedia->setProject($project);
+                                    $newMedia->setType('post');
+                                    $newMedia->setPost($post);
+                                    $newMedia->setUploader($user);
+                                    $em->persist($newMedia);
+                                } else {
+                                    $fileError = "badext";
+                                }
+                            }
+                        }
+
                         $em->persist($post);
                         $em->flush();
                         unset($post);
@@ -662,7 +774,7 @@ class ProjectController extends AbstractController
 
                     // SEEN
                     date_default_timezone_set('Europe/Prague');
-                    $seenPosts = $postRepository->findPostLimit(10, $project);
+                    $seenPosts = $postRepository->findBy(['project' => $project]);
                     foreach ($seenPosts as $post) {
                         if (!$seenRepository->findOneBy(['user' => $user, 'post' => $post])) {
                             $seen = new Seen();
@@ -675,6 +787,10 @@ class ProjectController extends AbstractController
                             $em->flush();
                         }
                     }
+
+                    // EVENTS
+
+
                 } else {
                 }
 

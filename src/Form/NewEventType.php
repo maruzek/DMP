@@ -2,27 +2,30 @@
 
 namespace App\Form;
 
-use App\Entity\Media;
+use App\Entity\Event;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class DeleteMediaType extends AbstractType
+class NewEventType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('submit', SubmitType::class, [
-                'label_html' => true,
-                'label' => '<i class="fas fa-trash"></i>'
-            ]);
+            ->add('name')
+            ->add('location')
+            ->add('start')
+            ->add('end')
+            ->add('created')
+            ->add('admin')
+            ->add('project')
+        ;
     }
 
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
-            'data_class' => Media::class,
+            'data_class' => Event::class,
         ]);
     }
 }

@@ -23,9 +23,11 @@
 					<img src="/img/skola1.jpg" class="d-block w-100" alt="">
 				</div>
 				{% for img in project.media %}
-					<div class="carousel-item">
-						<img src="/img/media/{{ img.name }}" class="d-block w-100" alt="">
-					</div>
+					{% if img.type == "hero" %}
+						<div class="carousel-item">
+							<img src="/img/media/{{ img.name }}" class="d-block w-100" alt="">
+						</div>
+					{% endif %}
 				{% endfor %}
 			</div>
 		</div>
@@ -137,6 +139,23 @@
 				</div>
 				<div class="toast-body">
 					Někde se stala chyba. Zkuste to prosím znovu později.
+				</div>
+			</div>
+
+			<div class="toast position-absolute mt-5 top-0 start-0" id="toast-memberdel-success">
+				<div class="toast-header">
+					<strong class="me-auto">Člen</strong>
+				</div>
+				<div class="toast-body">
+					Smazali jste členství
+				</div>
+			</div>
+			<div class="toast position-absolute mt-5 top-0 start-0" id="toast-memberdel-fail">
+				<div class="toast-header">
+					<strong class="me-auto">Člen</strong>
+				</div>
+				<div class="toast-body">
+					Stala se chyba
 				</div>
 			</div>
 		{% endif %}
@@ -312,7 +331,12 @@
 												<label class="form-check-label" for="flexSwitchCheckDefault">{{ form_label(postForm.privacy) }}</label>
 											</div>
 										</div>
-										<div class="col d-flex justify-content-end">
+										<div class="col d-flex align-items-center">
+											<div class="mt-2">
+												{{ form_widget(postForm.media) }}
+											</div>
+										</div>
+										<div class="col d-flex justify-content-end align-items-center">
 											<div class="mt-2 ml-2">
 												{{ form_widget(postForm.submit) }}
 											</div>
@@ -329,6 +353,46 @@
 									{% if post.privacy == 1 %}
 										{% if session.get('id') in projectMembers %}
 											<div class="project-post-wrapper {{ palette.post }}" id="post-{{ post.id }}">
+												<div class="post-textcontent">
+													<div class="project-post-profilepic">
+														<img src="http://localhost:8081/img/userimg/{{ post.author.image }}" alt="">
+													</div>
+													<div class="project-post-content w-100">
+														<p class="project-post-author w-100">{{ post.author.firstName ~ ' ' ~ post.author.lastName }}
+															<br>
+															<span class="badge bg-primary">{{ post.author.tag }}</span>
+															<span class="badge bg-light text-dark">{{ post.author.class }}</span>
+														</p>
+														<p id="postText-{{ post.id }}">{{ post.text }}</p>
+													</div>
+													{% if post.author.id == session.get('id')%}
+														<p data-bs-toggle="modal" class="editPostModalTrigger m-1" data-bs-target="#editPostModal" data-bs-editpost-text="{{ post.text }}" data-bs-editpost-private="{{ post.privacy }}" data-bs-editpost-id="{{ post.id }}" data-edit-post-id="{{ post.id }}">
+															<i class="fas fa-pen"></i>
+														</p>
+														<p class="post-card-trash-icon m-1" id="delPostTrigger" data-deletepost-id="{{ post.id }}">
+															<i class="fas fa-trash"></i>
+														</p>
+													{% endif %}
+												</div>
+												<div class="post-media d-block mx-auto">
+													<div class="fotorama">
+														{% for img in post.media %}
+															{% if img.type == "post" %}
+																<img src="/img/media/{{ img.name }}" class="d-block mw-100 h-50 mx-auto" alt="post media">
+															{% endif %}
+														{% endfor %}
+													</div>
+												</div>
+
+												<div class="post-seens-div">
+													<i class="fas fa-eye"></i>
+												</div>
+											</div>
+										{% endif %}
+
+									{% else %}
+										<div class="project-post-wrapper {{ palette.post }}" id="post-{{ post.id }}">
+											<div class="post-textcontent">
 												<div class="project-post-profilepic">
 													<img src="http://localhost:8081/img/userimg/{{ post.author.image }}" alt="">
 												</div>
@@ -349,34 +413,24 @@
 													</p>
 												{% endif %}
 											</div>
-										{% endif %}
-
-									{% else %}
-										<div class="project-post-wrapper {{ palette.post }}" id="post-{{ post.id }}">
-											<div class="project-post-profilepic">
-												<img src="http://localhost:8081/img/userimg/{{ post.author.image }}" alt="">
+											<div class="post-media d-block mx-auto">
+												<div class="fotorama">
+													{% for img in post.media %}
+														{% if img.type == "post" %}
+															<img src="/img/media/{{ img.name }}" class="d-block mw-100 h-50 mx-auto" alt="post media">
+														{% endif %}
+													{% endfor %}
+												</div>
 											</div>
-											<div class="project-post-content w-100">
-												<p class="project-post-author w-100">{{ post.author.firstName ~ ' ' ~ post.author.lastName }}
-													<br>
-													<span class="badge bg-primary">{{ post.author.tag }}</span>
-													<span class="badge bg-light text-dark">{{ post.author.class }}</span>
-												</p>
-												<p id="postText-{{ post.id }}">{{ post.text }}</p>
+											<div class="post-seens-div d-flex justify-content-end">
+												<i class="fas fa-eye post-seens" data-bs-toggle="modal" data-bs-target="#seensModal" data-bs-postid="{{ post.id }}"></i>
 											</div>
-											{% if post.author.id == session.get('id')%}
-												<p data-bs-toggle="modal" class="editPostModalTrigger m-1" data-bs-target="#editPostModal" data-bs-editpost-text="{{ post.text }}" data-bs-editpost-private="{{ post.privacy }}" data-bs-editpost-id="{{ post.id }}" data-edit-post-id="{{ post.id }}">
-													<i class="fas fa-pen"></i>
-												</p>
-												<p class="post-card-trash-icon m-1" id="delPostTrigger" data-deletepost-id="{{ post.id }}">
-													<i class="fas fa-trash"></i>
-												</p>
-											{% endif %}
 										</div>
 									{% endif %}
 
 								{% endif %}
 							{% endfor %}
+
 
 							<div class="project-post-wrapper {{ palette.post }}">
 								<div class="project-post-profilepic">
@@ -450,7 +504,7 @@
 									<tbody class="align-middle">
 										{% for member in project.members %}
 											{% if member.accepted == true %}
-												<tr id="member-request-tr">
+												<tr id="member-tr-">
 													<th scope="row">{{ member.member.id }}</th>
 													<td>{{ member.member.firstName ~ ' ' ~ member.member.lastName }}</td>
 													<td>{{ member.member.class }}</td>
@@ -472,7 +526,38 @@
 							</div>
 						</div>
 						<div class="tab-pane fade" id="udalosti" role="tabpanel" aria-labelledby="udalosti-tab">
-							Události
+							{% if session.get('id') == project.admin.id or session.get('id') in projectAdmins %}
+								<h5 class="text-secondary newEventBtn mt-3">
+									Vytvořit novou událost
+									<i class="fas fa-plus"></i>
+								</h5>
+
+								<div class="newEventSettings w-50">
+									<label for="newblockType">Typ nového bloku</label>
+									<select id="newblockType" class="form-select mb-3" aria-label="Vybrat typ nového bloku">
+										<option selected>Typ nového bloku</option>
+										<option value="project">Projekt</option>
+										<option value="post">Příspěvek</option>
+									</select>
+
+									<select id="newblockProject" class="form-select mb-3" aria-label="Vybrat typ nového bloku">
+										<option selected>Vyberte projekt</option>
+									</select>
+
+									<div class="mb-3" id="newblockPost">
+										<label for="newblockPostInput" class="form-label">ID Příspěvku</label>
+										<input type="text" class="form-control" id="newblockPostInput">
+									</div>
+
+									<button type="button" class="btn btn-success mb-3" id="newblockSubmit">Přidat nový blok</button>
+
+									<!--<select id="newblockPost" class="form-select mb-3" aria-label="Vybrat typ nového bloku">
+																																																																																																																																																																																																																																																	<option selected>Typ nového bloku</option>
+																																																																																																																																																																																																																																																	<option value="projekt">Projekt</option>
+																																																																																																																																																																																																																																																	<option value="post">Příspěvek</option>
+																																																																																																																																																																																																																																																</select>-->
+								</div>
+							{% endif %}
 						</div>
 						<div
 							class="tab-pane fade" id="media" role="tabpanel" aria-labelledby="media-tab">
@@ -526,25 +611,27 @@
 								{{ form_row(projectSettingsForm.medias) }}
 							</div>
 							<h4>Obrázky v pozadí</h4>
-							{% if projectSettingsForm.media|length > 0 %}
-								<div class="mb-2 mt-3 project-settings-bg-imgs">
-									<div class="img-del">
-										{% for media in project.media %}
-											<img src="/img/media/{{ media.name }}" alt="" class="img-fluid">
-										{% endfor %}
-									</div>
-									<div class="img-del-ico">
-										{% for mediap in projectSettingsForm.media %}
-											{{ form_row(mediap.submit)}}
-										{% endfor %}
-									</div>
-								</div>
 
-							{% else %}
-								<p>Zatím v pozadí není žádný obrázek. Přidat je můžete zde
-									<i class="fas fa-arrow-up"></i>
-								</p>
-							{% endif %}
+							<div class="table-responsive mb-2 mt-3">
+								<table>
+									<tbody>
+										{% for media in project.media %}
+											{% if media.type == "hero" %}
+												<tr>
+													<td>
+														<img src="/img/media/{{ media.name }}" alt="" class="img-fluid">
+													</td>
+													<td>
+														<button type="button" class="btn btn-danger delhero" id="delhero-{{ media.id }}">
+															<i class="fas fa-trash"></i>
+														</button>
+													</td>
+												</tr>
+											{% endif %}
+										{% endfor %}
+									</tbody>
+								</table>
+							</div>
 						</div>
 						<div class="modal-footer">
 							<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zrušit</button>
@@ -585,29 +672,25 @@
 				</div>
 			</div>
 
-			<!-- Seen Modal -->
-			<div class="modal fade" id="seenModal" tabindex="-1" aria-labelledby="seenModalLabel" aria-hidden="true">
-				<div class="modal-dialog">
+			<!-- Seens modal -->
+
+			<div class="modal fade" id="seensModal" tabindex="-1" aria-labelledby="seensModalLabel" aria-hidden="true">
+				<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
 					<div class="modal-content">
 						<div class="modal-header">
-							<h5 class="modal-title" id="exampleModalLabel">New message</h5>
+							<h5 class="modal-title" id="seensModalLabel">Zobrazeno</h5>
 							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 						</div>
 						<div class="modal-body">
-							<form>
-								<div class="mb-3">
-									<label for="recipient-name" class="col-form-label">Recipient:</label>
-									<input type="text" class="form-control" id="recipient-name">
-								</div>
-								<div class="mb-3">
-									<label for="message-text" class="col-form-label">Message:</label>
-									<textarea class="form-control" id="message-text"></textarea>
-								</div>
-							</form>
+							<div class="table-responsive">
+								<table class="table table-striped table-hover text-center">
+									<tbody id="seens-modal-tbody"></tbody>
+								</table>
+							</div>
 						</div>
 						<div class="modal-footer">
 							<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-							<button type="button" class="btn btn-primary">Send message</button>
+							<button type="button" class="btn btn-primary">Save changes</button>
 						</div>
 					</div>
 				</div>

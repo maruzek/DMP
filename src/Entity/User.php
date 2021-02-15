@@ -94,6 +94,11 @@ class User
      */
     private $projectAdmins;
 
+    /**
+     * @ORM\OneToMany(targetEntity=Event::class, mappedBy="admin", orphanRemoval=true)
+     */
+    private $events;
+
     public function __construct()
     {
         $this->projects = new ArrayCollection();
@@ -102,6 +107,7 @@ class User
         $this->posts = new ArrayCollection();
         $this->media = new ArrayCollection();
         $this->projectAdmins = new ArrayCollection();
+        $this->events = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -395,6 +401,36 @@ class User
             // set the owning side to null (unless already changed)
             if ($projectAdmin->getUser() === $this) {
                 $projectAdmin->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Event[]
+     */
+    public function getEvents(): Collection
+    {
+        return $this->events;
+    }
+
+    public function addEvent(Event $event): self
+    {
+        if (!$this->events->contains($event)) {
+            $this->events[] = $event;
+            $event->setAdmin($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEvent(Event $event): self
+    {
+        if ($this->events->removeElement($event)) {
+            // set the owning side to null (unless already changed)
+            if ($event->getAdmin() === $this) {
+                $event->setAdmin(null);
             }
         }
 
