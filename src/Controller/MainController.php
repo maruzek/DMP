@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Form\SearchType;
+use App\Repository\IndexBlockRepository;
 use App\Repository\ProjectRepository;
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -18,16 +19,15 @@ class MainController extends AbstractController
     /**
      * @Route("/", name="main")
      */
-    public function index(SessionInterface $session)
+    public function index(SessionInterface $session, IndexBlockRepository $indexBlockRepository)
     {
         $this->session = $session;
-        $searchForm = $this->createForm(SearchType::class);
 
 
         return $this->render('main.html.twig', [
             'controller_name' => 'MainController',
             'session' => $session,
-            'searchForm' => $searchForm
+            'indexBlocks' => $indexBlockRepository->findAll()
         ]);
     }
 

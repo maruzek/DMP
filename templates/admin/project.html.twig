@@ -101,25 +101,26 @@
 			</div>
 
 			<h4>Obrázky v pozadí</h4>
-			{% if basicSettingsForm.media|length > 0 %}
-				<div class="mb-2 mt-3 project-settings-bg-imgs">
-					<div class="img-del">
+			<div class="table-responsive mb-2 mt-3">
+				<table>
+					<tbody>
 						{% for media in project.media %}
-							<img src="/img/media/{{ media.name }}" alt="" class="img-fluid">
+							{% if media.type == "hero" %}
+								<tr>
+									<td>
+										<img src="/img/media/{{ media.name }}" alt="" class="img-fluid">
+									</td>
+									<td>
+										<button type="button" class="btn btn-danger delhero" id="delhero-{{ media.id }}">
+											<i class="fas fa-trash"></i>
+										</button>
+									</td>
+								</tr>
+							{% endif %}
 						{% endfor %}
-					</div>
-					<div class="img-del-ico">
-						{% for mediap in basicSettingsForm.media %}
-							{{ form_row(mediap.submit)}}
-						{% endfor %}
-					</div>
-				</div>
-
-			{% else %}
-				<p>Zatím v pozadí není žádný obrázek. Přidat je můžete zde
-					<i class="fas fa-arrow-up"></i>
-				</p>
-			{% endif %}
+					</tbody>
+				</table>
+			</div>
 			{{ form_end(basicSettingsForm) }}
 		</div>
 

@@ -1,0 +1,15 @@
+<div class="row row-cols-1 row-cols-md-2 g-4">
+	<div class="col w-100">
+		<div class="card mt-3">
+			<div class="card-body">
+				<h4 class="card-title m-0">{{ event.name }}</h4>
+				<p class="card-text text-danger m-0">{{ event.start|format_datetime(pattern='d.M.yyyy HH:mm') }}
+					až
+					{{ event.end|format_datetime(pattern='d.M.yyyy HH:mm') }}</p>
+				{% if event.description != null %}
+					<p class="card-text mt-2">{{ event.description }}</p>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+</div>

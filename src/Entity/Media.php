@@ -24,6 +24,7 @@ class Media
 
     /**
      * @ORM\ManyToOne(targetEntity=Post::class, inversedBy="media")
+     * @ORM\JoinColumn(onDelete="CASCADE")
      */
     private $post;
 
@@ -34,6 +35,7 @@ class Media
 
     /**
      * @ORM\ManyToOne(targetEntity=Project::class, inversedBy="media")
+     * @ORM\JoinColumn(onDelete="CASCADE")
      */
     private $project;
 

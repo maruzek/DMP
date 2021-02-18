@@ -25,7 +25,7 @@ class LoginController extends AbstractController
         #compose the callback URL (may not work in all circumstances)
         //$protocol = $_SERVER['HTTPS'] ? 'https' : 'http';
         $protocol = "http";
-        $callbackUrl = $protocol . "://" . $_SERVER['SERVER_NAME'] . $_SERVER['SCRIPT_NAME'];
+        $callbackUrl = $protocol . "://" . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'];
         $callbackUrl = $protocol . "://localhost:8081/login";
 
         #create the service token

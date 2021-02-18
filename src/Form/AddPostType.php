@@ -17,12 +17,11 @@ class AddPostType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('text', TextareaType::class, [
+            ->add('text', TextType::class, [
                 'attr' => [
                     'class' => 'form-control',
                     'id' => 'floatingTextarea2',
-                    'placeholder' => 'Leave a comment here',
-                    'style' => 'height: 70px;'
+                    'placeholder' => 'Nový příspěvek',
                 ],
                 'label' => 'Nový příspěvek'
             ])

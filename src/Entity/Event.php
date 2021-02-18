@@ -24,13 +24,13 @@ class Event
 
     /**
      * @ORM\ManyToOne(targetEntity=User::class, inversedBy="events")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
      */
     private $admin;
 
     /**
      * @ORM\ManyToOne(targetEntity=Project::class, inversedBy="events")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
      */
     private $project;
 
@@ -53,6 +53,16 @@ class Event
      * @ORM\Column(type="date")
      */
     private $created;
+
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    private $privacy = false;
+
+    /**
+     * @ORM\Column(type="string", nullable=true, length=280)
+     */
+    private $description;
 
     public function getId(): ?int
     {
@@ -139,6 +149,30 @@ class Event
     public function setProject(?Project $project): self
     {
         $this->project = $project;
+
+        return $this;
+    }
+
+    public function getPrivacy(): ?bool
+    {
+        return $this->privacy;
+    }
+
+    public function setPrivacy(bool $privacy): self
+    {
+        $this->privacy = $privacy;
+
+        return $this;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(?string $description): self
+    {
+        $this->description = $description;
 
         return $this;
     }

@@ -6,11 +6,33 @@
 @import 'cropper';
 
 .landing {
-    height: 92vh;
+    height: 94vh;
     display: flex;
     justify-content: center;
-    align-items: center;
     flex-direction: column;
+}
+
+.showcase {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+
+    .showcase-ib {
+        width: 100%;
+        border-radius: 1rem;
+        border: 1px solid #ccc;
+
+        margin: 20px 0px 20px 0px;
+        padding: 20px;
+
+        img {
+            width: 50%;
+        }
+    }
+}
+
+.round-img {
+    border-radius: 50%;
 }
 
 .abs {

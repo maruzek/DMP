@@ -359,7 +359,7 @@ if (memberBtn != null) {
           numberOfMembersEl.innerHTML = ' ' + numberOfMembers + ' členové'
         } else if (numberOfMembers > 4 || numberOfMembers == 0) {
           numberOfMembersEl.innerHTML = ' ' + numberOfMembers + ' členů'
-        } else if(numberOfMembers == 1) {
+        } else if (numberOfMembers == 1) {
           numberOfMembersEl.innerHTML = ' ' + numberOfMembers + ' člen'
         }
       } else if (response == "unmembersuccess") {
@@ -375,7 +375,7 @@ if (memberBtn != null) {
           numberOfMembersEl.innerHTML = ' ' + numberOfMembers + ' členové'
         } else if (numberOfMembers > 4 || numberOfMembers == 0) {
           numberOfMembersEl.innerHTML = ' ' + numberOfMembers + ' členů'
-        }else if(numberOfMembers == 1) {
+        } else if (numberOfMembers == 1) {
           numberOfMembersEl.innerHTML = ' ' + numberOfMembers + ' člen'
         }
       } else if (response == "memberfail" || response == "unmemberfail") {
@@ -406,10 +406,10 @@ if (acceptMemberBtn != null) {
         console.log(response)
         const tr = document.querySelector('#member-request-tr')
 
-        if(response == "accept-success") {
+        if (response == "accept-success") {
           $('#toast-memberaccept-success').toast('show')
           tr.remove()
-        }  else if(response == "accept-fail") {
+        } else if (response == "accept-fail") {
           $('#toast-memberrequest-fail').toast('show')
         }
       })
@@ -437,10 +437,10 @@ if (declineMemberBtn != null) {
         console.log(response)
         const tr = document.querySelector('#member-request-tr')
 
-        if(response == "decline-success") {
+        if (response == "decline-success") {
           $('#toast-memberdecline-success').toast('show')
           tr.remove()
-        }  else if(response == "decline-fail") {
+        } else if (response == "decline-fail") {
           $('#toast-memberrequest-fail').toast('show')
         }
       })
@@ -453,12 +453,12 @@ if (declineMemberBtn != null) {
 
 const searchUserInput = document.querySelector('#searchUserInput')
 
-if(searchUserInput != null) {
-  searchUserInput.addEventListener('input', (e)=>{
+if (searchUserInput != null) {
+  searchUserInput.addEventListener('input', (e) => {
     let input = e.target.value
 
     let trTest = document.querySelectorAll('.testlist')
-    if(trTest != null) {
+    if (trTest != null) {
       for (let i = 0; i < trTest.length; i++) {
         const element = trTest[i];
         element.remove()
@@ -490,9 +490,9 @@ if(searchUserInput != null) {
             let tag = document.createElement('TD')
             tag.innerHTML = response[i].tag
             let viewBtn = document.createElement('TD')
-            viewBtn.innerHTML = '<a class="btn btn-success" href="/user/'+ response[i].username +'" target="_blank">Zobrazit</a>'
+            viewBtn.innerHTML = '<a class="btn btn-success" href="/user/' + response[i].username + '" target="_blank">Zobrazit</a>'
             let editBtn = document.createElement('TD')
-            editBtn.innerHTML = '<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editUserModal" data-bs-userid="'+ response[i].id +'">Spravovat</button>'
+            editBtn.innerHTML = '<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editUserModal" data-bs-userid="' + response[i].id + '">Spravovat</button>'
 
             let delBtn = document.createElement('TD')
             delBtn.innerHTML = '<a class="btn btn-danger" id="admin-deluser">Smazat</a>'
@@ -520,7 +520,7 @@ if(searchUserInput != null) {
 // Edit user as Admin 
 
 const editUserModal = document.getElementById('editUserModal')
-if(editUserModal != null) {
+if (editUserModal != null) {
   editUserModal.addEventListener('show.bs.modal', function (event) {
     // Button that triggered the modal
     const button = event.relatedTarget
@@ -532,8 +532,8 @@ if(editUserModal != null) {
     // Update the modal's content.
     const delimgBtn = editUserModal.querySelector('.admin-deluser-img')
     const deldescBtn = editUserModal.querySelector('.admin-deluser-desc')
-  
-    delimgBtn.addEventListener('click', ()=>{
+
+    delimgBtn.addEventListener('click', () => {
       $.ajax({
         type: "POST",
         url: "/admin/editUser",
@@ -543,22 +543,22 @@ if(editUserModal != null) {
         }
       }).then((response) => {
         console.log(response)
-  
-        if(response == "success") {
+
+        if (response == "success") {
           $('#toast-edituser-delimg-success').toast('show')
-        } else if(response == "alreadydefault") {
+        } else if (response == "alreadydefault") {
           $('#toast-edituser-delimg-alreadydefault').toast('show')
-        } else if(response == "badrequest") {
+        } else if (response == "badrequest") {
           $('#toast-edituser-fail').toast('show')
-        } 
-  
-        
+        }
+
+
       }).catch((error) => {
         console.error(error)
       })
     })
-  
-    deldescBtn.addEventListener('click', ()=>{
+
+    deldescBtn.addEventListener('click', () => {
       $.ajax({
         type: "POST",
         url: "/admin/editUser",
@@ -568,19 +568,19 @@ if(editUserModal != null) {
         }
       }).then((response) => {
         console.log(response)
-        if(response == "success") {
+        if (response == "success") {
           $('#toast-edituser-deldesc-success').toast('show')
-        } else if(response == "alreadyclear") {
+        } else if (response == "alreadyclear") {
           $('#toast-edituser-deldesc-alreadyclear').toast('show')
-        } else if(response == "badrequest") {
+        } else if (response == "badrequest") {
           $('#toast-edituser-fail').toast('show')
-        } 
-  
+        }
+
       }).catch((error) => {
         console.error(error)
       })
     })
-  
+
   })
 }
 
@@ -588,27 +588,27 @@ if(editUserModal != null) {
 
 const newBlockBtn = document.querySelector('.newblockBtn')
 
-if(newBlockBtn != null) {
-  newBlockBtn.addEventListener('click', ()=> {
+if (newBlockBtn != null) {
+  newBlockBtn.addEventListener('click', () => {
     $('.newblockSettings').slideDown('slow')
   })
 
   const newBlockType = document.querySelector('#newblockType')
   const newblockProject = document.querySelector('#newblockProject')
-  const newblockPost= document.querySelector('#newblockPostInput')
+  const newblockPost = document.querySelector('#newblockPostInput')
   const newblockSubmit = document.querySelector('#newblockSubmit')
 
   newBlockType.addEventListener('change', (e) => {
-    if(e.target.value == "project") {
-      if(newblockPost.style.display != "none") {
-      $('#newblockPost').slideUp('slow')
+    if (e.target.value == "project") {
+      if (newblockPost.style.display != "none") {
+        $('#newblockPost').slideUp('slow')
       }
       $('#newblockProject').slideDown('slow')
       $('#newblockSubmit').slideDown('slow')
     } else if (e.target.value == "post") {
-      if(newblockProject.style.display != "none") {
+      if (newblockProject.style.display != "none") {
         $('#newblockProject').slideUp('slow')
-        }
+      }
       $('#newblockPost').slideDown('slow')
       $('#newblockSubmit').slideDown('slow')
     }
@@ -618,7 +618,7 @@ if(newBlockBtn != null) {
       let newblockProjectValue = newblockProject.value
       let newBlockTypeValue = newBlockType.value
       console.log(newblockPostValue)
-      if(newBlockTypeValue == "project") {
+      if (newBlockTypeValue == "project") {
         $.ajax({
           type: "POST",
           url: "/admin/addNewBlock",
@@ -627,9 +627,9 @@ if(newBlockBtn != null) {
             type: "project"
           }
         }).then((response) => {
-          console.log(response)    
-          
-          if(response == "success") {
+          console.log(response)
+
+          if (response == "success") {
             $('.newblockSettings').slideUp('slow')
           }
         }).catch((error) => {
@@ -644,9 +644,9 @@ if(newBlockBtn != null) {
             type: "post"
           }
         }).then((response) => {
-          console.log(response)    
-          
-          if(response == "success") {
+          console.log(response)
+
+          if (response == "success") {
             $('.newblockSettings').slideUp('slow')
           }
         }).catch((error) => {
@@ -661,15 +661,15 @@ if(newBlockBtn != null) {
 
 let delMemberBtn = document.querySelectorAll('.delete-member')
 
-if(delMemberBtn != null) {
+if (delMemberBtn != null) {
   for (let i = 0; i < delMemberBtn.length; i++) {
     const element = delMemberBtn[i];
-    
+
     element.addEventListener('click', () => {
       const id = element.getAttribute('id')
       const userid = id.split('-')[2]
       const projid = id.split('-')[4]
-      
+
       $.ajax({
         type: "POST",
         url: "/projekt/deleteMember",
@@ -678,12 +678,12 @@ if(delMemberBtn != null) {
           project: projid
         }
       }).then((response) => {
-        console.log(response)    
-        if(response == "success") {
+        console.log(response)
+        if (response == "success") {
           $('#toast-memberdel-success').toast('show');
-        
+
           element.parentElement.parentElement.remove()
-        } else if(response == "nonadmin" || response == "dbfail") {
+        } else if (response == "nonadmin" || response == "dbfail") {
           $('#toast-memberdel-fail').toast('show');
         }
 
@@ -698,13 +698,13 @@ if(delMemberBtn != null) {
 
 const delherobtn = document.querySelectorAll('.delhero')
 
-if(delherobtn != null) {
+if (delherobtn != null) {
   for (let i = 0; i < delherobtn.length; i++) {
     const element = delherobtn[i];
-    
+
     element.addEventListener('click', () => {
       const id = element.getAttribute('id').split('-')[1]
-      
+
       $.ajax({
         type: "POST",
         url: "/projekt/deleteHero",
@@ -713,8 +713,8 @@ if(delherobtn != null) {
           project: projectID
         }
       }).then((response) => {
-        console.log(response)    
-        
+        console.log(response)
+
         element.parentElement.parentElement.remove()
       }).catch((error) => {
         console.error(error)
@@ -727,7 +727,7 @@ if(delherobtn != null) {
 
 var seensModal = document.getElementById('seensModal')
 
-if(seensModal != null) {
+if (seensModal != null) {
   seensModal.addEventListener('show.bs.modal', function (event) {
     // Button that triggered the modal
     var button = event.relatedTarget
@@ -743,15 +743,96 @@ if(seensModal != null) {
         id: postid
       }
     }).then((response) => {
-      console.log(response)    
-      
+      console.log(response)
+
     }).catch((error) => {
       console.error(error)
     })
     // Update the modal's content.
     var modalTitle = seensModal.querySelector('.modal-title')
     var modalBodyInput = seensModal.querySelector('.modal-body input')
-  
+
     modalTitle.textContent = 'Post ID: ' + postid
   })
+}
+
+// new event
+
+const newEventBtn = document.querySelector('.newEventBtn')
+
+if (newEventBtn != null) {
+  newEventBtn.addEventListener('click', () => {
+    $('.newEventSettings').slideDown('slow')
+  })
+
+  const newEventStart = document.querySelector('#new_event_start')
+  const newEventEnd = document.querySelector('#new_event_end')
+  const newEventSubmit = document.querySelector('#new_event_submit')
+
+  const newEventForm = document.querySelector('#newEventForm')
+  const newEventEndBeforeStart = document.querySelector('#newEventEndBeforeStart')
+
+  newEventEnd.addEventListener('change', () => {
+    if (newEventEnd.value < newEventStart.value) {
+      if (newEventEndBeforeStart.classList.contains('d-none')) {
+        newEventEndBeforeStart.classList.remove('d-none')
+        newEventEndBeforeStart.classList.add('d-block')
+        newEventSubmit.classList.add('disabled')
+      }
+
+    } else if(newEventEnd.value > newEventStart.value && newEventEndBeforeStart.classList.contains('d-block')) {
+      newEventEndBeforeStart.classList.remove('d-block')
+      newEventEndBeforeStart.classList.add('d-none')
+      newEventSubmit.classList.remove('disabled')
+    }
+  })
+
+  newEventStart.addEventListener('change', () => {
+    if (newEventEnd.value < newEventStart.value && newEventEnd.value != null) {
+      if (newEventEndBeforeStart.classList.contains('d-none')) {
+        newEventEndBeforeStart.classList.remove('d-none')
+        newEventEndBeforeStart.classList.add('d-block')
+        newEventSubmit.classList.add('disabled')
+      }
+
+    } else if(newEventEnd.value > newEventStart.value && newEventEndBeforeStart.classList.contains('d-block')) {
+      newEventEndBeforeStart.classList.remove('d-block')
+      newEventEndBeforeStart.classList.add('d-none')
+      newEventSubmit.classList.remove('disabled')
+    }
+  })
+}
+
+// Remove index block
+
+const removeIbBtn = document.querySelectorAll('.removeIndexBlock')
+
+if(removeIbBtn != null) {
+  for (let i = 0; i < removeIbBtn.length; i++) {
+    const element = removeIbBtn[i];
+    const id = element.getAttribute('id').split('-')[1]
+    
+    element.addEventListener('click', () => {
+      $.ajax({
+        type: "POST",
+        url: "/admin/deleteIndexBlock",
+        data: {
+          id: id
+        }
+      }).then((response) => {
+        console.log(response)
+
+        if(response == "success") {
+          $('#toast-delIB-success').toast('show')
+        } else if(response == "dberror") {
+          $('#toast-delIB-dberror').toast('show')
+        } else if(response == "nonexistant") {
+          $('#toast-delIB-nonexistant').toast('show')
+        }
+  
+      }).catch((error) => {
+        console.error(error)
+      })
+    });
+  }
 }

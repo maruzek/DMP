@@ -362,6 +362,10 @@
   background-color: #ccc;
 }
 
+.newEventSettings {
+  display: none;
+}
+
 /*
 @media screen and (max-width: 1920px) {
     .project-content {
@@ -1140,20 +1144,46 @@ footer {
 }
 
 .landing {
-  height: 92vh;
+  height: 94vh;
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
   -webkit-box-pack: center;
       -ms-flex-pack: center;
           justify-content: center;
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
   -webkit-box-orient: vertical;
   -webkit-box-direction: normal;
       -ms-flex-direction: column;
           flex-direction: column;
+}
+
+.showcase {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+}
+
+.showcase .showcase-ib {
+  width: 100%;
+  border-radius: 1rem;
+  border: 1px solid #ccc;
+  margin: 20px 0px 20px 0px;
+  padding: 20px;
+}
+
+.showcase .showcase-ib img {
+  width: 50%;
+}
+
+.round-img {
+  border-radius: 50%;
 }
 
 .abs {

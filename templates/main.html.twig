@@ -4,19 +4,58 @@
 {% endblock %}
 
 {% block body %}
-	<div class="landing">
-		{% if session.get('username') != "" %}
-			<h1 class="text-center">Přihlášen</h1>
 
-			<h4>
-				{{ session.get('username') }}
-			</h4>
-		{% else %}
+	<div class="container landing">
+		<h1>Vítejte na stránkách projektů SPŠ Ostrov</h1>
+		<p>Najdete zde nejzajímavější informace o projektech a kroužcích na naší škole</p>
 
-			<h1 class="text-center">Prosím přihlaste se pro přístup k aplikaci</h1>
-			<a href="/login">
-				<button type="button" class="btn btn-outline-danger m-2">Přihlásit se</button>
-			</a>
-		{% endif %}
+		<div>
+			<a href="/seznam" class="btn btn-primary">Zobrazit vše</a>
+			<a href="#" class="btn btn-danger m-2">Ukázat výběr</a>
+		</div>
 	</div>
+
+	<div class="container showcase">
+		{% for ib in indexBlocks %}
+			{% if ib.type == "project" %}
+				{% if ib.project.deleted == false %}
+					<div class="showcase-ib">
+						<div class="row">
+							<div class="col-4">
+								<img src="/img/projectimg/{{ ib.project.image }}" alt="" class="img-fluid round-img d-block mx-auto">
+								<h3>{{ ib.project.name }}</h3>
+								<p>{{ ib.project.description }}</p>
+							</div>
+							<div class="col-8">
+								<div class="fotorama">
+									{% for img in ib.project.media %}
+										{% if img.type == "hero" %}
+											<img src="/img/media/{{ img.name }}" class="d-block mw-100 h-50 mx-auto" alt="post media">
+										{% endif %}
+									{% endfor %}
+								</div>
+							</div>
+						</div>
+					</div>
+				{% endif %}
+			{% endif %}
+
+		{% endfor %}
+	</div>
+
+	<!--<div class="landing">
+																																																													{% if session.get('username') != "" %}
+																																																														<h1 class="text-center">Přihlášen</h1>
+																																																											
+																																																														<h4>
+																																																															{{ session.get('username') }}
+																																																														</h4>
+																																																													{% else %}
+																																																											
+																																																														<h1 class="text-center">Prosím přihlaste se pro přístup k aplikaci</h1>
+																																																														<a href="/login">
+																																																															<button type="button" class="btn btn-outline-danger m-2">Přihlásit se</button>
+																																																														</a>
+																																																													{% endif %}
+																																																												</div>-->
 {% endblock %}

@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Authentication\Authentication;
 use App\ColorTheme\ColorTheme;
+use App\Entity\Event;
 use App\Entity\Follow;
 use App\Entity\Media;
 use App\Entity\Member;
@@ -16,6 +17,7 @@ use App\Form\AddPostType;
 use App\Form\EditPostType;
 use App\Form\FollowType;
 use App\Form\MemberType;
+use App\Form\NewEventType;
 use App\Form\NewProjectType;
 use App\Form\ProjectSettingsType;
 use App\Form\UnfollowType;
@@ -527,9 +529,6 @@ class ProjectController extends AbstractController
         if ($project) {
             $projectCheck = new ProjectCheck($project->getId(), $projectRepository);
             if ($projectCheck->isAccessible()) {
-                $projectCheck = new ProjectCheck($project->getId(), $projectRepository);
-                if ($projectCheck->isAccessible()) {
-                }
                 $color = new ColorTheme();
                 $palette = $color->colorPallette($project->getColor());
 
@@ -790,7 +789,24 @@ class ProjectController extends AbstractController
 
                     // EVENTS
 
+                    $event = new Event();
+                    $event->setProject($project);
+                    $event->setAdmin($user);
+                    $event->setCreated(DateTime::createFromFormat('Y-m-d HH:mm', date('Y-m-d HH:mm')));
 
+                    $newEventForm = $this->createForm(NewEventType::class, $event);
+                    $newEventForm->handleRequest($request);
+                    if ($newEventForm->isSubmitted()) {
+                        $end = $newEventForm->getData()->getEnd();
+                        $start = $newEventForm->getData()->getStart();
+                        if ($start < $end) {
+                            $em = $this->getDoctrine()->getManager();
+                            $em->persist($event);
+                            $em->flush();
+                        } else {
+                            $newEventResult = "endbeforestart";
+                        }
+                    }
                 } else {
                 }
 
@@ -808,7 +824,8 @@ class ProjectController extends AbstractController
                         'posts' => $posts,
                         'projectAdmins' => $projectAdmins,
                         'projectMembers' => $projectMembers,
-                        'memberBtn' => $memberBtn
+                        'memberBtn' => $memberBtn,
+                        'newEventForm' => $newEventForm->createView()
                     ]);
                 } else {
                     return $this->render('project/index.html.twig', [

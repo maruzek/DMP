@@ -532,32 +532,38 @@
 									<i class="fas fa-plus"></i>
 								</h5>
 
-								<div class="newEventSettings w-50">
-									<label for="newblockType">Typ nového bloku</label>
-									<select id="newblockType" class="form-select mb-3" aria-label="Vybrat typ nového bloku">
-										<option selected>Typ nového bloku</option>
-										<option value="project">Projekt</option>
-										<option value="post">Příspěvek</option>
-									</select>
-
-									<select id="newblockProject" class="form-select mb-3" aria-label="Vybrat typ nového bloku">
-										<option selected>Vyberte projekt</option>
-									</select>
-
-									<div class="mb-3" id="newblockPost">
-										<label for="newblockPostInput" class="form-label">ID Příspěvku</label>
-										<input type="text" class="form-control" id="newblockPostInput">
+								<div class="newEventSettings">
+									{{ form_start(newEventForm) }}
+									{{ form_row(newEventForm.name) }}
+									{{ form_row(newEventForm.location) }}
+									{{ form_row(newEventForm.start) }}
+									{{ form_row(newEventForm.end) }}
+									<div class="alert alert-danger d-none" role="alert" id="newEventEndBeforeStart">
+										Událost nemůže skončit dřív, než začne!
 									</div>
-
-									<button type="button" class="btn btn-success mb-3" id="newblockSubmit">Přidat nový blok</button>
-
-									<!--<select id="newblockPost" class="form-select mb-3" aria-label="Vybrat typ nového bloku">
-																																																																																																																																																																																																																																																	<option selected>Typ nového bloku</option>
-																																																																																																																																																																																																																																																	<option value="projekt">Projekt</option>
-																																																																																																																																																																																																																																																	<option value="post">Příspěvek</option>
-																																																																																																																																																																																																																																																</select>-->
+									<div class="form-check form-switch mb-3">
+										{{ form_row(newEventForm.privacy) }}
+									</div>
+									{{ form_row(newEventForm.description) }}
+									{{ form_row(newEventForm.submit) }}
+									{{ form_end(newEventForm) }}
 								</div>
+
 							{% endif %}
+
+							{% if session.get('id') in projectMembers %}
+								{% for event in project.events|sort((a, b) => a.start <=> b.start) %}
+									{% include "project/event.html.twig" %}
+								{% endfor %}
+
+							{% else %}
+								{% for event in project.events|sort((a, b) => a.start <=> b.start) %}
+									{% if event.privacy == 0 %}
+										{% include "project/event.html.twig" %}
+									{% endif %}
+								{% endfor %}
+							{% endif %}
+
 						</div>
 						<div
 							class="tab-pane fade" id="media" role="tabpanel" aria-labelledby="media-tab">

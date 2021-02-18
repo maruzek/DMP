@@ -83,6 +83,7 @@ class AdminController extends AbstractController
         ], new Response('', 401));
     }
 
+
     /**
      * @Route("/projekty", name="projects")
      */
@@ -150,7 +151,7 @@ class AdminController extends AbstractController
                     /** @var UploadedFile $file*/
                     foreach ($media as $file) {
                         $ext = $file->guessClientExtension();
-                        if ($ext == "jpeg" || $ext == "jpg" || $ext == "jfif" || $ext == "png") {
+                        if ($ext == "jpeg" || $ext == "jpg" || $ext == "png") {
                             $height = getimagesize($file)[1];
                             if ($height) {
                                 //TODO Přidat velikost 480 zpět do ifu
@@ -690,6 +691,56 @@ class AdminController extends AbstractController
                 }
             }
 
+
+
+            $defaultContext = [
+                AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => function ($object, $format, $context) {
+                    return $object->getId();
+                },
+            ];
+            $encoders = [
+                new JsonEncoder()
+            ];
+            $normalizers = [
+                new ObjectNormalizer(null, null, null, null, null, null, $defaultContext)
+            ];
+            $serializer = new Serializer($normalizers, $encoders);
+            $response = $serializer->serialize($result, 'json');
+            return new JsonResponse($response, 200, [], true);
+        } else if (!$this->auth->isAbsAdmin()) {
+            return new JsonResponse([
+                'type' => "error",
+                'message' => 'You are not an admin'
+            ], 401);
+        }
+
+        return new JsonResponse([
+            'type' => "error",
+            'message' => 'Not an AJAX request'
+        ], 500);
+    }
+
+    /**
+     * @Route("/deleteIndexBlock", name="deleteIndexBlock", methods={"POST"})
+     */
+    public function deleteIndexBlock(Request $request, ProjectRepository $projectRepository, UserRepository $userRepository, IndexBlockRepository $indexBlockRepository, PostRepository $postRepository)
+    {
+        if ($request->isXmlHttpRequest() && $this->auth->isAbsAdmin()) {
+            $id = $request->request->get('id');
+            $ib = $indexBlockRepository->find($id);
+
+            $result = "";
+            if ($ib) {
+                $em = $this->getDoctrine()->getManager();
+                $em->remove($ib);
+                if (!$em->flush()) {
+                    $result = "success";
+                } else {
+                    $result = "dberror";
+                }
+            } else {
+                $result = "nonexistant";
+            }
 
 
             $defaultContext = [

@@ -2,10 +2,11 @@
 
 {% block body %}
 	<div class="table-responsive">
-		<table class="table table-striped table-hover text-center">
+		<table class="table table-striped table-hover text-center align-middle">
 			<thead>
 				<th>Jméno</th>
 				<th>Hlavní správce</th>
+				<th>Navštívit</th>
 			</thead>
 			<tbody>
 				{% for project in allProjects %}
@@ -17,31 +18,13 @@
 							<td>
 								{{ project.admin.firstname ~ ' ' ~ project.admin.lastname }}
 							</td>
+							<td>
+								<a href="{{ path('project.project', {id: project.id}) }}" class="btn btn-primary">Otevřít</a>
+							</td>
 						</tr>
 					</a>
 				{% endfor %}
 			</tbody>
 		</table>
-	</div>
-	<div id="controls" class="carousel slide" data-bs-ride="carousel">
-		<div class="carousel-inner">
-			<div class="carousel-item active">
-				<img src="/img/media/_42da498758b6af82effc939e95bd2b12.jpeg" class="d-block w-100" alt="post media">
-			</div>
-			<div class="carousel-item ">
-				<img src="/img/media/_71ce17615409dec1f1022b653daabe37.jpeg" class="d-block w-100" alt="post media">
-			</div>
-			<div class="carousel-item ">
-				<img src="/img/media/_1488fddcb24d3c8fa775675fac0ee6b2.png" class="d-block w-100" alt="post media">
-			</div>
-		</div>
-		<a class="carousel-control-prev" type="button" data-bs-target="#controls" data-bs-slide="prev">
-			<span class="carousel-control-prev-icon" aria-hidden="true"></span>
-			<span class="visually-hidden">Previous</span>
-		</a>
-		<a class="carousel-control-next" type="button" data-bs-target="#controls" data-bs-slide="next">
-			<span class="carousel-control-next-icon" aria-hidden="true"></span>
-			<span class="visually-hidden">Next</span>
-		</a>
 	</div>
 {% endblock %}
