@@ -51,26 +51,25 @@
 									{{ session.get('firstName') ~ ' ' ~ session.get('lastName') }}
 								</a>
 								<ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-									{% for role in session.get('role') %}
-										{% if role == "ROLE_ADMIN" %}
-											<li>
-												<a class="dropdown-item" href="{{ path('user.projects', {username: session.get('username')}) }}">
-													<i class="fas fa-user-cog"></i>
-													Moje projekty
-												</a>
-											</li>
-											<li><hr class="dropdown-divider"></li>
-										{% endif %}
-									{% endfor %}
+									{% if session.get('role') == "admin" %}
+										<li>
+											<a class="dropdown-item" href="{{ path('user.projects', {username: session.get('username')}) }}">
+												<i class="fas fa-user-cog"></i>
+												Moje projekty
+											</a>
+										</li>
+										<li>
+											<a class="dropdown-item" href="{{ path('admin.index') }}">
+												<i class="fas fa-user-shield"></i>
+												Administrátorské prostředí
+											</a>
+										</li>
+										<li><hr class="dropdown-divider"></li>
+									{% endif %}
 									<li>
 										<a class="dropdown-item" href="{{ path('user.profile', {username: session.get('username')}) }}">
 											<i class="fas fa-user"></i>
 											Můj Profil
-										</a>
-									</li>
-									<li>
-										<a class="dropdown-item" href="#">
-											<button type="button" class="btn btn-primary">Odhlásit se</button>
 										</a>
 									</li>
 								</ul>
@@ -101,7 +100,9 @@
 
 
 					{% block footer %}
-						<footer class="container-fluid"></footer>
+						<footer class="container-fluid">
+							<p>&copy; Martin Růžek 2021</p>
+						</footer>
 					{% endblock %}
 
 					{% block javascripts %}

@@ -355,7 +355,7 @@
 											<div class="project-post-wrapper {{ palette.post }}" id="post-{{ post.id }}">
 												<div class="post-textcontent">
 													<div class="project-post-profilepic">
-														<img src="http://localhost:8081/img/userimg/{{ post.author.image }}" alt="">
+														<img src="/img/userimg/{{ post.author.image }}" alt="">
 													</div>
 													<div class="project-post-content w-100">
 														<p class="project-post-author w-100">{{ post.author.firstName ~ ' ' ~ post.author.lastName }}
@@ -375,7 +375,7 @@
 													{% endif %}
 												</div>
 												<div class="post-media d-block mx-auto">
-													<div class="fotorama">
+													<div class="fotorama mw-100">
 														{% for img in post.media %}
 															{% if img.type == "post" %}
 																<img src="/img/media/{{ img.name }}" class="d-block mw-100 h-50 mx-auto" alt="post media">
@@ -394,7 +394,7 @@
 										<div class="project-post-wrapper {{ palette.post }}" id="post-{{ post.id }}">
 											<div class="post-textcontent">
 												<div class="project-post-profilepic">
-													<img src="http://localhost:8081/img/userimg/{{ post.author.image }}" alt="">
+													<img src="/img/userimg/{{ post.author.image }}" alt="">
 												</div>
 												<div class="project-post-content w-100">
 													<p class="project-post-author w-100">{{ post.author.firstName ~ ' ' ~ post.author.lastName }}
@@ -414,7 +414,7 @@
 												{% endif %}
 											</div>
 											<div class="post-media d-block mx-auto">
-												<div class="fotorama">
+												<div class="fotorama mw-100">
 													{% for img in post.media %}
 														{% if img.type == "post" %}
 															<img src="/img/media/{{ img.name }}" class="d-block mw-100 h-50 mx-auto" alt="post media">
@@ -430,19 +430,6 @@
 
 								{% endif %}
 							{% endfor %}
-
-
-							<div class="project-post-wrapper {{ palette.post }}">
-								<div class="project-post-profilepic">
-									<img src="http://localhost:8081/img/logo1.jpg" alt="">
-								</div>
-								<div class="project-post-content">
-									<p class="project-post-author">Václav Klečka ml.
-										<span class="badge bg-danger">správce koroužku</span>
-									</p>
-									<p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Maiores velit, consequatur eos dolore, eum nihil atque eius reprehenderit fuga veritatis, id perferendis placeat fugit dolores. Doloremque ipsum excepturi impedit. Minus.</p>
-								</div>
-							</div>
 						</div>
 						<div class="tab-pane fade" id="clenove" role="tabpanel" aria-labelledby="clenove-tab">
 							{% if session.get('id') == project.admin.id or session.get('id') in projectAdmins %}

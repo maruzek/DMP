@@ -20,7 +20,7 @@ class Authentication
     {
         if (!$this->session->get('id') == null) {
             $user = $this->userRepository->find($this->session->get('id'));
-            if (in_array("ROLE_ADMIN", $user->getRoles())) {
+            if ($user->getRole() == "admin") {
                 return true;
             } else {
                 return false;
@@ -29,27 +29,6 @@ class Authentication
             return false;
         }
     }
-
-    /*
-    public function __constructor($id)
-    {
-        $this->userId = $id;
-    }
-
-    public function isAbsAdmin(SessionInterface $session, UserRepository $userRepository): bool
-    {
-        $this->session = $session;
-        if (!$session->get('id') == null) {
-            $user = $userRepository->find($session->get('id'));
-            if (in_array("ROLE_ADMIN", $user->getRoles())) {
-                return true;
-            } else {
-                return false;
-            }
-        } else {
-            return false;
-        }
-    }*/
 
     public function isLoggedUser($id): bool
     {

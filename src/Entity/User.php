@@ -45,9 +45,9 @@ class User
     private $tag;
 
     /**
-     * @ORM\Column(type="json")
+     * @ORM\Column(type="string", length=6)
      */
-    private $roles = [];
+    private $role = "user";
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
@@ -83,11 +83,6 @@ class User
      * @ORM\OneToMany(targetEntity=Media::class, mappedBy="uploader")
      */
     private $media;
-
-    /**
-     * @ORM\Column(type="json", nullable=true)
-     */
-    private $admin;
 
     /**
      * @ORM\OneToMany(targetEntity=ProjectAdmin::class, mappedBy="user")
@@ -171,22 +166,6 @@ class User
     public function setTag(string $tag): self
     {
         $this->tag = $tag;
-
-        return $this;
-    }
-
-    public function getRoles(): array
-    {
-        return $this->roles;
-
-        $roles[] = 'ROLE_USER';
-
-        return array_unique($roles);
-    }
-
-    public function setRoles(array $roles): self
-    {
-        $this->roles = $roles;
 
         return $this;
     }
@@ -365,18 +344,6 @@ class User
         return $this;
     }
 
-    public function getAdmin(): ?array
-    {
-        return $this->admin;
-    }
-
-    public function setAdmin(array $admin): self
-    {
-        $this->admin = $admin;
-
-        return $this;
-    }
-
     /**
      * @return Collection|ProjectAdmin[]
      */
@@ -433,6 +400,18 @@ class User
                 $event->setAdmin(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getRole(): ?string
+    {
+        return $this->role;
+    }
+
+    public function setRole(string $role): self
+    {
+        $this->role = $role;
 
         return $this;
     }
