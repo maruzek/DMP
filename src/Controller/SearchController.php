@@ -28,7 +28,6 @@ class SearchController extends AbstractController
         $searchUsers = $searchQ[0];
         $searchPosts = $searchQ[1];
         $searchProjects = $searchQ[2];
-        dump($searchQ);
 
         //'searchPosts' => $searchQ[1],
         //'searchUsers' => $searchQ[0],

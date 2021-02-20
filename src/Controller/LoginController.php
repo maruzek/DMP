@@ -45,7 +45,7 @@ class LoginController extends AbstractController
 
             //get the user data
             $data = file_get_contents($ssoUserDataRequestingUrl);
-            //die;
+
             $strposLogin = strpos($data, "login");
             $strposName = strpos($data, "name");
             $strposGroup = strpos($data, "group");
@@ -152,6 +152,35 @@ class LoginController extends AbstractController
             $this->session->set('tag', $tag);
             $this->session->set('id', $user->getId());
             $this->session->set('user', $user);
+
+            $responseFile = file_get_contents(__DIR__ . '/../response.json');
+            $json = json_decode($responseFile, true);
+
+            $newResponse = [
+                'username' => $username,
+                'group' => $expOu[1],
+                'response' => $data
+            ];
+            $alreadyInFile = false;
+            if ($json != null) {
+                foreach ($json as $user) {
+                    if ($user['username']) {
+                        if ($user['username'] != $username) {
+                            $alreadyInFile = true;
+                            break;
+                        }
+                    }
+                }
+            } else {
+                $alreadyInFile = true;
+            }
+
+
+            if ($alreadyInFile) {
+                array_push($json, $newResponse);
+                $json = json_encode($json);
+                file_put_contents(__DIR__ . '/../response.json', $json);
+            }
 
             return $this->redirect('/');
         } else {

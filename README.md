@@ -12,24 +12,37 @@
 * Psaní aktualit správci 
 * Tvorba kalendáře s možností vkládání událostí a notifikací na e-maily členů projektu.
 
+### Popis
+
+* Aplikace je naprogramovaná v PHP
+* Běží na frameworku Symfony
+* Frontend je postavený na Bootstrapu 5 (použitá je avšak i jQuery)
+
 ## TODO
 
-* [ ] Search
-* [ ] Knihovna obrázků
-* [ ] Profilové obrázky
+* [ ] Dokumentace / Textová část DMP
+* [ ] Okomentování kódů
+* [ ] Vyhladit a zdokonalit kód k co největší dokonalosti
 * [ ] Zmeškané notifikace
 * [ ] Autodetekce linků
-* [ ] Content jen pro členy
-* [ ] Logout
-* [ ] Role
-* [ ] Absolutní admin
-* [ ] Zobrazeno
-* [ ] Koš
+* [ ] Email
+* [ ] Error pages
+* [ ] Sjednocení designu
+* [ ] Výpis jen části příspěvků
+* [ ] Identifikátor počtu znaků v příspěvku apodob.
+* [ ] Označení příspěvků jen pro členy
+* [ ] Úprava zabezpečení
+* [ ] Crop obrázků v pozadí
+* [ ] Přizpůsobení pro tisk
+* [ ] Ošetření formů
+* [ ] Aktivní záložka v navbaru
+* [ ] Editace / smazání příspěvku administrátorem
+* [ ] Galerie
+* [x] Content jen pro členy
+* [x] Role
+* [x] Absolutní admin
+* [x] Zobrazeno
+* [x] Koš
+* [x] Search
+* [x] Profilové obrázky
 
-### Představa
-
-*Zatím nic*
-
-#### Random poznákmy
-
-Web by měl běžet na Symfony

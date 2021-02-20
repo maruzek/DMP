@@ -429,8 +429,11 @@ class ProjectController extends AbstractController
         if ($request->isXmlHttpRequest()) {
             $postid = $request->request->get('id');
             $post = $postRepository->find($postid);
-
-            $result = $seenRepository->findBy(['post' => $post]);
+            $result = [];
+            $seens = $seenRepository->findBy(['post' => $post]);
+            foreach ($seens as $seen) {
+                array_push($result, $seen->getUser()->getFirstname() . " " . $seen->getUser()->getLastname());
+            }
 
 
             $defaultContext = [

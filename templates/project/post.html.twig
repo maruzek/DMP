@@ -1,0 +1,35 @@
+<div class="project-post-wrapper {{ palette.post }}" id="post-{{ post.id }}">
+	<div class="post-textcontent">
+		<div class="project-post-profilepic">
+			<img src="/img/userimg/{{ post.author.image }}" alt="">
+		</div>
+		<div class="project-post-content w-100">
+			<p class="project-post-author w-100">{{ post.author.firstName ~ ' ' ~ post.author.lastName }}
+				<br>
+				<span class="badge bg-primary">{{ post.author.tag }}</span>
+				<span class="badge bg-light text-dark">{{ post.author.class }}</span>
+			</p>
+			<p id="postText-{{ post.id }}">{{ post.text }}</p>
+		</div>
+		{% if post.author.id == session.get('id')%}
+			<p data-bs-toggle="modal" class="editPostModalTrigger m-1" data-bs-target="#editPostModal" data-bs-editpost-text="{{ post.text }}" data-bs-editpost-private="{{ post.privacy }}" data-bs-editpost-id="{{ post.id }}" data-edit-post-id="{{ post.id }}">
+				<i class="fas fa-pen"></i>
+			</p>
+			<p class="post-card-trash-icon m-1" id="delPostTrigger" data-deletepost-id="{{ post.id }}">
+				<i class="fas fa-trash"></i>
+			</p>
+		{% endif %}
+	</div>
+	<div class="post-media d-block mx-auto">
+		<div class="fotorama mw-100">
+			{% for img in post.media %}
+				{% if img.type == "post" %}
+					<img src="/img/media/{{ img.name }}" class="d-block mw-100 h-50 mx-auto" alt="post media">
+				{% endif %}
+			{% endfor %}
+		</div>
+	</div>
+	<div class="post-seens-div d-flex justify-content-end">
+		<i class="fas fa-eye post-seens" data-bs-toggle="modal" data-bs-target="#seensModal" data-bs-postid="{{ post.id }}"></i>
+	</div>
+</div>

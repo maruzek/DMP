@@ -725,17 +725,21 @@ if (delherobtn != null) {
 
 // Post seens
 
-var seensModal = document.getElementById('seensModal')
+let seensModal = document.getElementById('seensModal')
 
 if (seensModal != null) {
   seensModal.addEventListener('show.bs.modal', function (event) {
     // Button that triggered the modal
-    var button = event.relatedTarget
+    const button = event.relatedTarget
     // Extract info from data-bs-* attributes
-    var postid = button.getAttribute('data-bs-postid')
+    const postid = button.getAttribute('data-bs-postid')
     // If necessary, you could initiate an AJAX request here
     // and then do the updating in a callback.
     //
+
+    const tbody = seensModal.querySelector('#seens-modal-tbody')
+    tbody.innerHTML = ''
+    
     $.ajax({
       type: "POST",
       url: "/projekt/getPostSeens",
@@ -744,15 +748,20 @@ if (seensModal != null) {
       }
     }).then((response) => {
       console.log(response)
+      for (let i = 0; i < response.length; i++) {
+        const tr = document.createElement("TR")
+        const element = response[i]
+        console.log(element)
+        let name = document.createElement('TD')
+        name.innerHTML = element
+        tr.appendChild(name)
+
+        tbody.appendChild(tr)
+      }
 
     }).catch((error) => {
       console.error(error)
     })
-    // Update the modal's content.
-    var modalTitle = seensModal.querySelector('.modal-title')
-    var modalBodyInput = seensModal.querySelector('.modal-body input')
-
-    modalTitle.textContent = 'Post ID: ' + postid
   })
 }
 
@@ -780,7 +789,7 @@ if (newEventBtn != null) {
         newEventSubmit.classList.add('disabled')
       }
 
-    } else if(newEventEnd.value > newEventStart.value && newEventEndBeforeStart.classList.contains('d-block')) {
+    } else if (newEventEnd.value > newEventStart.value && newEventEndBeforeStart.classList.contains('d-block')) {
       newEventEndBeforeStart.classList.remove('d-block')
       newEventEndBeforeStart.classList.add('d-none')
       newEventSubmit.classList.remove('disabled')
@@ -795,7 +804,7 @@ if (newEventBtn != null) {
         newEventSubmit.classList.add('disabled')
       }
 
-    } else if(newEventEnd.value > newEventStart.value && newEventEndBeforeStart.classList.contains('d-block')) {
+    } else if (newEventEnd.value > newEventStart.value && newEventEndBeforeStart.classList.contains('d-block')) {
       newEventEndBeforeStart.classList.remove('d-block')
       newEventEndBeforeStart.classList.add('d-none')
       newEventSubmit.classList.remove('disabled')
@@ -807,11 +816,11 @@ if (newEventBtn != null) {
 
 const removeIbBtn = document.querySelectorAll('.removeIndexBlock')
 
-if(removeIbBtn != null) {
+if (removeIbBtn != null) {
   for (let i = 0; i < removeIbBtn.length; i++) {
     const element = removeIbBtn[i];
     const id = element.getAttribute('id').split('-')[1]
-    
+
     element.addEventListener('click', () => {
       $.ajax({
         type: "POST",
@@ -822,14 +831,14 @@ if(removeIbBtn != null) {
       }).then((response) => {
         console.log(response)
 
-        if(response == "success") {
+        if (response == "success") {
           $('#toast-delIB-success').toast('show')
-        } else if(response == "dberror") {
+        } else if (response == "dberror") {
           $('#toast-delIB-dberror').toast('show')
-        } else if(response == "nonexistant") {
+        } else if (response == "nonexistant") {
           $('#toast-delIB-nonexistant').toast('show')
         }
-  
+
       }).catch((error) => {
         console.error(error)
       })
