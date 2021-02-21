@@ -34,10 +34,11 @@
 * [ ] Úprava zabezpečení
 * [ ] Crop obrázků v pozadí
 * [ ] Přizpůsobení pro tisk
-* [ ] Ošetření formů
+* [ ] Ošetření (validace) formů
 * [ ] Aktivní záložka v navbaru
 * [ ] Editace / smazání příspěvku administrátorem
 * [ ] Galerie
+* [ ] Velikosti obrázků (moc velké obrázky nedokáže zpracovat)
 * [x] Content jen pro členy
 * [x] Role
 * [x] Absolutní admin
