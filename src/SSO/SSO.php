@@ -1,8 +1,8 @@
 <?php
 
-namespace App\SSO\SSOResponse;
+namespace App\SSO;
 
-class SSOResponse
+class SSO
 {
     private $response;
 

@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Repository\UserRepository;
-use App\SSO\SSOResponse\SSOResponse;
+use App\SSO\SSO;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\FrameworkBundle\Routing\Router;
 use Symfony\Component\HttpFoundation\Response;
@@ -63,7 +63,7 @@ class LoginController extends AbstractController
             $json = json_encode($json);
             file_put_contents(__DIR__ . '/../response.json', $json);
 
-            $sso = new SSOResponse($data);
+            $sso = new SSO($data);
             $ssoData = $sso->getAllData();
 
             $userDB = $userRepository->findOneBy(['username' => $ssoData['login']]);
@@ -103,9 +103,11 @@ class LoginController extends AbstractController
             return $this->redirect($ssoUrl);
         }
 
-        return $this->render('login/index.html.twig', [
+        return $this->redirect('/');
+
+        /*return $this->render('login/index.html.twig', [
             'controller_name' => 'LoginController',
             'session' => $session
-        ]);
+        ]);*/
     }
 }

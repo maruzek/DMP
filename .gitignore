@@ -28,4 +28,4 @@
 package-lock.json
 
 responseUC.txt
-src/response.json
+/src/response.json
