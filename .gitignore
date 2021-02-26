@@ -27,3 +27,5 @@
 /node_modules
 package-lock.json
 
+responseUC.txt
+src/response.json

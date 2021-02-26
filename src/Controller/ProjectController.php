@@ -645,6 +645,7 @@ class ProjectController extends AbstractController
                     $mediaError = "";
                     $settingsForm->handleRequest($request);
                     if ($settingsForm->isSubmitted()) {
+
                         // Zpracování profilového obrázku
                         $file = $request->files->get('project_settings')["attach"];
                         if ($file) {
