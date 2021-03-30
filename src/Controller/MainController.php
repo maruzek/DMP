@@ -3,8 +3,11 @@
 namespace App\Controller;
 
 use App\Form\SearchType;
+use App\PostSeens\PostSeens;
 use App\Repository\IndexBlockRepository;
+use App\Repository\PostRepository;
 use App\Repository\ProjectRepository;
+use App\Repository\UserRepository;
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,13 +18,34 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 class MainController extends AbstractController
 {
     private $session;
+    private $postSeens;
+
+    public function __construct(PostRepository $postRepository, UserRepository $userRepository, SessionInterface $session)
+    {
+        $this->postSeens = new PostSeens($postRepository, $userRepository, $session);
+    }
 
     /**
      * @Route("/", name="main")
      */
-    public function index(SessionInterface $session, IndexBlockRepository $indexBlockRepository)
+    public function index(SessionInterface $session, IndexBlockRepository $indexBlockRepository, PostRepository $postRepository, UserRepository $userRepository)
     {
         $this->session = $session;
+
+        if ($session->get('username') != null) {
+            $user = $userRepository->find($session->get('id'));
+
+            /*foreach ($user->getMembers() as $member) {
+                dump($member->getProject()->getName());
+            }
+            dump($user->getMembers());
+            die;*/
+            return $this->render('logged.html.twig', [
+                'controller_name' => 'MainController',
+                'session' => $session,
+                'posts' => $this->postSeens->whatUserHasntSeen()
+            ]);
+        }
 
 
         return $this->render('main.html.twig', [

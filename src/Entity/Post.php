@@ -34,11 +34,14 @@ class Post
 
     /**
      * @ORM\Column(type="string", length=1000, nullable=true)
+     * @Assert\Length(
+     *      max = 1000
+     * )
      */
     private $text;
 
     /**
-     * @ORM\Column(type="integer", nullable=true)
+     * @ORM\Column(type="integer", nullable=true) 
      */
     private $privacy;
 
@@ -48,14 +51,14 @@ class Post
     private $media;
 
     /**
-     * @ORM\OneToMany(targetEntity=Seen::class, mappedBy="post", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity=Seen::class, mappedBy="post", orphanRemoval=true)     * 
      */
     private $seens;
 
     /**
      * @ORM\Column(type="boolean")
      */
-    private $deleted;
+    private $deleted = false;
 
     public function __construct()
     {

@@ -18,6 +18,7 @@ use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
  * @Route("/user", name="user.")
@@ -71,7 +72,7 @@ class UserController extends AbstractController
     /**
      * @Route("/{username}", name="profile")
      */
-    public function index($username, SessionInterface $session, UserRepository $userRepository, Request $request): Response
+    public function index($username, SessionInterface $session, UserRepository $userRepository, Request $request, ValidatorInterface $validator): Response
     {
         $this->session = $session;
 
@@ -79,79 +80,23 @@ class UserController extends AbstractController
             $form = $this->createForm(UserSettingsType::class, $user);
             $form->handleRequest($request);
             if ($form->isSubmitted()) {
-                $file = $request->files->get('user_settings')["attach"];
-                if ($file) {
-                    $img = new ImageCrop($file, $this->getParameter('user_pic'), $this->getDoctrine()->getManager());
-                    if ($img->cropUserImage($user)) {
-                        $filestatus = "success";
-                    } else {
-                        $filestatus = "fail";
+                if (count($validator->validate($user)) <= 0) {
+                    $file = $request->files->get('user_settings')["attach"];
+                    if ($file) {
+                        $img = new ImageCrop($file, $this->getParameter('user_pic'), $this->getDoctrine()->getManager());
+                        if ($img->cropUserImage($user)) {
+                            $filestatus = "success";
+                        } else {
+                            $filestatus = "fail";
+                        }
                     }
-                    /*$ext = $file->guessClientExtension();
-                    if ($ext == "jpeg" || $ext == "jpg" || $ext == "png") {
-                        $ext = "jpeg";
-                        $filename = md5(uniqid()) . '.' . $ext;
-                        if ($ext == "jpeg" || $ext == "jpg") {
-                            //$im = imagecreatefromjpeg($file);
-                            $im = imagecreatefromjpeg($file);
-                            $x = imagesx($im);
-                            $y = imagesy($im);
-                            if ($x > $y) {
-                                $crop = imagecrop($im, ['x' => $x / 4, 'y' => 0, 'width' => $y, 'height' => $y]);
-                            } else if ($x < $y) {
-                                $crop = imagecrop($im, ['x' => 0, 'y' => $y / 4, 'width' => $x, 'height' => $x]);
-                            } else if ($x == $y) {
-                                $file->move(
-                                    $this->getParameter('user_pic'),
-                                    $filename
-                                );
-                            }
-    
-                            //$crop = imagecrop($im, ['x' => max(imagesx($im), imagesy($im)) / 4, 'y' => 0, 'width' => min(imagesx($im), imagesy($im)), 'height' => min(imagesx($im), imagesy($im))]);
-                            if ($crop !== false && $x !== $y) {
-                                imagedestroy($im);
-                                imagejpeg($crop, $this->getParameter('user_pic') . '/' . $filename);
-                            }
-                            imagedestroy($crop);
-                        } else if ($ext == "png") {
-                            $im = imagecreatefrompng($file);
-                            $x = imagesx($im);
-                            $y = imagesy($im);
-                            if ($x > $y) {
-                                $crop = imagecrop($im, ['x' => $x / 4, 'y' => 0, 'width' => $y, 'height' => $y]);
-                            } else if ($x < $y) {
-                                $crop = imagecrop($im, ['x' => 0, 'y' => $y / 4, 'width' => $x, 'height' => $x]);
-                            } else if ($x == $y) {
-                                $file->move(
-                                    $this->getParameter('user_pic'),
-                                    $filename
-                                );
-                            }
-    
-                            if ($crop !== false && $x !== $y) {
-                                imagedestroy($im);
-                                $file = imagepng($crop, $this->getParameter('user_pic') . '/' . $filename);
-                            }
-                        }
-    
-                        
-                        $file->move(
-                            $this->getParameter('user_pic'),
-                            $filename
-                        );
-                        if (file_exists('img/userimg/' . $user->getImage()) && $user->getImage() != 'default.png') {
-                            unlink($this->getParameter('user_pic') . '/' . $user->getImage());
-                        }
-    
-                        $user->setImage($filename);
-                    } else {
-                        $fileError = "badext";
-                    }*/
-                }
 
-                $em = $this->getDoctrine()->getManager();
-                $em->flush();
-                $status = "success";
+                    $em = $this->getDoctrine()->getManager();
+                    $em->flush();
+                    $status = "success";
+                } else {
+                    //! ERROR
+                }
             }
 
             $publicPosts = [];

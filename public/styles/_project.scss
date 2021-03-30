@@ -335,6 +335,26 @@
     display: none;
 }
 
+.event-setting-btn {
+    color: rgb(131, 131, 131);
+    transition: .2s;
+    cursor: pointer;
+
+    &:hover {
+        color: rgb(110, 110, 110);
+    }
+}
+
+.event-delete-btn {
+    color: rgb(131, 131, 131);
+    transition: .2s;
+    cursor: pointer;
+
+    &:hover {
+        color: rgb(110, 110, 110);
+    }
+}
+
 
 /*
 @media screen and (max-width: 1920px) {

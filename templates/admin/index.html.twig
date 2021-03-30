@@ -78,6 +78,51 @@
 		</div>
 	</div>
 
+	<div class="toast position-absolute mt-5 top-0 start-0" id="toast-deluser-success">
+		<div class="toast-header">
+			<strong class="me-auto">Uživatel</strong>
+		</div>
+		<div class="toast-body">
+			Smazání proběhlo v pořádku
+		</div>
+	</div>
+
+	<div class="toast position-absolute mt-5 top-0 start-0" id="toast-deluser-dbfail">
+		<div class="toast-header">
+			<strong class="me-auto">Uživatel</strong>
+		</div>
+		<div class="toast-body">
+			Někde se stala chyba, zkuste to prosím později.
+		</div>
+	</div>
+
+	<div class="toast position-absolute mt-5 top-0 start-0" id="toast-delAbsAdmin-success">
+		<div class="toast-header">
+			<strong class="me-auto">Admin</strong>
+		</div>
+		<div class="toast-body">
+			Admin byl úspěšně odstraněn
+		</div>
+	</div>
+
+	<div class="toast position-absolute mt-5 top-0 start-0" id="toast-delAbsAdmin-dbfail">
+		<div class="toast-header">
+			<strong class="me-auto">Admin</strong>
+		</div>
+		<div class="toast-body">
+			Někde se stala chyba, zkuste to prosím později.
+		</div>
+	</div>
+
+	<div class="toast position-absolute mt-5 top-0 start-0" id="toast-delAbsAdmin-toofewadmins">
+		<div class="toast-header">
+			<strong class="me-auto">Admin</strong>
+		</div>
+		<div class="toast-body">
+			Vždy musí být určeni alespoň dva správci v jednu chvíli!
+		</div>
+	</div>
+
 {% endblock %}
 
 {% block fluid %}
@@ -103,6 +148,11 @@
 					<a class="dropdown-item" href="{{ path('admin.newProject') }}">Nový projekt</a>
 				</li>
 			</ul>
+		</li>
+		<li class="nav-item flex-sm-fill" role="presentation">
+			<a class=" text-sm-center nav-link" data-bs-toggle="pill" href="#admins" role="tab" aria-controls="admins" aria-selected="true">
+				Správci aplikace
+			</a>
 		</li>
 		<li class="nav-item flex-sm-fill" role="presentation">
 			<a class=" text-sm-center nav-link" data-bs-toggle="pill" href="#statistiky" role="tab" aria-controls="statistiky" aria-selected="true">
@@ -150,10 +200,10 @@
 						<button type="button" class="btn btn-success mb-3" id="newblockSubmit">Přidat nový blok</button>
 
 						<!--<select id="newblockPost" class="form-select mb-3" aria-label="Vybrat typ nového bloku">
-																																																																																																																																																																																																																																																	<option selected>Typ nového bloku</option>
-																																																																																																																																																																																																																																																	<option value="projekt">Projekt</option>
-																																																																																																																																																																																																																																																	<option value="post">Příspěvek</option>
-																																																																																																																																																																																																																																																</select>-->
+																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																															<option selected>Typ nového bloku</option>
+																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																															<option value="projekt">Projekt</option>
+																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																															<option value="post">Příspěvek</option>
+																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																														</select>-->
 					</div>
 					{% for block in allIndexBlocksArray %}
 						{% if block.type == "project" %}
@@ -172,52 +222,122 @@
 					{% endfor %}
 				</div>
 			</div>
-			<div class="tab-pane fade" id="statistiky" role="tabpanel" aria-labelledby="statistiky">statistiky</div>
-			<div class="tab-pane fade" id="uzivatele" role="tabpanel" aria-labelledby="uzivatele">
-				<div class="form-floating mb-3 mt-3">
-					<input type="text" class="form-control" id="searchUserInput" placeholder="Hledat...">
-					<label for="searchUser">Hledat uživatele</label>
+
+			<div class="tab-pane fade" id="admins" role="tabpanel" aria-labelledby="admins">
+				<h2 class="m-3">Správci aplikace</h2>
+				<p class="m-3">Zde můžete upravovat ostatní správce této stránky.</p>
+				<div class="alert alert-danger" role="alert">
+					Vždy musí být určeni alespoň dva správci v jednu chvíli!
 				</div>
-				<div class="table-responsive mt-3">
-					<table class="table table-striped table-hover text-center">
+
+				<h4 class="m-3">Seznam správců</h4>
+				<div class="table-responsive">
+					<table class="table table-striped table-hover text-center align-middle">
 						<thead>
 							<tr>
 								<th scope="col">ID</th>
 								<th scope="col">Jméno</th>
+								<th scope="col">Uživatel jméno</th>
 								<th scope="col">Třída</th>
-								<th scope="col">Uživatelské jméno</th>
 								<th scope="col">Tag</th>
-								<th scope="col">Zobrazit profil</th>
-								<th scope="col">Spravovat</th>
-								<th scope="col">Smazat</th>
+								<th scope="col">Profil</th>
+								<th scope="col">Odstranit</th>
 							</tr>
 						</thead>
-						<tbody class="align-middle" id="allUsers-tbody"></tbody>
+						<tbody>
+							{% for user in allUsers %}
+								{% if user.role == "admin" %}
+									<tr id="delAbsAdmin-tr-{{ user.id }}">
+										<th scope="row">{{ user.id }}</th>
+										<td>{{ user.firstname ~ ' ' ~ user.lastname }}</td>
+										<td>{{ user.username }}</td>
+										<td>{{ user.class }}</td>
+										<td>{{ user.tag }}</td>
+										<td>
+											<a href="{{ path('user.profile', {username: user.username }) }}" class="btn btn-primary" target="_blank">Zobrazit</a>
+										</td>
+										<td>
+											<button class="btn btn-danger delAbsAdmin" data-admin-id="{{ user.id }}">Odstranit</button>
+										</td>
+									</tr>
+								{% endif %}
+							{% endfor %}
+						</tbody>
 					</table>
 				</div>
+
+				<h4 class="m-3">Přidat nového správce</h4>
+				<div class="m-3">
+					{{ form(newAdminForm) }}
+					</div>
+
+				</div>
+
+				<div class="tab-pane fade" id="statistiky" role="tabpanel" aria-labelledby="statistiky">statistiky</div>
+				<div class="tab-pane fade" id="uzivatele" role="tabpanel" aria-labelledby="uzivatele">
+					<div class="form-floating mb-3 mt-3">
+						<input type="text" class="form-control" id="searchUserInput" placeholder="Hledat...">
+						<label for="searchUser">Hledat uživatele</label>
+					</div>
+					<div class="table-responsive mt-3">
+						<table class="table table-striped table-hover text-center">
+							<thead>
+								<tr>
+									<th scope="col">ID</th>
+									<th scope="col">Jméno</th>
+									<th scope="col">Třída</th>
+									<th scope="col">Uživatelské jméno</th>
+									<th scope="col">Tag</th>
+									<th scope="col">Zobrazit profil</th>
+									<th scope="col">Spravovat</th>
+									<th scope="col">Smazat</th>
+								</tr>
+							</thead>
+							<tbody class="align-middle" id="allUsers-tbody"></tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</main>
+
+		<!-- Edit User Modal -->
+		<div class="modal fade" id="editUserModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+			<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="staticBackdropLabel">Spravovat uživatele</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+					<div class="modal-body">
+						<button type="button" class="btn btn-danger m-3 admin-deluser-img">Smazat profilovou fotku</button>
+						<br>
+						<button type="button" class="btn btn-danger m-3 admin-deluser-desc">Smazat popisek</button>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zavřít</button>
+					</div>
+				</div>
 			</div>
 		</div>
-	</main>
 
-	<!-- Edit User Modal -->
-	<div class="modal fade" id="editUserModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-		<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title" id="staticBackdropLabel">Spravovat uživatele</h5>
-					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-				</div>
-				<div class="modal-body">
-					<button type="button" class="btn btn-danger m-3 admin-deluser-img">Smazat profilovou fotku</button>
-					<br>
-					<button type="button" class="btn btn-danger m-3 admin-deluser-desc">Smazat popisek</button>
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zavřít</button>
+		<!-- Delete User Modal -->
+		<div class="modal fade" id="modalDelUser" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="smodalDelUserLabel">Smazat uživatele?</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+					<div class="modal-body">
+						<p>Opravdu chcete uživatele vymazat? Tento krok již nepůjde navrátit.</p>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zrušit</button>
+						<button type="button" class="btn btn-danger admin-deluser-confirm" data-bs-dismiss="modal">Smazat</button>
+					</div>
 				</div>
 			</div>
 		</div>
-	</div>
 
 
-{% endblock %}
+	{% endblock %}

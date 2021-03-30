@@ -223,7 +223,7 @@ if (deletePostTrigger != null) {
         }).then((response) => {
           console.log(response)
           if (response == "success") {
-            let deletedPost = document.querySelector('#post-' + id).remove()
+            let deletedPost = document.querySelector('#post-' + id).parentElement.remove()
             $("#toast-delpost-success").toast("show")
           } else {
             console.log('chyba')
@@ -495,7 +495,7 @@ if (searchUserInput != null) {
             editBtn.innerHTML = '<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editUserModal" data-bs-userid="' + response[i].id + '">Spravovat</button>'
 
             let delBtn = document.createElement('TD')
-            delBtn.innerHTML = '<a class="btn btn-danger" id="admin-deluser">Smazat</a>'
+            delBtn.innerHTML = '<button type="button" class="btn btn-danger"  data-bs-toggle="modal" data-bs-target="#modalDelUser" data-bs-userid="' + response[i].id + '">Smazat</button>'
 
             tr.appendChild(id)
             tr.appendChild(name)
@@ -514,6 +514,48 @@ if (searchUserInput != null) {
         console.error(error)
       })
     }
+  })
+}
+
+// Delete user
+
+const delUserModal = document.getElementById('modalDelUser')
+if (delUserModal != null) {
+  delUserModal.addEventListener('show.bs.modal', function (event) {
+    // Button that triggered the modal
+    const button = event.relatedTarget
+    // Extract info from data-bs-* attributes
+    const id = button.getAttribute('data-bs-userid')
+    // If necessary, you could initiate an AJAX request here
+    // and then do the updating in a callback.
+    //
+    // Update the modal's content.
+    const confirmBtn = delUserModal.querySelector('.admin-deluser-confirm')
+
+    confirmBtn.addEventListener('click', () => {
+      $.ajax({
+        type: "POST",
+        url: "/admin/delUser",
+        data: {
+          id: id
+        }
+      }).then((response) => {
+        console.log(response)
+
+        if (response == "success") {
+          $('#toast-deluser-success').toast('show')
+
+          document.querySelector('#searchUserInput').value = ""
+          document.querySelector('#allUsers-tbody').textContent = ""
+        } else if (response == "dbfail") {
+          $('#toast-deluser-dbfail').toast('show')
+        }
+
+
+      }).catch((error) => {
+        console.error(error)
+      })
+    })
   })
 }
 
@@ -739,7 +781,7 @@ if (seensModal != null) {
 
     const tbody = seensModal.querySelector('#seens-modal-tbody')
     tbody.innerHTML = ''
-    
+
     $.ajax({
       type: "POST",
       url: "/projekt/getPostSeens",
@@ -845,3 +887,168 @@ if (removeIbBtn != null) {
     });
   }
 }
+
+// DelAbsAdmin
+
+const delAbsAdminBtns = document.querySelectorAll('.delAbsAdmin')
+
+if (delAbsAdminBtns != null) {
+  for (let i = 0; i < delAbsAdminBtns.length; i++) {
+    const element = delAbsAdminBtns[i];
+
+    element.addEventListener('click', () => {
+      if (confirm("Opravdu chcete tohoto administrátora odstranit?")) {
+        const id = element.getAttribute('data-admin-id')
+
+        $.ajax({
+          type: "POST",
+          url: "/admin/deleteAbsAdmin",
+          data: {
+            id: id
+          }
+        }).then((response) => {
+          console.log(response)
+
+          if (response == "success") {
+            $('#toast-delAbsAdmin-success').toast('show')
+            document.querySelector('#delAbsAdmin-tr-' + id).remove()
+          } else if (response == "dbfail") {
+            $('#toast-delAbsAdmin-dbfail').toast('show')
+          } else if (response == "toofewadmins") {
+            $('#toast-delAbsAdmin-toofewadmins').toast('show')
+          }
+
+        }).catch((error) => {
+          console.error(error)
+        })
+      }
+    })
+  }
+}
+
+// Edit event
+
+const eventSettingsModal = document.querySelector("#eventSettingsModal")
+
+if (eventSettingsModal != null) {
+
+  eventSettingsModal.addEventListener('show.bs.modal', function (event) {
+    // Button that triggered the modal
+    let button = event.relatedTarget
+    // Extract info from data-bs-* attributes
+    let name = button.getAttribute('data-bs-editevent-name')
+    let privacy = button.getAttribute('data-bs-editevent-privacy')
+    let location = button.getAttribute('data-bs-editevent-location')
+    let start = button.getAttribute('data-bs-editevent-start')
+    let end = button.getAttribute('data-bs-editevent-end')
+    let description = button.getAttribute('data-bs-editevent-description')
+    const id = button.getAttribute('data-bs-editevent-id')
+
+    // If necessary, you could initiate an AJAX request here
+    // and then do the updating in a callback.
+    //
+    // Update the modal's content. var modalBodyInput = editPostModal.querySelector('.modal-body input')
+    let nameForm = eventSettingsModal.querySelector('#editevent-name')
+    let privacyForm = eventSettingsModal.querySelector('#editevent-privacy')
+    let locationForm = eventSettingsModal.querySelector('#editevent-location')
+    let startForm = eventSettingsModal.querySelector('#editevent-start')
+    let endForm = eventSettingsModal.querySelector('#editevent-end')
+    let descriptionForm = eventSettingsModal.querySelector('#editevent-description')
+    nameForm.value = name
+    locationForm.value = location
+    startForm.value = start
+    endForm.value = end
+    descriptionForm.value = description
+    
+    if (privacy == 1) {
+      privacyForm.setAttribute('checked', 'true')
+    } else {
+      privacyForm.removeAttribute('checked')
+    }
+
+    const editEventBtn = eventSettingsModal.querySelector('#editevent-submit')
+
+    editEventBtn.addEventListener('click', (event) => {
+      $.ajax({
+        type: "POST",
+        url: "/projekt/editEvent",
+        data: {
+          id: id,
+          name: nameForm.value,
+          location: locationForm.value,
+          start: startForm.value,
+          end: endForm.value,
+          description: descriptionForm.value,
+          privacy: privacyForm.checked
+        }
+      }).then((response) => {
+        if (response == "success") {
+          $("#toast-editevent-success").toast("show")
+
+          document.querySelector('#event-' + id + '-name').textContent = nameForm.value
+          document.querySelector('#event-' + id + '-location').innerHTML = '<i class="fas fa-map-marker"></i> ' + locationForm.value
+          const options = { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' }
+          const newdateStart = new Date(startForm.value)
+          const newdateEnd = new Date(endForm.value)
+          document.querySelector('#event-'+id+'-date').innerHTML = newdateStart.toLocaleDateString('cs-cs', options) + ' až ' + newdateEnd.toLocaleDateString('cs-cs', options)
+          document.querySelector('#event-'+id+'-description').innerHTML = descriptionForm.value
+        } else if (response['result'] == "nochange") {
+          $("#toast-editevent-nochange").toast("show")
+        }
+      })
+
+    })
+  })
+
+}
+
+
+// Delete event
+
+const delEventBtns = document.querySelectorAll('.event-delete-btn')
+
+if(delEventBtns != null) {
+  for (let i = 0; i < delEventBtns.length; i++) {
+    const element = delEventBtns[i];
+    
+    element.addEventListener('click', () => {
+      if(confirm('Opravdu chcete tuto událost smazat?')) {
+        const id = element.getAttribute('data-delevent-id')
+
+        $.ajax({
+          type: "POST",
+          url: "/projekt/deleteEvent",
+          data: {
+            id: id
+          }
+        }).then((response) => {
+          if (response == "success") {
+            $("#toast-editevent-success").toast("show")
+
+            document.querySelector('#event-card-'+id).parentElement.remove()
+          } else if (response['result'] == "nochange") {
+            $("#toast-editevent-nochange").toast("show")
+          }
+        })
+      } else {
+        console.log('nope')
+      }
+    })
+  }
+}
+
+// Media modal
+
+var mediaModal = document.getElementById('mediaModal')
+mediaModal.addEventListener('show.bs.modal', function (event) {
+  // Button that triggered the modal
+  var button = event.relatedTarget
+  // Extract info from data-bs-* attributes
+  var img = button.getAttribute('src')
+  // If necessary, you could initiate an AJAX request here
+  // and then do the updating in a callback.
+  //
+  // Update the modal's content.
+  mediaModal.querySelector('#media-modal-img').setAttribute('src', img)
+
+})

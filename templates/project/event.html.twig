@@ -1,15 +1,29 @@
-<div class="row row-cols-1 row-cols-md-2 g-4">
-	<div class="col w-100">
-		<div class="card mt-3">
-			<div class="card-body">
-				<h4 class="card-title m-0">{{ event.name }}</h4>
-				<p class="card-text text-danger m-0">{{ event.start|format_datetime(pattern='d.M.yyyy HH:mm') }}
-					až
-					{{ event.end|format_datetime(pattern='d.M.yyyy HH:mm') }}</p>
-				{% if event.description != null %}
-					<p class="card-text mt-2">{{ event.description }}</p>
-				{% endif %}
-			</div>
+<div style="position: relative">
+	{% if event.privacy == 1 %}
+		<div style="z-index: 5; position: absolute; left: -10px; top: -10px">
+			<span class="badge bg-danger" title="Pouze pro členy">
+				<i class="fas fa-user-check"></i>
+			</span>
+		</div>
+	{% endif %}
+	<div class="card mt-3" id="event-card-{{ event.id }}">
+		<div class="card-body">
+			<h4 class="card-title m-0" id="event-{{ event.id }}-name">{{ event.name }}</h4>
+			<p class="mt-2 mb-2 m-0" id="event-{{ event.id }}-location">
+				<i class="fas fa-map-marker"></i>
+				{{ event.location }}</p>
+			<p class="card-text text-danger m-0" id="event-{{ event.id }}-date">{{ event.start|format_datetime(pattern='d. M. yyyy HH:mm') }}
+				až
+				{{ event.end|format_datetime(pattern='d. M. yyyy HH:mm') }}</p>
+			{% if event.description != null %}
+				<p class="card-text mt-2" id="event-{{ event.id }}-description">{{ event.description }}</p>
+			{% endif %}
+			{% if session.get('id') == event.admin.id %}
+				<div>
+					<i class="fas fa-sliders-h mt-2 event-setting-btn" data-bs-toggle="modal" data-bs-target="#eventSettingsModal" data-bs-editevent-name="{{ event.name }}" data-bs-editevent-location="{{ event.location }}" data-bs-editevent-start="{{ event.start|format_datetime(pattern='yyyy-MM-ddTHH:mm:ss') }}" data-bs-editevent-end="{{ event.end|format_datetime(pattern='yyyy-MM-ddTHH:mm:ss') }}" data-bs-editevent-privacy="{{ event.privacy }}" data-bs-editevent-description="{{ event.description }}" data-bs-editevent-id="{{ event.id }}"></i>
+					<i class="fas fa-trash mt-2 ml-2 event-delete-btn" data-delevent-id="{{ event.id }}"></i>
+				</div>
+			{% endif %}
 		</div>
 	</div>
 </div>

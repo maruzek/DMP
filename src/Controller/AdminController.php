@@ -9,6 +9,7 @@ use App\Entity\Member;
 use App\Entity\Project;
 use App\Entity\ProjectAdmin;
 use App\Form\AddAdminType;
+use App\Form\NewAbsAdminType;
 use App\Form\NewProjectType;
 use App\Form\ProjectSettingsType;
 use App\ImageCrop\ImageCrop;
@@ -30,6 +31,7 @@ use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
+use Symfony\Flex\Unpack\Result;
 
 /**
  * @Route("/admin", name="admin.")
@@ -54,6 +56,7 @@ class AdminController extends AbstractController
         //$auth = new Authentication($session, $userRepository);
         if ($this->auth->isAbsAdmin()) {
             $user = $userRepository->find($session->get('id'));
+            $em = $this->getDoctrine()->getManager();
 
             $allProjects = $projectRepository->findAll();
             $allIndexBlocksArray = $indexBlockRepository->findAll();
@@ -68,19 +71,36 @@ class AdminController extends AbstractController
             }
             $allUsers = $userRepository->findAll();
 
+            // New Admin
+            $newAdminForm = $this->createForm(NewAbsAdminType::class);
+            $newAdminForm->handleRequest($request);
+            if ($newAdminForm->isSubmitted()) {
+                $selected = $newAdminForm->getData()['role'];
+
+                $newAdminUsername = explode('(', $selected);
+                $newAdminUsername = explode(',', $newAdminUsername[1]);
+                $newAdminUsername = $newAdminUsername[0];
+                //echo $userdata;
+                $newAdminUser = $userRepository->findOneBy(['username' => trim($newAdminUsername)]);
+
+                if ($newAdminUser->getRole() == "admin") {
+                } else {
+                    $newAdminUser->setRole("admin");
+
+                    $em->flush();
+                }
+            }
+
             return $this->render('admin/index.html.twig', [
                 'session' => $session,
                 'allUsers' => $allUsers,
                 'allProjects' => $allProjects,
                 'projectIndexBlocks' => $projectIndexBlocks,
                 'postIndexBlocks' => $postIndexBlocks,
-                'allIndexBlocksArray' => $allIndexBlocksArray
+                'allIndexBlocksArray' => $allIndexBlocksArray,
+                'newAdminForm' => $newAdminForm->createView()
             ]);
         }
-
-        return $this->render('error/401.html.twig', [
-            'session' => $session
-        ], new Response('', 401));
     }
 
 
@@ -357,11 +377,24 @@ class AdminController extends AbstractController
 
                 foreach ($usersAll as $user) {
                     if (!$projectAdminRepository->findOneBy(['user' => $user, 'project' => $project]) && $user != $project->getAdmin()) {
-                        array_push($users, $user);
+                        array_push($users, [
+                            'firstname' => $user->getFirstname(),
+                            'lastname' => $user->getLastname(),
+                            'username' => $user->getUsername(),
+                            'class' => $user->getClass()
+                        ]);
                     }
                 }
             } else {
-                $users = $usersAll;
+                //$users = $usersAll;
+                foreach ($usersAll as $user) {
+                    array_push($users, [
+                        'firstname' => $user->getFirstname(),
+                        'lastname' => $user->getLastname(),
+                        'username' => $user->getUsername(),
+                        'class' => $user->getClass()
+                    ]);
+                }
             }
 
             $defaultContext = [
@@ -552,6 +585,20 @@ class AdminController extends AbstractController
         if ($request->isXmlHttpRequest() && $this->auth->isAbsAdmin()) {
             $input = $request->request->get('input');
             $usersAll = $userRepository->searchUser($input);
+            $results = [];
+
+            foreach ($usersAll as $user) {
+                $userArray = [
+                    'id' => $user->getId(),
+                    'username' => $user->getUsername(),
+                    'firstname' => $user->getFirstname(),
+                    'lastname' => $user->getLastname(),
+                    'class' => $user->getClass(),
+                    'tag' => $user->getTag()
+                ];
+
+                array_push($results, $userArray);
+            }
 
             $defaultContext = [
                 AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => function ($object, $format, $context) {
@@ -565,7 +612,7 @@ class AdminController extends AbstractController
                 new ObjectNormalizer(null, null, null, null, null, null, $defaultContext)
             ];
             $serializer = new Serializer($normalizers, $encoders);
-            $response = $serializer->serialize($usersAll, 'json');
+            $response = $serializer->serialize($results, 'json');
             return new JsonResponse($response, 200, [], true);
         } else if (!$this->auth->isAbsAdmin()) {
             return new JsonResponse([
@@ -616,6 +663,52 @@ class AdminController extends AbstractController
                 }
             } else {
                 $result = "badrequest";
+            }
+
+            $defaultContext = [
+                AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => function ($object, $format, $context) {
+                    return $object->getId();
+                },
+            ];
+            $encoders = [
+                new JsonEncoder()
+            ];
+            $normalizers = [
+                new ObjectNormalizer(null, null, null, null, null, null, $defaultContext)
+            ];
+            $serializer = new Serializer($normalizers, $encoders);
+            $response = $serializer->serialize($result, 'json');
+            return new JsonResponse($response, 200, [], true);
+        } else if (!$this->auth->isAbsAdmin()) {
+            return new JsonResponse([
+                'type' => "error",
+                'message' => 'You are not an admin'
+            ], 401);
+        }
+
+        return new JsonResponse([
+            'type' => "error",
+            'message' => 'Not an AJAX request'
+        ], 500);
+    }
+
+    /**
+     * @Route("/delUser", name="delUser", methods={"POST"})
+     */
+    public function delUser(Request $request, UserRepository $userRepository)
+    {
+        if ($request->isXmlHttpRequest() && $this->auth->isAbsAdmin()) {
+            $id = $request->request->get('id');
+
+            $user = $userRepository->find($id);
+            $result = "";
+            $em = $this->getDoctrine()->getManager();
+
+            $em->remove($user);
+            if (!$em->flush()) {
+                $result = "success";
+            } else {
+                $result = "dbfail";
             }
 
             $defaultContext = [
@@ -742,6 +835,55 @@ class AdminController extends AbstractController
                 $result = "nonexistant";
             }
 
+
+            $defaultContext = [
+                AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => function ($object, $format, $context) {
+                    return $object->getId();
+                },
+            ];
+            $encoders = [
+                new JsonEncoder()
+            ];
+            $normalizers = [
+                new ObjectNormalizer(null, null, null, null, null, null, $defaultContext)
+            ];
+            $serializer = new Serializer($normalizers, $encoders);
+            $response = $serializer->serialize($result, 'json');
+            return new JsonResponse($response, 200, [], true);
+        } else if (!$this->auth->isAbsAdmin()) {
+            return new JsonResponse([
+                'type' => "error",
+                'message' => 'You are not an admin'
+            ], 401);
+        }
+
+        return new JsonResponse([
+            'type' => "error",
+            'message' => 'Not an AJAX request'
+        ], 500);
+    }
+
+    /**
+     * @Route("/deleteAbsAdmin", name="deleteAbsAdmin", methods={"POST"})
+     */
+    public function deleteAbsAdmin(Request $request, UserRepository $userRepository)
+    {
+        if ($request->isXmlHttpRequest() && $this->auth->isAbsAdmin()) {
+            $id = $request->request->get('id');
+            $result = "";
+            $user = $userRepository->find($id);
+            $allAdmins = $userRepository->findBy(['role' => 'admin']);
+            if ($user->getRole() == "admin" && count($allAdmins) > 2) {
+                $user->setRole('user');
+                $em = $this->getDoctrine()->getManager();
+                if (!$em->flush()) {
+                    $result = "success";
+                } else {
+                    $result = "dbfail";
+                }
+            } else {
+                $result = "toofewadmins";
+            }
 
             $defaultContext = [
                 AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => function ($object, $format, $context) {

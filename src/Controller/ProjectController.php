@@ -24,6 +24,7 @@ use App\Form\UnfollowType;
 use App\Form\UnmemberType;
 use App\ImageCrop\ImageCrop;
 use App\ProjectCheck\ProjectCheck;
+use App\Repository\EventRepository;
 use App\Repository\FollowRepository;
 use App\Repository\MediaRepository;
 use App\Repository\MemberRepository;
@@ -32,6 +33,7 @@ use App\Repository\ProjectAdminRepository;
 use App\Repository\ProjectRepository;
 use App\Repository\SeenRepository;
 use App\Repository\UserRepository;
+use App\ValidateImage\ValidateImage;
 use DateTime;
 use DateTimeZone;
 use PhpParser\Node\Expr\AssignOp\Pow;
@@ -46,6 +48,8 @@ use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
+use Symfony\Component\Validator\Constraints\ImageValidator;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
  * @Route("/projekt", name="project.")
@@ -128,6 +132,127 @@ class ProjectController extends AbstractController
 
             $em = $this->getDoctrine()->getManager()->flush();
 
+
+            $defaultContext = [
+                AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => function ($object, $format, $context) {
+                    return $object->getId();
+                },
+            ];
+            $encoders = [
+                new JsonEncoder()
+            ];
+            $normalizers = [
+                new ObjectNormalizer(null, null, null, null, null, null, $defaultContext)
+            ];
+            $serializer = new Serializer($normalizers, $encoders);
+            $response = $serializer->serialize($result, 'json');
+            return new JsonResponse($response, 200, [], true);
+        }
+
+        return new JsonResponse([
+            'type' => "error",
+            'message' => 'Not an AJAX request'
+        ]);
+    }
+
+    /**
+     * @Route("/editEvent", name="editEvent", methods={"POST"})
+     */
+    public function editEvent(Request $request, EventRepository $eventRepository)
+    {
+        if ($request->isXmlHttpRequest()) {
+            $id = $request->request->get('id');
+            $name = $request->request->get('name');
+            $location = $request->request->get('location');
+            $start = date_create($request->request->get('start'));
+            $end = date_create($request->request->get('end'));
+            $description = $request->request->get('description');
+            $privacy = $request->request->get('privacy');
+
+            $event = $eventRepository->find($id);
+
+            $result = "";
+
+            if ($event->getPrivacy() == $privacy && $event->getName() == $name && $event->getLocation() == $location && $event->getStart() == $start && $event->getEnd() == $end && $event->getDescription() == $description) {
+                $result = "nochange";
+            } else {
+                if ($event->getName() != $name) {
+                    $event->setName($name);
+                }
+
+                if ($event->getPrivacy() != $privacy) {
+                    $event->setPrivacy($privacy);
+                }
+
+                if ($event->getLocation() != $location) {
+                    $event->setLocation($location);
+                }
+
+                if ($event->getStart() != $start) {
+                    $event->setStart($start);
+                }
+
+                if ($event->getEnd() != $end) {
+                    $event->setEnd($end);
+                }
+
+                if ($event->getDescription() != $description) {
+                    $event->setDescription($description);
+                }
+
+                if (!$em = $this->getDoctrine()->getManager()->flush()) {
+                    $result = "success";
+                } else {
+                    $result = "dbfail";
+                }
+            }
+
+            $defaultContext = [
+                AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => function ($object, $format, $context) {
+                    return $object->getId();
+                },
+            ];
+            $encoders = [
+                new JsonEncoder()
+            ];
+            $normalizers = [
+                new ObjectNormalizer(null, null, null, null, null, null, $defaultContext)
+            ];
+            $serializer = new Serializer($normalizers, $encoders);
+            $response = $serializer->serialize($result, 'json');
+            return new JsonResponse($response, 200, [], true);
+        }
+
+        return new JsonResponse([
+            'type' => "error",
+            'message' => 'Not an AJAX request'
+        ]);
+    }
+
+    /**
+     * @Route("/deleteEvent", name="deleteEvent", methods={"POST"})
+     */
+    public function deleteEvent(Request $request, EventRepository $eventRepository)
+    {
+        if ($request->isXmlHttpRequest()) {
+            $id = $request->request->get('id');
+
+            $event = $eventRepository->find($id);
+
+            $result = "";
+
+            if (!$event) {
+                $result = "notexist";
+            } else {
+                $em = $this->getDoctrine()->getManager();
+                $em->remove($event);
+
+                if (!$em->flush()) {
+                    $result = "success";
+                } else {
+                    $result = "dbfail";
+                }
+            }
 
             $defaultContext = [
                 AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => function ($object, $format, $context) {
@@ -524,7 +649,7 @@ class ProjectController extends AbstractController
     /**
      * @Route("/{id}", name="project")
      */
-    public function index($id, SessionInterface $session, ProjectRepository $projectRepository, UserRepository $userRepository, FollowRepository $followRepository, Request $request, MemberRepository $memberRepository, PostRepository $postRepository, SeenRepository $seenRepository): Response
+    public function index($id, SessionInterface $session, ProjectRepository $projectRepository, UserRepository $userRepository, FollowRepository $followRepository, Request $request, MemberRepository $memberRepository, PostRepository $postRepository, SeenRepository $seenRepository, ValidatorInterface $validator): Response
     {
         $this->session = $session;
         $project = $projectRepository->findOneBy(['id' => $id]);
@@ -557,17 +682,6 @@ class ProjectController extends AbstractController
                 if ($session->get('username') != "") {
                     $user = $userRepository->find($session->get('id'));
 
-                    /*
-                        $follow = new Follow();
-                        $follow->setFollower($user);
-                        $follow->setProject($project);
-        
-                        $newMember = new Member();
-                        $newMember->setProject($project);
-                        $newMember->setMember($user);
-                        $newMember->setAccepted("false");*/
-
-
                     if (!$followRepository->findOneBy(['follower' => $session->get('id'), 'project' => $project])) {
                         //$followForm = $this->createForm(FollowType::class, $follow);
                         $followBtn = "follow";
@@ -586,60 +700,6 @@ class ProjectController extends AbstractController
                         $memberBtn = "unmember";
                     }
 
-
-                    /*
-                        $followStatus = '';
-                        $followForm->handleRequest($request);
-                        if ($followForm->isSubmitted()) {
-                            $em = $this->getDoctrine()->getManager();
-                            $follower = $userRepository->find($session->get('id'));
-        
-                            if ($followRepository->findOneBy(['follower' => $session->get('id'), 'project' => $project])) {
-                                $unfollow = $em->getRepository(Follow::class)->findOneBy([
-                                    'project' => $project,
-                                    'follower' => $follower
-                                ]);
-                                $em->remove($unfollow);
-                                $em->flush();
-                                $followStatus = 'unfollowed';
-                            } else {
-                                $em->persist($follow);
-                                $em->flush();
-                                $followStatus = 'success';
-                            }
-                        }*/
-                    /*
-                        $memberStatus = "";
-                        $memberForm->handleRequest($request);
-                        if ($memberForm->isSubmitted()) {
-                            $em = $this->getDoctrine()->getManager();
-                            if ($memberRepository->findOneBy(['member' => $user, 'project' => $project])) {
-                                $unmember = $em->getRepository(Member::class)->findOneBy([
-                                    'project' => $project,
-                                    'member' => $user
-                                ]);
-                                $em->remove($unmember);
-                                $em->flush();
-                                $memberStatus = "unmember";
-                            } else {
-                                $em->persist($member);
-                                $em->flush();
-                                $memberStatus = "newmember";
-                            }
-                        }*/
-
-                    /* if (!$followRepository->findOneBy(['follower' => $session->get('id'), 'project' => $project])) {
-                            $followForm = $this->createForm(FollowType::class, $follow);
-                        } else {
-                            $followForm = $this->createForm(UnfollowType::class, $follow);
-                        }
-        
-                        if (!$memberRepository->findOneBy(['member' => $user, 'project' => $project])) {
-                            $memberForm = $this->createForm(MemberType::class, $member);
-                        } else {
-                            $memberForm = $this->createForm(UnmemberType::class, $member);
-                        }*/
-
                     $settingsForm = $this->createForm(ProjectSettingsType::class, $project);
                     $fileError = "";
                     $mediaError = "";
@@ -652,18 +712,6 @@ class ProjectController extends AbstractController
                             $img = new ImageCrop($file, $this->getParameter('project_pic'), $this->getDoctrine()->getManager());
                             if ($img->cropProjectImage($project)) {
                             }
-                            /*$ext = $file->guessClientExtension();
-                            if ($ext == "jpeg" || $ext == "jpg" || $ext == "jfif" || $ext == "png") {
-                                $filename = md5(uniqid()) . '.' . $file->guessClientExtension();
-                                $file->move(
-                                    $this->getParameter('project_pic'),
-                                    $filename
-                                );
-                                unlink($this->getParameter('project_pic') . '/' . $project->getImage());
-                                $project->setImage($filename);
-                            } else {
-                                $fileError = "badext";
-                            }*/
                         }
 
                         // Zavolání entitty managera
@@ -730,49 +778,52 @@ class ProjectController extends AbstractController
                     $post = new Post();
                     $post->setProject($project);
                     $post->setAuthor($user);
-                    $post->setDeleted(false);
+
                     $addPostForm = $this->createForm(AddPostType::class, $post);
 
                     $addPostForm->handleRequest($request);
                     if ($addPostForm->isSubmitted()) {
-                        $em = $this->getDoctrine()->getManager();
-                        $media = $request->files->get('add_post')['media'];
-                        if ($media) {
-                            /** @var UploadedFile $file */
-                            foreach ($media as $file) {
-                                $ext = $file->guessClientExtension();
-                                if ($ext == "jpg" || $ext == "jpeg" || $ext == "png") {
-                                    $filename = md5(uniqid()) . '.' . $file->guessClientExtension();
-                                    $file->move(
-                                        $this->getParameter('media'),
-                                        $filename
-                                    );
-                                    $newMedia = new Media();
-                                    $newMedia->setName($filename);
-                                    $newMedia->setProject($project);
-                                    $newMedia->setType('post');
-                                    $newMedia->setPost($post);
-                                    $newMedia->setUploader($user);
-                                    $em->persist($newMedia);
-                                } else {
-                                    $fileError = "badext";
+                        if (count($validator->validate($post)) > 0) {
+                            //! ERROR
+                        } else {
+                            $em = $this->getDoctrine()->getManager();
+                            $media = $request->files->get('add_post')['media'];
+                            if ($media) {
+                                $imgValidator = new ValidateImage();
+                                /** @var UploadedFile $file */
+                                foreach ($media as $file) {
+                                    if ($imgValidator->isImgValid($file) == "success") {
+                                        $filename = md5(uniqid()) . '.' . $file->guessClientExtension();
+                                        $file->move(
+                                            $this->getParameter('media'),
+                                            $filename
+                                        );
+                                        $newMedia = new Media();
+                                        $newMedia->setName($filename);
+                                        $newMedia->setProject($project);
+                                        $newMedia->setType('post');
+                                        $newMedia->setPost($post);
+                                        $newMedia->setUploader($user);
+                                        $em->persist($newMedia);
+                                    } elseif ($imgValidator->isImgValid($file) == "badext") {
+                                        $fileError = "badext";
+                                    } elseif ($imgValidator->isImgValid($file) == "toobig") {
+                                        $fileError = "toobig";
+                                    } elseif ($imgValidator->isImgValid($file) == "badsize") {
+                                        $fileError = "badsize";
+                                    }
                                 }
                             }
-                        }
 
-                        $em->persist($post);
-                        $em->flush();
-                        unset($post);
-                        unset($addPostForm);
-                        $post = new Post();
-                        $addPostForm = $this->createForm(AddPostType::class, $post);
+                            $em->persist($post);
+                            $em->flush();
+                            unset($post);
+                            unset($addPostForm);
+                            $post = new Post();
+                            $addPostForm = $this->createForm(AddPostType::class, $post);
+                        }
                     }
 
-                    // Edit Post
-                    /*
-                        $editPost = new Post();
-                        $editPostForm = $this->createForm(EditPostType::class);
-                        $editPostForm->setData($postRepository->find(26));*/
                     $posts = $project->getPosts();
 
                     // SEEN
@@ -796,7 +847,7 @@ class ProjectController extends AbstractController
                     $event = new Event();
                     $event->setProject($project);
                     $event->setAdmin($user);
-                    $event->setCreated(DateTime::createFromFormat('Y-m-d HH:mm', date('Y-m-d HH:mm')));
+                    $event->setCreated(DateTime::createFromFormat('Y-m-d H:i:s', date('Y-m-d H:i:s')));
 
                     $newEventForm = $this->createForm(NewEventType::class, $event);
                     $newEventForm->handleRequest($request);

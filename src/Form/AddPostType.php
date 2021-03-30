@@ -10,7 +10,9 @@ use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Mime\MimeTypes;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\Image;
 use Symfony\Component\Validator\Constraints\Length;
 
 class AddPostType extends AbstractType
@@ -46,7 +48,7 @@ class AddPostType extends AbstractType
                 'attr' => [
                     'class' => 'btn btn-success'
                 ],
-                'label' => 'Přidat příspěvek'
+                'label' => 'Přidat'
             ]);
     }
 

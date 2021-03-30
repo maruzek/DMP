@@ -22,11 +22,20 @@ class SSO
             }
 
             if ($parsed[0] == "name") {
-                $lastname = explode(' ', $parsed[1])[1];
-                $firstname = explode(' ', $parsed[1])[0];
+                //! ODSTRANIT
+                if ($parsed[1][0] == "x") {
+                    $lastname = explode('.', $parsed[1])[1];
+                    $firstname = explode('.', $parsed[1])[0];
 
-                $data["lastname"] = $lastname;
-                $data["firstname"] = $firstname;
+                    $data["lastname"] = $lastname;
+                    $data["firstname"] = $firstname;
+                } else {
+                    $lastname = explode(' ', $parsed[1])[1];
+                    $firstname = explode(' ', $parsed[1])[0];
+
+                    $data["lastname"] = $lastname;
+                    $data["firstname"] = $firstname;
+                }
             } else {
                 $class = "";
 
@@ -38,6 +47,7 @@ class SSO
                         if (date('n') <= 12 && date('n') >= 9) {
                             $classNum = (int)date('y') - ($classYear - 1);
                         } else {
+                            //$classNum = 3;
                             $classNum = (int)date('y') - ($classYear);
                         }
 

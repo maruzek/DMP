@@ -366,6 +366,28 @@
   display: none;
 }
 
+.event-setting-btn {
+  color: #838383;
+  -webkit-transition: .2s;
+  transition: .2s;
+  cursor: pointer;
+}
+
+.event-setting-btn:hover {
+  color: #6e6e6e;
+}
+
+.event-delete-btn {
+  color: #838383;
+  -webkit-transition: .2s;
+  transition: .2s;
+  cursor: pointer;
+}
+
+.event-delete-btn:hover {
+  color: #6e6e6e;
+}
+
 /*
 @media screen and (max-width: 1920px) {
     .project-content {

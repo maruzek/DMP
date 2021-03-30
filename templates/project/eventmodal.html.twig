@@ -1,0 +1,42 @@
+<div class="modal fade" id="eventSettingsModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="eventSettingsModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="eventSettingsModalLabel">Nastavení události</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<div class="modal-body">
+				<form action="">
+					<div class="mb-3">
+						<label for="editevent-name" class="form-label">Název</label>
+						<input type="text" class="form-control" id="editevent-name">
+					</div>
+					<div class="mb-3">
+						<label for="editevent-location" class="form-label">Místo konání</label>
+						<input type="text" class="form-control" id="editevent-location">
+					</div>
+					<div class="mb-3">
+						<label for="editevent-start">Začátek události</label>
+						<input type="datetime-local" id="editevent-start" class="form-control">
+					</div>
+					<div class="mb-3">
+						<label for="editevent-end">Konec události</label>
+						<input type="datetime-local" id="editevent-end" class="form-control">
+					</div>
+					<div class="mb-3">
+						<label for="editevent-description" class="form-label">Popisek</label>
+						<textarea class="form-control" id="editevent-description" rows="3"></textarea>
+					</div>
+					<div class="form-check form-switch">
+						<input class="form-check-input" type="checkbox" id="editevent-privacy">
+						<label class="form-check-label" for="editevent-privacy">Pouze pro členy</label>
+					</div>
+				</form>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zrušit</button>
+				<button type="button" class="btn btn-primary" id="editevent-submit" data-bs-dismiss="modal">Upravit</button>
+			</div>
+		</div>
+	</div>
+</div>
