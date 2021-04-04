@@ -10,9 +10,10 @@ class ColorTheme
             case 'white':
                 $response = [
                     'background' => '',
-                    'row' => '',
-                    'post' => '',
-                    'nav' => ''
+                    'row' => '#e4e4e4',
+                    'post' => 'project-post-white',
+                    'nav' => '',
+                    'pills' => ''
                 ];
                 break;
             case 'blue':
@@ -20,7 +21,8 @@ class ColorTheme
                     'background' => '#66b3ff',
                     'row' => '#fff',
                     'post' => 'project-post-blue',
-                    'nav' => ''
+                    'nav' => '',
+                    'pills' => 'project-pills-blue'
                 ];
                 break;
             case 'red':
@@ -28,7 +30,8 @@ class ColorTheme
                     'background' => '#ff6666',
                     'row' => '#fff',
                     'post' => 'project-post-red',
-                    'nav' => 'project-nav-red'
+                    'nav' => 'project-nav-red',
+                    'pills' => 'project-pills-red'
                 ];
                 break;
             case 'green':
@@ -36,7 +39,8 @@ class ColorTheme
                     'background' => '#4dff4d',
                     'row' => '#fff',
                     'post' => 'project-post-green',
-                    'nav' => 'project-nav-green'
+                    'nav' => 'project-nav-green',
+                    'pills' => 'project-pills-green'
                 ];
                 break;
             case 'yellow':
@@ -44,7 +48,8 @@ class ColorTheme
                     'background' => '#ffff66',
                     'row' => '#fff',
                     'post' => 'project-post-yellow',
-                    'nav' => 'project-nav-yellow'
+                    'nav' => 'project-nav-yellow',
+                    'pills' => 'project-pills-yellow'
                 ];
                 break;
         }

@@ -34,6 +34,11 @@ class IndexBlock
      */
     private $type;
 
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $added;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -71,6 +76,18 @@ class IndexBlock
     public function setType(string $type): self
     {
         $this->type = $type;
+
+        return $this;
+    }
+
+    public function getAdded(): ?\DateTimeInterface
+    {
+        return $this->added;
+    }
+
+    public function setAdded(?\DateTimeInterface $added): self
+    {
+        $this->added = $added;
 
         return $this;
     }

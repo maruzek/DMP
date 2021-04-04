@@ -14,11 +14,14 @@ use App\Form\NewProjectType;
 use App\Form\ProjectSettingsType;
 use App\ImageCrop\ImageCrop;
 use App\ProjectCheck\ProjectCheck;
+use App\Repository\EventRepository;
 use App\Repository\IndexBlockRepository;
 use App\Repository\PostRepository;
 use App\Repository\ProjectAdminRepository;
 use App\Repository\ProjectRepository;
 use App\Repository\UserRepository;
+use DateTime;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -26,6 +29,9 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Address;
+use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
@@ -222,9 +228,11 @@ class AdminController extends AbstractController
                 }
             }
 
+            // Nový admin
+
             $newAdmin = new ProjectAdmin();
             $newAdmin->setProject($project);
-            //$addAdminForm = $this->createForm(AddAdminType::class, $newAdmin);
+            $newAdmin->setDateAdded(DateTime::createFromFormat('Y-m-d H:i:s', date('Y-m-d H:i:s')));
             $addAdminForm = $this->createFormBuilder()
                 ->add('user', TextType::class, [
                     'attr' => [
@@ -331,6 +339,7 @@ class AdminController extends AbstractController
 
                 $newAdmin = $userRepository->findOneBy(['username' => $newAdminUsername]);
                 $project->setAdmin($newAdmin);
+                $project->setCreated(DateTime::createFromFormat('Y-m-d H:i:s', date('Y-m-d H:i:s')));
 
                 $member = new Member();
                 $member->setProject($project);
@@ -754,6 +763,7 @@ class AdminController extends AbstractController
                     $newBlock = new IndexBlock();
                     $newBlock->setProject($project);
                     $newBlock->setType("project");
+                    $newBlock->setAdded(DateTime::createFromFormat('Y-m-d H:i:s', date('Y-m-d H:i:s')));
 
                     $em = $this->getDoctrine()->getManager();
                     $em->persist($newBlock);

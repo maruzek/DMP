@@ -34,6 +34,16 @@ class Member
      */
     private $accepted;
 
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $requestDate;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $acceptedDate;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -71,6 +81,30 @@ class Member
     public function setAccepted(string $accepted): self
     {
         $this->accepted = $accepted;
+
+        return $this;
+    }
+
+    public function getRequestDate(): ?\DateTimeInterface
+    {
+        return $this->requestDate;
+    }
+
+    public function setRequestDate(\DateTimeInterface $requestDate): self
+    {
+        $this->requestDate = $requestDate;
+
+        return $this;
+    }
+
+    public function getAcceptedDate(): ?\DateTimeInterface
+    {
+        return $this->acceptedDate;
+    }
+
+    public function setAcceptedDate(\DateTimeInterface $acceptedDate): self
+    {
+        $this->acceptedDate = $acceptedDate;
 
         return $this;
     }

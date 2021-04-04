@@ -23,6 +23,7 @@ use App\Form\ProjectSettingsType;
 use App\Form\UnfollowType;
 use App\Form\UnmemberType;
 use App\ImageCrop\ImageCrop;
+use App\Memberships\Memberships;
 use App\ProjectCheck\ProjectCheck;
 use App\Repository\EventRepository;
 use App\Repository\FollowRepository;
@@ -37,12 +38,15 @@ use App\ValidateImage\ValidateImage;
 use DateTime;
 use DateTimeZone;
 use PhpParser\Node\Expr\AssignOp\Pow;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Address;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
@@ -168,6 +172,11 @@ class ProjectController extends AbstractController
             $end = date_create($request->request->get('end'));
             $description = $request->request->get('description');
             $privacy = $request->request->get('privacy');
+            if ($privacy == "false") {
+                $privacy = false;
+            } elseif ($privacy == "true") {
+                $privacy = true;
+            }
 
             $event = $eventRepository->find($id);
 
@@ -293,6 +302,7 @@ class ProjectController extends AbstractController
                 $newFollow = new Follow();
                 $newFollow->setFollower($user);
                 $newFollow->setProject($project);
+                $newFollow->setFollowed(DateTime::createFromFormat('Y-m-d H:i:s', date('Y-m-d H:i:s')));
 
                 $em->persist($newFollow);
                 if (!$em->flush()) {
@@ -350,6 +360,7 @@ class ProjectController extends AbstractController
                 $newMember->setMember($user);
                 $newMember->setProject($project);
                 $newMember->setAccepted(false);
+                $newMember->setRequestDate(DateTime::createFromFormat('Y-m-d H:i:s', date('Y-m-d H:i:s')));
 
                 $em->persist($newMember);
                 if (!$em->flush()) {
@@ -406,6 +417,7 @@ class ProjectController extends AbstractController
 
             if ($type == "accept") {
                 $member->setAccepted(true);
+                $member->setAcceptedDate(DateTime::createFromFormat('Y-m-d H:i:s', date('Y-m-d H:i:s')));
                 if (!$em->flush()) {
                     $result = "accept-success";
                 } else {
@@ -585,71 +597,9 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @Route("/novy", name="new")
-     */
-    public function new(SessionInterface $session, Request $request, UserRepository $userRepository): Response
-    {
-        // Volání session    
-        $this->session = $session;
-
-        // Vytvoření objektu nového projektu
-        $project = new Project();
-
-        $user = $userRepository->find($session->get('id'));
-        $project->setAdmin($user);
-        $form = $this->createForm(NewProjectType::class, $project);
-
-        // Získání odpovědi z formu
-        $form->handleRequest($request);
-        $formResponse = "";
-        $id = "";
-        $fileError = "";
-        if ($form->isSubmitted()) {
-            // Zpracování nahraného obrázku
-            /** @var UploadedFile $file*/
-            $file = $request->files->get('new_project')['attach'];
-            if ($file) {
-                $ext = $file->guessClientExtension();
-                if ($ext == "jpeg" || $ext == "jpg" || $ext == "png" || $ext == "gif") {
-                    $filename = md5(uniqid()) . '.' . $file->guessClientExtension();
-                    $file->move(
-                        $this->getParameter('project_pic'),
-                        $filename
-                    );
-                    $project->setImage($filename);
-                } else {
-                    $fileError = "badext";
-                }
-            }
-
-            if (!$fileError) {
-                // Zapsání do DB
-                $em = $this->getDoctrine()->getManager();
-                $em->persist($project);
-                $em->flush();
-                $formResponse = "success";
-                $id = $project->getId();
-
-                // Přesměronání na nově vytvořený projekt
-                return $this->redirectToRoute('project.project', ['id' => $project->getId()]);
-            } else {
-            }
-        }
-
-        return $this->render('project/new.html.twig', [
-            'controller_name' => 'ProjectController',
-            'session' => $session,
-            'form' => $form->createView(),
-            'response' => $formResponse,
-            'id' => $id,
-            'fileError' => $fileError
-        ]);
-    }
-
-    /**
      * @Route("/{id}", name="project")
      */
-    public function index($id, SessionInterface $session, ProjectRepository $projectRepository, UserRepository $userRepository, FollowRepository $followRepository, Request $request, MemberRepository $memberRepository, PostRepository $postRepository, SeenRepository $seenRepository, ValidatorInterface $validator): Response
+    public function index($id, SessionInterface $session, ProjectRepository $projectRepository, UserRepository $userRepository, FollowRepository $followRepository, Request $request, MemberRepository $memberRepository, PostRepository $postRepository, SeenRepository $seenRepository, ValidatorInterface $validator, EventRepository $eventRepository, MailerInterface $mailer): Response
     {
         $this->session = $session;
         $project = $projectRepository->findOneBy(['id' => $id]);
@@ -659,6 +609,13 @@ class ProjectController extends AbstractController
             if ($projectCheck->isAccessible()) {
                 $color = new ColorTheme();
                 $palette = $color->colorPallette($project->getColor());
+
+                $imgValidator = new ValidateImage();
+                $memberships = new Memberships();
+                $postsPrivacy = 0;
+                $em = $this->getDoctrine()->getManager();
+
+                $errors = [];
 
                 $followBtn = "";
                 $memberBtn = "";
@@ -678,9 +635,16 @@ class ProjectController extends AbstractController
                     }
                 }
 
+                $posts = [];
 
                 if ($session->get('username') != "") {
                     $user = $userRepository->find($session->get('id'));
+
+                    if ($memberships->isUserMember($project, $user)) {
+                        $postsPrivacy = 1;
+                    } else {
+                        $postsPrivacy = 0;
+                    }
 
                     if (!$followRepository->findOneBy(['follower' => $session->get('id'), 'project' => $project])) {
                         //$followForm = $this->createForm(FollowType::class, $follow);
@@ -702,16 +666,24 @@ class ProjectController extends AbstractController
 
                     $settingsForm = $this->createForm(ProjectSettingsType::class, $project);
                     $fileError = "";
-                    $mediaError = "";
                     $settingsForm->handleRequest($request);
                     if ($settingsForm->isSubmitted()) {
-
                         // Zpracování profilového obrázku
                         $file = $request->files->get('project_settings')["attach"];
                         if ($file) {
-                            $img = new ImageCrop($file, $this->getParameter('project_pic'), $this->getDoctrine()->getManager());
-                            if ($img->cropProjectImage($project)) {
+                            $validation = $imgValidator->isImgValid($file);
+                            if ($validation == "success") {
+                                $img = new ImageCrop($file, $this->getParameter('project_pic'), $this->getDoctrine()->getManager());
+                                if ($img->cropProjectImage($project)) {
+                                }
+                            } elseif ($validation == "badsize") {
+                                array_push($errors, 'Nový profilový obrázek má moc veliké rozměry');
+                            } elseif ($validation == "toobig") {
+                                array_push($errors, 'Nový profilový obrázek je moc velký (maximální velikost 2 MB)');
+                            } elseif ($validation == "badext") {
+                                array_push($errors, 'Nový profilový obrázek je nepodporovaného typu (povolené jsou jen .png, .jpg a .jpeg)');
                             }
+                            $fileError = "errr";
                         }
 
                         // Zavolání entitty managera
@@ -721,27 +693,17 @@ class ProjectController extends AbstractController
                         if ($media) {
                             /** @var UploadedFile $file*/
                             foreach ($media as $file) {
-                                $ext = $file->guessClientExtension();
-                                if ($ext == "jpeg" || $ext == "jpg" || $ext == "jfif" || $ext == "png") {
-                                    $height = getimagesize($file)[1];
-                                    if ($height) {
-                                        //TODO Přidat velikost 480 zpět do ifu
-                                        $filename = md5(uniqid()) . '.' . $file->guessClientExtension();
-                                        $file->move(
-                                            $this->getParameter('media'),
-                                            $filename
-                                        );
-                                        $newMedia = new Media();
-                                        $newMedia->setName($filename);
-                                        $newMedia->setProject($project);
-                                        $newMedia->setType('hero');
-                                        $newMedia->setUploader($user);
-                                        $em->persist($newMedia);
-                                    } else {
-                                        $mediaError = "badheight";
+                                $validation = $imgValidator->isImgValid($file);
+                                if ($validation == "success") {
+                                    $img = new ImageCrop($file, $this->getParameter('media'), $this->getDoctrine()->getManager());
+                                    if ($img->scaleBgImage($project, $user)) {
                                     }
-                                } else {
-                                    $mediaError = "badext";
+                                } elseif ($validation == "badsize") {
+                                    array_push($errors, 'Nový obrázek má moc veliké rozměry');
+                                } elseif ($validation == "toobig") {
+                                    array_push($errors, 'Nový obrázek je moc velký (maximální velikost 2 MB)');
+                                } elseif ($validation == "badext") {
+                                    array_push($errors, 'Nový obrázek je nepodporovaného typu (povolené jsou jen .png, .jpg a .jpeg)');
                                 }
                             }
                         }
@@ -760,16 +722,14 @@ class ProjectController extends AbstractController
                             if (isset($request->request->get('project_settings')['media'][$i])) {
                                 if (file_exists('img/media/' . $heroImagesArray[$i]->getName())) {
                                     unlink('img/media/' . $heroImagesArray[$i]->getName());
-                                    echo 'penis';
                                 }
                                 $em->remove($heroImagesArray[$i]);
                             }
                         }
 
                         // Pokud se vše podaří, zapíše do DB a refreshne stránku
-                        if ($fileError == "" && $mediaError == "") {
+                        if (empty($errors)) {
                             $em->flush();
-                            $status = "success";
                             return $this->redirect($request->getUri());
                         }
                     }
@@ -778,53 +738,83 @@ class ProjectController extends AbstractController
                     $post = new Post();
                     $post->setProject($project);
                     $post->setAuthor($user);
+                    $post->setPostedDate(DateTime::createFromFormat('Y-m-d H:i:s', date('Y-m-d H:i:s')));
 
                     $addPostForm = $this->createForm(AddPostType::class, $post);
 
                     $addPostForm->handleRequest($request);
                     if ($addPostForm->isSubmitted()) {
                         if (count($validator->validate($post)) > 0) {
-                            //! ERROR
+                            array_push($errors, 'Došlo k chybě. Pravděpodobně je váš příspěvek delší než 1000 znaků');
                         } else {
                             $em = $this->getDoctrine()->getManager();
                             $media = $request->files->get('add_post')['media'];
                             if ($media) {
-                                $imgValidator = new ValidateImage();
                                 /** @var UploadedFile $file */
                                 foreach ($media as $file) {
-                                    if ($imgValidator->isImgValid($file) == "success") {
+                                    $validation = $imgValidator->isImgValid($file);
+                                    if ($validation == "success") {
                                         $filename = md5(uniqid()) . '.' . $file->guessClientExtension();
-                                        $file->move(
-                                            $this->getParameter('media'),
-                                            $filename
-                                        );
+
                                         $newMedia = new Media();
                                         $newMedia->setName($filename);
                                         $newMedia->setProject($project);
                                         $newMedia->setType('post');
                                         $newMedia->setPost($post);
                                         $newMedia->setUploader($user);
+                                        $newMedia->setUploadDate(DateTime::createFromFormat('Y-m-d H:i:s', date('Y-m-d H:i:s')));
                                         $em->persist($newMedia);
-                                    } elseif ($imgValidator->isImgValid($file) == "badext") {
-                                        $fileError = "badext";
-                                    } elseif ($imgValidator->isImgValid($file) == "toobig") {
-                                        $fileError = "toobig";
-                                    } elseif ($imgValidator->isImgValid($file) == "badsize") {
-                                        $fileError = "badsize";
+                                        $file->move(
+                                            $this->getParameter('media'),
+                                            $filename
+                                        );
+                                    } elseif ($validation == "badsize") {
+                                        array_push($errors, 'Vámi nahrávaný obrázek má moc veliké rozměry');
+                                    } elseif ($validation == "toobig") {
+                                        array_push($errors, 'Vámi nahrávaný obrázek je moc velký (maximální velikost 2 MB)');
+                                    } elseif ($validation == "badext") {
+                                        array_push($errors, 'Vámi nahrávaný obrázek je nepodporovaného typu (povolené jsou jen .png, .jpg a .jpeg). Také se mohlo stát, že je váš obrázek poškozený.');
                                     }
                                 }
                             }
 
-                            $em->persist($post);
-                            $em->flush();
+                            if (empty($errors)) {
+                                //$reg_exUrl = "/(http|https)\:\/\/[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}(\/\S*)?/";
+                                /*$reg_exUrl = '#(?<!href\=[\'"])(https?|ftp|file)://[-A-Za-z0-9+&@\#/%()?=~_|$!:,.;]*[-A-Za-z0-9+&@\#/%()=~_|$]#';
+
+
+                                $text = $addPostForm->getData()->getText();
+
+                                //$s = preg_replace_callback('#(?<!href\=[\'"])(https?|ftp|file)://[-A-Za-z0-9+&@\#/%()?=~_|$!:,.;]*[-A-Za-z0-9+&@\#/%()=~_|$]#', autoDetectLinks(), $s);
+                                //dump($text);
+
+                                // gergre https://google.com fregerger https://seznam.cz
+
+                                if (preg_match_all($reg_exUrl, $text, $url)) {
+                                    $replace = [];
+                                    $regexArray = [];
+                                    for ($i = 0; $i < count($url[0]); $i++) {
+                                        array_push($regexArray, $url[0][$i]);
+                                        array_push($replace, '<a href="' . $url[0][$i] . '">' . $url[0][$i] . '</a>');
+                                    }
+
+                                    $text = str_replace($regexArray, $replace, $text);
+                                }*/
+
+
+                                //$post->setText($text);
+                                $em->persist($post);
+                                $em->flush();
+                            }
                             unset($post);
                             unset($addPostForm);
                             $post = new Post();
                             $addPostForm = $this->createForm(AddPostType::class, $post);
+                            if (empty($errors)) {
+                                return $this->redirect($request->getUri());
+                            }
                         }
                     }
-
-                    $posts = $project->getPosts();
 
                     // SEEN
                     date_default_timezone_set('Europe/Prague');
@@ -834,7 +824,7 @@ class ProjectController extends AbstractController
                             $seen = new Seen();
                             $seen->setPost($post);
                             $seen->setUser($user);
-                            $seen->setDate(DateTime::createFromFormat('Y-m-d', date('Y-m-d')));
+                            $seen->setDate(DateTime::createFromFormat('Y-m-d H:i:s', date('Y-m-d H:i:s')));
 
                             $em = $this->getDoctrine()->getManager();
                             $em->persist($seen);
@@ -843,7 +833,6 @@ class ProjectController extends AbstractController
                     }
 
                     // EVENTS
-
                     $event = new Event();
                     $event->setProject($project);
                     $event->setAdmin($user);
@@ -858,12 +847,73 @@ class ProjectController extends AbstractController
                             $em = $this->getDoctrine()->getManager();
                             $em->persist($event);
                             $em->flush();
+
+                            // Email notifikace
+
+                            if (isset($request->request->get('new_event')['notification'])) {
+                                $emails = [];
+                                foreach ($project->getMembers() as $member) {
+                                    array_push($emails, new Address($member->getMember()->getUsername() . '@ms.spsostrov.cz', $member->getMember()->getFirstname() . ' ' . $member->getMember()->getLastname()));
+                                }
+                                // new Address('ruzema@ms.spsostrov.cz', 'Martin Růžek')
+                                $email = (new TemplatedEmail())
+                                    ->bcc(...$emails)
+                                    ->subject('Nová událost')
+                                    ->htmlTemplate('email/newevent.html.twig')
+                                    ->context([
+                                        'event' => $event
+                                    ]);
+
+                                if (!$mailer->send($email)) {
+                                }
+                            }
+
+                            unset($event);
+                            unset($newEventForm);
+                            $event = new Event();
+                            $newEventForm = $this->createForm(NewEventType::class, $event);
                         } else {
-                            $newEventResult = "endbeforestart";
+                            array_push($errors, 'Vámi zadaný konec akce je před jejím začátkem.');
                         }
                     }
                 } else {
                 }
+
+                // Příspěvky k zobrazení
+
+                $resultsPerPage = 15;
+                $numberOfPosts = count($postRepository->findNonDeleted($project, $postsPrivacy));
+                $numberOfPages = ceil($numberOfPosts / $resultsPerPage);
+                if (!$request->query->get('postpage')) {
+                    $page = 1;
+                } else {
+                    if (is_numeric($request->query->get('postpage')) && $request->query->get('postpage') <= $numberOfPages && $request->query->get('postpage') >= 1) {
+                        $page = $request->query->get('postpage');
+                    }
+                    $page = 1;
+                }
+                $thisPageFirstPost = ($page - 1) * $resultsPerPage;
+
+                $posts = $postRepository->findPostFromTo($thisPageFirstPost, $resultsPerPage, $postsPrivacy, $project);
+
+                if ($page < 4) {
+                    $currentmin = 1;
+                } else {
+                    $currentmin = $page - 3;
+                }
+
+                if ($page + 3 >= $numberOfPages) {
+                    $currentmax = $numberOfPages;
+                } else {
+                    $currentmax = $page + 3;
+                }
+
+                $postPages = [
+                    'max' => $numberOfPages,
+                    'current' => $page,
+                    'currentmin' => $currentmin,
+                    'currentmax' => $currentmax
+                ];
 
                 if ($followBtn != "") {
                     return $this->render('project/index.html.twig', [
@@ -875,12 +925,13 @@ class ProjectController extends AbstractController
                         'pic' => $this->getParameter('project_pic'),
                         'postForm' => $addPostForm->createView(),
                         'projectSettingsForm' => $settingsForm->createView(),
-                        'mediaError' => $mediaError,
                         'posts' => $posts,
                         'projectAdmins' => $projectAdmins,
                         'projectMembers' => $projectMembers,
                         'memberBtn' => $memberBtn,
-                        'newEventForm' => $newEventForm->createView()
+                        'newEventForm' => $newEventForm->createView(),
+                        'errors' => $errors,
+                        'postPages' => $postPages
                     ]);
                 } else {
                     return $this->render('project/index.html.twig', [
@@ -889,15 +940,14 @@ class ProjectController extends AbstractController
                         'project' => $project,
                         'palette' => $palette,
                         'projectAdmins' => $projectAdmins,
-                        'projectMembers' => $projectMembers
+                        'projectMembers' => $projectMembers,
+                        'errors' => $errors,
+                        'posts' => $posts
                     ]);
                 }
             }
         }
 
-        return $this->render('error/404.html.twig', [
-            'controller_name' => 'ProjectController',
-            'session' => $session
-        ], new Response('', 404));
+        return new Response('', 404);
     }
 }

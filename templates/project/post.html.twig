@@ -9,30 +9,39 @@
 	<div class="project-post-wrapper {{ palette.post }}" id="post-{{ post.id }}">
 		<div class="post-textcontent">
 			<div class="project-post-profilepic">
-				<img src="/img/userimg/{{ post.author.image }}" alt="">
+				<a href="{{ path('user.profile', { username: post.author.username }) }}">
+					<img src="/img/userimg/{{ post.author.image }}" alt="">
+				</a>
 			</div>
 			<div class="project-post-content w-100">
-				<p class="project-post-author w-100">{{ post.author.firstName ~ ' ' ~ post.author.lastName }}
-					<br>
-					<span class="badge bg-primary">{{ post.author.tag }}</span>
-					<span class="badge bg-light text-dark">{{ post.author.class }}</span>
-				</p>
-				<p id="postText-{{ post.id }}">{{ post.text }}</p>
+				<a href="{{ path('user.profile', { username: post.author.username }) }}" class="nicelink">
+					<p class="project-post-author w-100">{{ post.author.firstName ~ ' ' ~ post.author.lastName }}
+						<br>
+						<span class="badge bg-primary">{{ post.author.tag }}</span>
+						<span class="badge bg-light text-dark">{{ post.author.class }}</span>
+						<span class="small">{{ post.postedDate|format_datetime(pattern='d. M. yyyy HH:mm') }}</span>
+					</p>
+				</a>
+				{% if post.author.id in projectAdmins or post.author.id == project.admin.id %}
+					<p id="postText-{{ post.id }}">{{ post.text|anchor|raw }}</p>
+				{% else %}
+					<p id="postText-{{ post.id }}">{{ post.text }}</p>
+				{% endif %}
 			</div>
 			{% if post.author.id == session.get('id') or session.get('id') in projectAdmins or session.get('id') == project.admin.id %}
-				<p data-bs-toggle="modal" class="editPostModalTrigger m-1" data-bs-target="#editPostModal" data-bs-editpost-text="{{ post.text }}" data-bs-editpost-private="{{ post.privacy }}" data-bs-editpost-id="{{ post.id }}" data-edit-post-id="{{ post.id }}">
-					<i class="fas fa-pen"></i>
+				<p class="m-1">
+					<i class="fas fa-pen editPostModalTrigger" data-bs-toggle="modal" data-bs-target="#editPostModal" data-bs-editpost-text="{{ post.text }}" data-bs-editpost-private="{{ post.privacy }}" data-bs-editpost-id="{{ post.id }}" data-edit-post-id="{{ post.id }}"></i>
 				</p>
-				<p class="post-card-trash-icon m-1" id="delPostTrigger" data-deletepost-id="{{ post.id }}">
-					<i class="fas fa-trash"></i>
+				<p class="m-1">
+					<i class="fas fa-trash post-card-trash-icon" id="delPostTrigger" data-deletepost-id="{{ post.id }}"></i>
 				</p>
 			{% endif %}
 		</div>
 		<div class="post-media d-block mx-auto">
-			<div class="fotorama mw-100">
+			<div class="fotorama" data-width="100%" data-ratio="800/600" data-minwidth="500" data-maxwidth="1000" data-minheight="300" data-maxheight="100%">
 				{% for img in post.media %}
 					{% if img.type == "post" %}
-						<img src="/img/media/{{ img.name }}" class="d-block mw-100 h-50 mx-auto" alt="post media">
+						<img src="/img/media/{{ img.name }}" class="d-block mx-auto" alt="post media">
 					{% endif %}
 				{% endfor %}
 			</div>

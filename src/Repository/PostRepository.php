@@ -53,8 +53,8 @@ class PostRepository extends ServiceEntityRepository
                             ),
                         )
                     )
-                        ->andWhere("u.deleted='0'")
-                        ->andWhere("u.privacy='0'")
+                        ->andWhere("u.deleted=0")
+                        ->andWhere("u.privacy=0")
                         ->setParameter('val', '%' . $parsedPhrase . '%');
                 }
             }
@@ -71,6 +71,52 @@ class PostRepository extends ServiceEntityRepository
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
+    }
+
+    public function findPostFromTo($from, $to, $privacy, $project)
+    {
+        if ($privacy == 0) {
+            return $this->createQueryBuilder('p')
+                ->andWhere('p.project = :project')
+                ->setParameter('project', $project)
+                ->setFirstResult($from)
+                ->setMaxResults($to)
+                ->andWhere('p.deleted=0')
+                ->andWhere('p.privacy=0')
+                ->orderBy('p.id', 'DESC')
+                ->getQuery()
+                ->getResult();
+        } else {
+            return $this->createQueryBuilder('p')
+                ->andWhere('p.project = :project')
+                ->setParameter('project', $project)
+                ->setFirstResult($from)
+                ->setMaxResults($to)
+                ->andWhere('p.deleted=0')
+                ->orderBy('p.id', 'DESC')
+                ->getQuery()
+                ->getResult();
+        }
+    }
+
+    public function findNonDeleted($project, $privacy)
+    {
+        if ($privacy == 0) {
+            return $this->createQueryBuilder('p')
+                ->andWhere('p.project = :project')
+                ->setParameter('project', $project)
+                ->andWhere('p.deleted=0')
+                ->andWhere('p.privacy=0')
+                ->getQuery()
+                ->getResult();
+        } else {
+            return $this->createQueryBuilder('p')
+                ->andWhere('p.project = :project')
+                ->setParameter('project', $project)
+                ->andWhere('p.deleted=0')
+                ->getQuery()
+                ->getResult();
+        }
     }
 
     /*

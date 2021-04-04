@@ -29,6 +29,11 @@ class ProjectAdmin
      */
     private $project;
 
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $dateAdded;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -54,6 +59,18 @@ class ProjectAdmin
     public function setProject(?Project $project): self
     {
         $this->project = $project;
+
+        return $this;
+    }
+
+    public function getDateAdded(): ?\DateTimeInterface
+    {
+        return $this->dateAdded;
+    }
+
+    public function setDateAdded(?\DateTimeInterface $dateAdded): self
+    {
+        $this->dateAdded = $dateAdded;
 
         return $this;
     }

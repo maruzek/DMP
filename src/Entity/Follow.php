@@ -29,6 +29,11 @@ class Follow
      */
     private $project;
 
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $followed;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -54,6 +59,18 @@ class Follow
     public function setProject(?Project $project): self
     {
         $this->project = $project;
+
+        return $this;
+    }
+
+    public function getFollowed(): ?\DateTimeInterface
+    {
+        return $this->followed;
+    }
+
+    public function setFollowed(?\DateTimeInterface $followed): self
+    {
+        $this->followed = $followed;
 
         return $this;
     }

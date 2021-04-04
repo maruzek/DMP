@@ -2,8 +2,10 @@
 
 namespace App\ImageCrop;
 
+use App\Entity\Media;
 use App\Entity\Project;
 use App\Entity\User;
+use DateTime;
 
 class ImageCrop
 {
@@ -111,6 +113,39 @@ class ImageCrop
             $this->em->flush();
         }
         return true;
+    }
+
+    public function scaleBgImage(Project $project, User $user, $type = null)
+    {
+        $ext = $this->file->guessClientExtension();
+
+        $filename = md5(uniqid()) . '.' . $ext;
+        if ($ext == "jpeg" || $ext == "jpg") {
+            $im = imagecreatefromjpeg($this->file);
+            $im = imagescale($im, 1200, 480);
+            imagejpeg($im, $this->path . '/' . $filename);
+            imagedestroy($im);
+        } else if ($ext == "png") {
+            $im = imagecreatefrompng($this->file);
+            $im = imagescale($im, 1200, 480);
+            imagepng($im, $this->path . '/' . $filename);
+            imagedestroy($im);
+        } else {
+            return false;
+        }
+
+        $newMedia = new Media();
+        $newMedia->setName($filename);
+        $newMedia->setProject($project);
+        $newMedia->setType('hero');
+        $newMedia->setUploader($user);
+        $newMedia->setUploadDate(DateTime::createFromFormat('Y-m-d H:i:s', date('Y-m-d H:i:s')));
+        $this->em->persist($newMedia);
+
+        if ($type != "new") {
+            $this->em->flush();
+            return true;
+        }
     }
 
     public function cropUserImage(User $user)

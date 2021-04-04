@@ -90,6 +90,11 @@ class Project
      */
     private $deleted = false;
 
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $created;
+
     public function __construct()
     {
         $this->follows = new ArrayCollection();
@@ -377,6 +382,18 @@ class Project
                 $event->setProject(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getCreated(): ?\DateTimeInterface
+    {
+        return $this->created;
+    }
+
+    public function setCreated(?\DateTimeInterface $created): self
+    {
+        $this->created = $created;
 
         return $this;
     }

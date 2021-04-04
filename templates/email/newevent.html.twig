@@ -1,0 +1,23 @@
+<h2>Byla vytvořena nová událost v
+	{{ event.project.name }}</h2>
+
+<h4>{{ event.name }}</h4>
+<p>📍 Kde:
+	{{ event.location }}</p>
+<p>⌚ Kdy:
+	{{ event.start|format_datetime(pattern='d. M. yyyy HH:mm') }}
+	až
+	{{ event.end|format_datetime(pattern='d. M. yyyy HH:mm') }}
+</p>
+<p>
+	<a href="{{ url('project.project', {id: event.project.id }) }}">Odkaz na projekt</a>
+</p>
+<p>{{ event.description }}</p>
+{% if event.privacy == 1 %}
+	<p>Událost je jen pro členy
+		{{ event.project.name }}</p>
+{% endif %}
+
+
+<p>Událost vytvořil
+	{{ event.admin.firstname ~ ' ' ~ event.admin.lastname }}</p>

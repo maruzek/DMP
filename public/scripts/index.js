@@ -26,7 +26,6 @@ if (addAdminInput !== null) {
           project: projectID
         }
       }).then((response) => {
-        console.log(response)
         if (response.length <= 0) {
           autocopmleteArray = []
         } else {
@@ -36,7 +35,6 @@ if (addAdminInput !== null) {
             }
           }
         }
-        console.log(autocopmleteArray)
       }).catch((error) => {
         console.error(error)
       })
@@ -63,7 +61,6 @@ if (delButton != null) {
           project: projectID
         }
       }).then((response) => {
-        console.log(response)
         if (response == "success") {
           $("#toast-deladmin-fromproj-success").toast('show')
 
@@ -102,7 +99,6 @@ if (changeAdminBtn != null) {
           project: projectID
         }
       }).then((response) => {
-        console.log(response)
         if (response.length <= 0) {
           autocopmleteArray = []
         } else {
@@ -112,7 +108,6 @@ if (changeAdminBtn != null) {
             }
           }
         }
-        console.log(autocopmleteArrayChange)
       }).catch((error) => {
         console.error(error)
       })
@@ -132,7 +127,6 @@ if (changeAdminBtn != null) {
         project: projectID
       }
     }).then((response) => {
-      console.log(response)
       location.reload();
     }).catch((error) => {
       console.error(error)
@@ -153,7 +147,6 @@ if (editPostModal != null) {
     let text = button.getAttribute('data-bs-editpost-text')
     let privatel = button.getAttribute('data-bs-editpost-private')
     let id = button.getAttribute('data-bs-editpost-id')
-    console.log(text)
     // If necessary, you could initiate an AJAX request here
     // and then do the updating in a callback.
     //
@@ -167,7 +160,6 @@ if (editPostModal != null) {
 
     if (privatel == 1) {
       modalBodyCheck.setAttribute('checked', 'true')
-      console.log('je true')
     } else {
       modalBodyCheck.removeAttribute('checked')
     }
@@ -221,12 +213,10 @@ if (deletePostTrigger != null) {
             data: id
           }
         }).then((response) => {
-          console.log(response)
           if (response == "success") {
             let deletedPost = document.querySelector('#post-' + id).parentElement.remove()
             $("#toast-delpost-success").toast("show")
           } else {
-            console.log('chyba')
           }
         })
       }
@@ -246,7 +236,6 @@ if (projDelBtn != null) {
     const id = element.getAttribute('data-delproj-id')
     element.addEventListener('click', () => {
       let confirmMsg
-      console.log(element.parentElement.parentElement.parentElement)
       if (element.parentElement.parentElement.parentElement.getAttribute('id') == 'deleted-projects-tbody') {
         confirmMsg = "Opravdu chcete obnovit tento projekt?"
       } else {
@@ -275,7 +264,6 @@ if (projDelBtn != null) {
             projectTr.remove()
             $("#toast-delproj-success").toast("show")
           } else {
-            console.log('chyba')
           }
         })
       }
@@ -326,7 +314,6 @@ if (followBtn != null) {
         }
       } else if (response == "followfail" || response == "unfollowfail") {
         $('#toast-follow-fail').toast('show')
-        console.log(response)
       }
     })
   })
@@ -380,7 +367,6 @@ if (memberBtn != null) {
         }
       } else if (response == "memberfail" || response == "unmemberfail") {
         $('#toast-member-fail').toast('show')
-        console.log(response)
       }
     })
   })
@@ -403,7 +389,6 @@ if (acceptMemberBtn != null) {
           type: "accept"
         }
       }).then((response) => {
-        console.log(response)
         const tr = document.querySelector('#member-request-tr')
 
         if (response == "accept-success") {
@@ -434,7 +419,6 @@ if (declineMemberBtn != null) {
           type: "decline"
         }
       }).then((response) => {
-        console.log(response)
         const tr = document.querySelector('#member-request-tr')
 
         if (response == "decline-success") {
@@ -473,7 +457,6 @@ if (searchUserInput != null) {
           input: input
         }
       }).then((response) => {
-        console.log(response)
         if (response.length <= 0) {
           autocopmleteArray = []
         } else {
@@ -540,7 +523,6 @@ if (delUserModal != null) {
           id: id
         }
       }).then((response) => {
-        console.log(response)
 
         if (response == "success") {
           $('#toast-deluser-success').toast('show')
@@ -584,7 +566,6 @@ if (editUserModal != null) {
           type: "delimg"
         }
       }).then((response) => {
-        console.log(response)
 
         if (response == "success") {
           $('#toast-edituser-delimg-success').toast('show')
@@ -609,7 +590,6 @@ if (editUserModal != null) {
           type: "deldesc"
         }
       }).then((response) => {
-        console.log(response)
         if (response == "success") {
           $('#toast-edituser-deldesc-success').toast('show')
         } else if (response == "alreadyclear") {
@@ -659,7 +639,6 @@ if (newBlockBtn != null) {
       let newblockPostValue = newblockPost.value
       let newblockProjectValue = newblockProject.value
       let newBlockTypeValue = newBlockType.value
-      console.log(newblockPostValue)
       if (newBlockTypeValue == "project") {
         $.ajax({
           type: "POST",
@@ -669,7 +648,6 @@ if (newBlockBtn != null) {
             type: "project"
           }
         }).then((response) => {
-          console.log(response)
 
           if (response == "success") {
             $('.newblockSettings').slideUp('slow')
@@ -686,7 +664,6 @@ if (newBlockBtn != null) {
             type: "post"
           }
         }).then((response) => {
-          console.log(response)
 
           if (response == "success") {
             $('.newblockSettings').slideUp('slow')
@@ -720,7 +697,6 @@ if (delMemberBtn != null) {
           project: projid
         }
       }).then((response) => {
-        console.log(response)
         if (response == "success") {
           $('#toast-memberdel-success').toast('show');
 
@@ -755,7 +731,6 @@ if (delherobtn != null) {
           project: projectID
         }
       }).then((response) => {
-        console.log(response)
 
         element.parentElement.parentElement.remove()
       }).catch((error) => {
@@ -789,11 +764,9 @@ if (seensModal != null) {
         id: postid
       }
     }).then((response) => {
-      console.log(response)
       for (let i = 0; i < response.length; i++) {
         const tr = document.createElement("TR")
         const element = response[i]
-        console.log(element)
         let name = document.createElement('TD')
         name.innerHTML = element
         tr.appendChild(name)
@@ -871,7 +844,6 @@ if (removeIbBtn != null) {
           id: id
         }
       }).then((response) => {
-        console.log(response)
 
         if (response == "success") {
           $('#toast-delIB-success').toast('show')
@@ -907,7 +879,6 @@ if (delAbsAdminBtns != null) {
             id: id
           }
         }).then((response) => {
-          console.log(response)
 
           if (response == "success") {
             $('#toast-delAbsAdmin-success').toast('show')
@@ -965,6 +936,8 @@ if (eventSettingsModal != null) {
     } else {
       privacyForm.removeAttribute('checked')
     }
+
+    console.log(privacyForm.checked)
 
     const editEventBtn = eventSettingsModal.querySelector('#editevent-submit')
 
@@ -1031,7 +1004,6 @@ if(delEventBtns != null) {
           }
         })
       } else {
-        console.log('nope')
       }
     })
   }
@@ -1052,3 +1024,9 @@ mediaModal.addEventListener('show.bs.modal', function (event) {
   mediaModal.querySelector('#media-modal-img').setAttribute('src', img)
 
 })
+
+
+// Fotorama
+
+let postWidth = document.querySelector('.project-post-wrapper').offsetWidth
+document.querySelector('.fotorama').setAttribute('data-minwidth', (postWidth*80)/100)

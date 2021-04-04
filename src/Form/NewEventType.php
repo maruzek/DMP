@@ -58,6 +58,14 @@ class NewEventType extends AbstractType
                 'label' => 'Popis',
                 'required' => false
             ])
+            ->add('notification', CheckboxType::class, [
+                'attr' => [
+                    'class' => 'form-check-input'
+                ],
+                'label' => 'Odeslat členům notifikaci na email',
+                'required' => false,
+                'mapped' => false
+            ])
             ->add('submit', SubmitType::class, [
                 'attr' => [
                     'class' => 'btn btn-success mb-3'

@@ -10,11 +10,13 @@ class ValidateImage
     {
         /** @var UploadedFile $file */
         $ext = $file->guessClientExtension();
+        $exxt = $file->getClientOriginalExtension();
         if ($ext == "jpg" || $ext == "jpeg") {
             $im = imagecreatefromjpeg($file);
         } elseif ($ext == "png") {
             $im = imagecreatefrompng($file);
         }
+
         if (isset($im)) {
             $width = imagesx($im);
             $height = imagesy($im);

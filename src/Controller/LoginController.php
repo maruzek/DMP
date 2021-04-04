@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use App\SSO\SSO;
+use DateTime;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\FrameworkBundle\Routing\Router;
 use Symfony\Component\HttpFoundation\Response;
@@ -77,7 +78,8 @@ class LoginController extends AbstractController
                     ->setRole($ssoData['role'])
                     ->setFirstname($ssoData['firstname'])
                     ->setLastname($ssoData['lastname'])
-                    ->setTag($ssoData['tag']);
+                    ->setTag($ssoData['tag'])
+                    ->setFirstLogin(DateTime::createFromFormat('Y-m-d H:i:s', date('Y-m-d H:i:s')));
                 $em = $this->getDoctrine()->getManager();
                 $em->persist($user);
                 $em->flush();

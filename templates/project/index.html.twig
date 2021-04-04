@@ -41,7 +41,7 @@
 				<strong class="me-auto">Příspěvek</strong>
 			</div>
 			<div class="toast-body">
-				Váš příspěvek byl upraven
+				Příspěvek byl upraven
 			</div>
 		</div>
 		<div class="toast position-absolute mt-5 top-0 start-0" id="toast-editpost-nochange">
@@ -188,6 +188,17 @@
 	</div>
 {% endblock %}
 
+{% block errors %}
+	<div class="pt-3">
+		{% for error in errors %}
+			<div class="alert alert-danger alert-dismissible fade show" role="alert">
+				{{ error }}
+				<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+			</div>
+		{% endfor %}
+	</div>
+{% endblock %}
+
 {% block body %}
 	{% if project is defined %}
 
@@ -315,7 +326,7 @@
 							<p class="project-id d-none" id="{{ project.id }}"></p>
 						{% endif %}
 						{% if session.get('id') == project.admin.id or session.get('id') in projectAdmins %}
-							<button class="btn btn-outline-dark w-100" data-bs-toggle="modal" data-bs-target="#settingsModal">
+							<button class="btn btn-outline-dark w-100" data-bs-toggle="modal" data-bs-target="#settingsModal" id="projectSettingsBtn">
 								Spravovat
 								{{ project.tag }}
 							</button>
@@ -374,58 +385,114 @@
 								{% endif %}
 
 							</div>
-							{% for post in project.posts|reverse %}
+							{% for post in posts %}
 								{% if post.deleted == 0 %}
-									{% if post.privacy == 1 %}
-										{% if session.get('id') in projectMembers %}
-											{% include "project/post.html.twig" %}
-										{% endif %}
-									{% else %}
-										{% include "project/post.html.twig" %}
-									{% endif %}
+									{% include "project/post.html.twig" %}
 								{% endif %}
 							{% endfor %}
+
+							<nav aria-label="Pagination">
+								<ul class="pagination justify-content-center">
+									{% if postPages.current != 1 %}
+										<li class="page-item">
+											<a class="page-link" href="?postpage={{ postPages.current - 1 }}" tabindex="-1">Předchozí</a>
+										</li>
+									{% else %}
+										<li class="page-item disabled">
+											<a class="page-link" href="?postpage=#" tabindex="-1">Předchozí</a>
+										</li>
+									{% endif %}
+
+									{% if postPages.current != 1 %}
+										<li class="page-item">
+											<a class="page-link" href="?postpage=1">První</a>
+										</li>
+									{% else %}
+										<li class="page-item disabled">
+											<a class="page-link" href="?postpage=1">První</a>
+										</li>
+									{% endif %}
+
+
+									{% for i in postPages.currentmin..postPages.currentmax %}
+										{% if postPages.current != i %}
+											<li class="page-item">
+												<a class="page-link" href="?postpage={{ i }}">{{ i }}</a>
+											</li>
+										{% else %}
+											<li class="page-item disabled">
+												<a class="page-link" href="?postpage={{ i }}">{{ i }}</a>
+											</li>
+										{% endif %}
+									{% endfor %}
+
+									{% if postPages.current != postPages.max %}
+										<li class="page-item">
+											<a class="page-link" href="?postpage={{ postPages.max }}">Poslední</a>
+										</li>
+									{% else %}
+										<li class="page-item disabled">
+											<a class="page-link" href="?postpage={{ postPages.max }}">Poslední</a>
+										</li>
+									{% endif %}
+
+
+									{% if postPages.current < postPages.max %}
+										<li class="page-item">
+											<a class="page-link" href="?postpage={{ postPages.current + 1 }}">Další</a>
+										</li>
+									{% else %}
+										<li class="page-item disabled">
+											<a class="page-link" href="?postpage=#">Další</a>
+										</li>
+									{% endif %}
+
+								</ul>
+							</nav>
+
+
 						</div>
 						<div class="tab-pane fade" id="clenove" role="tabpanel" aria-labelledby="clenove-tab">
 							{% if session.get('id') == project.admin.id or session.get('id') in projectAdmins %}
-								<h3 class="mt-3">Žádosti o členství</h3>
-								<div class="member-requests mt-1 table-responsive">
-
-									<table class="table table-striped table-hover text-center">
-										<thead>
-											<tr>
-												<th scope="col">
-													ID</th>
-												<th scope="col">Jméno</th>
-												<th scope="col">Třída</th>
-												<th scope="col">Zobrazit profil</th>
-												<th scope="col">
-													Přijmout žádost
-												</th>
-												<th scope="col">Odmítnout žádost</th>
-											</tr>
-										</thead>
-										<tbody class="align-middle">
-											{% for member in project.members %}
-												{% if member.accepted == false %}
-													<tr id="member-request-tr">
-														<th scope="row">{{ member.member.id }}</th>
-														<td>{{ member.member.firstName ~ ' ' ~ member.member.lastName }}</td>
-														<td>{{ member.member.class }}</td>
-														<td>
-															<a class="btn btn-primary" href="{{ path('user.profile', {username: member.member.username}) }}" target="_blank">Zobrazit</a>
-														</td>
-														<td>
-															<button type="button" class="btn btn-success acceptMemberBtn" data-member-id="{{ member.id }}">Přijmout</button>
-														</td>
-														<td>
-															<button type="button" class="btn btn-danger declineMemberBtn" data-member-id="{{ member.id }}">Odmítnout</button>
-														</td>
-													</tr>
-												{% endif %}
-											{% endfor %}
-										</tbody>
-									</table>
+								<div class="member-req">
+									<h3 class="mt-3">Žádosti o členství</h3>
+									<div class="member-requests mt-1 table-responsive">
+										<table class="table table-striped table-hover text-center">
+											<thead>
+												<tr>
+													<th scope="col">
+														ID</th>
+													<th scope="col">Jméno</th>
+													<th scope="col">Třída</th>
+													<th scope="col">Zobrazit profil</th>
+													<th scope="col">
+														Přijmout žádost
+													</th>
+													<th scope="col">Odmítnout žádost</th>
+												</tr>
+											</thead>
+											<tbody class="align-middle">
+												{% for member in project.members %}
+													{% if member.accepted == false %}
+														<tr id="member-request-tr">
+															<th scope="row">{{ member.member.id }}</th>
+															<td>{{ member.member.firstName ~ ' ' ~ member.member.lastName }}</td>
+															<td>{{ member.member.class }}</td>
+															<td>
+																<a class="btn btn-primary" href="{{ path('user.profile', {username: member.member.username}) }}" target="_blank">Zobrazit</a>
+															</td>
+															<td>
+																<button type="button" class="btn btn-success acceptMemberBtn" data-member-id="{{ member.id }}">Přijmout</button>
+															</td>
+															<td>
+																<button type="button" class="btn btn-danger declineMemberBtn" data-member-id="{{ member.id }}">Odmítnout</button>
+															</td>
+														</tr>
+													{% endif %}
+												{% endfor %}
+											</tbody>
+										</table>
+									</div>
 								</div>
 							{% endif %}
 
@@ -434,12 +501,12 @@
 								<table class="table table-striped table-hover text-center">
 									<thead>
 										<tr>
-											<th scope="col">ID</th>
 											<th scope="col">Jméno</th>
 											<th scope="col">Třída</th>
-											<th scope="col">Zobrazit profil</th>
+											<th scope="col" class="table-print-hide">Zobrazit profil</th>
 											{% if session.get('id') == project.admin.id or session.get('id') in projectAdmins %}
-												<th scope="col">Odebrat z členů</th>
+												<th scope="col" class="table-print-hide">Členem od</th>
+												<th scope="col" class="table-print-hide">Odebrat z členů</th>
 											{% endif %}
 										</tr>
 									</thead>
@@ -447,17 +514,19 @@
 										{% for member in project.members %}
 											{% if member.accepted == true %}
 												<tr id="member-tr-">
-													<th scope="row">{{ member.member.id }}</th>
 													<td>{{ member.member.firstName ~ ' ' ~ member.member.lastName }}</td>
 													<td>{{ member.member.class }}</td>
-													<td>
+													<td class="table-print-hide">
 														<a class="btn btn-primary" href="{{ path('user.profile', {username: member.member.username}) }}" target="_blank">Zobrazit</a>
 													</td>
 													{% if session.get('id') == project.admin.id or session.get('id') in projectAdmins %}
+														<td class="table-print-hide">{{ member.acceptedDate|format_datetime(pattern='d. M. yyyy HH:mm') }}</td>
 														{% if member.member.id != project.admin.id and member.member.id not in projectAdmins %}
-															<td>
+															<td class="table-print-hide">
 																<button type="button" class="btn btn-danger delete-member" href="{{ path('project.deleteMember') }}" id="delete-member-{{ member.member.id }}-project-{{ project.id }}">Odebrat z členů</button>
 															</td>
+														{% else %}
+															<td class="table-print-hide"></td>
 														{% endif %}
 													{% endif %}
 												</tr>
@@ -487,10 +556,12 @@
 										{{ form_row(newEventForm.privacy) }}
 									</div>
 									{{ form_row(newEventForm.description) }}
+									<div class="form-check form-switch mb-3">
+										{{ form_row(newEventForm.notification) }}
+									</div>
 									{{ form_row(newEventForm.submit) }}
 									{{ form_end(newEventForm) }}
 								</div>
-
 							{% endif %}
 
 							{% if session.get('id') in projectMembers %}
@@ -505,15 +576,14 @@
 									{% endif %}
 								{% endfor %}
 							{% endif %}
-
 						</div>
 						<div
 							class="tab-pane fade" id="media" role="tabpanel" aria-labelledby="media-tab">
 
 							<!-- MEDIA -->
 							<div class="project-media row">
-								{% for img in project.media %}
-									{% if img.type == "post" %}
+								{% for img in project.media|reverse %}
+									{% if img.type == "post" and img.post.deleted == false %}
 										<div class="col-4 d-flex justify-constent-center align-items-center mt-3 mb-2">
 											<img src="/img/media/{{img.name}}" alt="" class="img-fluid" data-bs-toggle="modal" data-bs-target="#mediaModal" data-bs-medianame="{{ img.name }}">
 										</div>
@@ -632,15 +702,18 @@
 							</div>
 							<div class="mb-3">
 								{{ form_row(projectSettingsForm.medias) }}
+								<p class="text-secondary">
+									<em>Doporučená velikost nahrávaných obrázků od pozadí je 1200x480. Obrázky jiných velikostí budou roztaženy.</em>
+								</p>
 							</div>
 							<h4>Obrázky v pozadí</h4>
 
 							<div class="table-responsive mb-2 mt-3">
-								<table>
+								<table class="table table-bordered align-middle">
 									<tbody>
 										{% for media in project.media %}
 											{% if media.type == "hero" %}
-												<tr>
+												<tr class="mt-5">
 													<td>
 														<img src="/img/media/{{ media.name }}" alt="" class="img-fluid">
 													</td>

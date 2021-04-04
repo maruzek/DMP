@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\ColorTheme\ColorTheme;
 use App\Form\SearchType;
 use App\PostSeens\PostSeens;
 use App\Repository\IndexBlockRepository;
@@ -35,15 +36,14 @@ class MainController extends AbstractController
         if ($session->get('username') != null) {
             $user = $userRepository->find($session->get('id'));
 
-            /*foreach ($user->getMembers() as $member) {
-                dump($member->getProject()->getName());
-            }
-            dump($user->getMembers());
-            die;*/
+            $color = new ColorTheme();
+            $palette = $color->colorPallette('white');
+
             return $this->render('logged.html.twig', [
                 'controller_name' => 'MainController',
                 'session' => $session,
-                'posts' => $this->postSeens->whatUserHasntSeen()
+                'posts' => $this->postSeens->whatUserHasntSeen(),
+                'palette' => $palette
             ]);
         }
 

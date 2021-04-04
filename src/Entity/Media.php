@@ -45,6 +45,11 @@ class Media
      */
     private $uploader;
 
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $uploadDate;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -106,6 +111,18 @@ class Media
     public function setUploader(?User $uploader): self
     {
         $this->uploader = $uploader;
+
+        return $this;
+    }
+
+    public function getUploadDate(): ?\DateTimeInterface
+    {
+        return $this->uploadDate;
+    }
+
+    public function setUploadDate(\DateTimeInterface $uploadDate): self
+    {
+        $this->uploadDate = $uploadDate;
 
         return $this;
     }

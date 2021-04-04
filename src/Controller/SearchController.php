@@ -25,13 +25,16 @@ class SearchController extends AbstractController
         $query = $request->query->get('q');
         $searchObj = new Search($userRepository, $postRepository, $projectRepository);
         $searchQ = $searchObj->doSearch($query);
-        $searchUsers = $searchQ[0];
-        $searchPosts = $searchQ[1];
-        $searchProjects = $searchQ[2];
+        if ($searchQ != null) {
+            $searchUsers = $searchQ[0];
+            $searchPosts = $searchQ[1];
+            $searchProjects = $searchQ[2];
+        } else {
+            $searchUsers = "";
+            $searchPosts = "";
+            $searchProjects = "";
+        }
 
-        //'searchPosts' => $searchQ[1],
-        //'searchUsers' => $searchQ[0],
-        //'searchProjects' => $searchQ[2],
 
         return $this->render('search/index.html.twig', [
             'controller_name' => 'SearchController',

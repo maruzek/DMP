@@ -98,6 +98,11 @@ class User
      */
     private $events;
 
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $firstLogin;
+
     public function __construct()
     {
         $this->projects = new ArrayCollection();
@@ -416,6 +421,18 @@ class User
     public function setRole(string $role): self
     {
         $this->role = $role;
+
+        return $this;
+    }
+
+    public function getFirstLogin(): ?\DateTimeInterface
+    {
+        return $this->firstLogin;
+    }
+
+    public function setFirstLogin(?\DateTimeInterface $firstLogin): self
+    {
+        $this->firstLogin = $firstLogin;
 
         return $this;
     }

@@ -60,6 +60,11 @@ class Post
      */
     private $deleted = false;
 
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $postedDate;
+
     public function __construct()
     {
         $this->media = new ArrayCollection();
@@ -187,6 +192,18 @@ class Post
     public function setDeleted(?bool $deleted): self
     {
         $this->deleted = $deleted;
+
+        return $this;
+    }
+
+    public function getPostedDate(): ?\DateTimeInterface
+    {
+        return $this->postedDate;
+    }
+
+    public function setPostedDate(?\DateTimeInterface $postedDate): self
+    {
+        $this->postedDate = $postedDate;
 
         return $this;
     }

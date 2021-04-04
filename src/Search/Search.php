@@ -8,7 +8,6 @@ use App\Repository\UserRepository;
 
 class Search
 {
-    private string $query;
     private $userRepository;
     private $postRepository;
     private $projectRepository;
@@ -22,12 +21,14 @@ class Search
 
     public function doSearch($query)
     {
-        $response = [];
+        if ($query != null) {
+            $response = [];
 
-        array_push($response, $this->userRepository->searchUser($query));
-        array_push($response, $this->postRepository->searchPost($query));
-        array_push($response, $this->projectRepository->searchProject($query));
+            array_push($response, $this->userRepository->searchUser($query));
+            array_push($response, $this->postRepository->searchPost($query));
+            array_push($response, $this->projectRepository->searchProject($query));
 
-        return $response;
+            return $response;
+        }
     }
 }

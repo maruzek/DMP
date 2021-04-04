@@ -6,7 +6,7 @@
 			</span>
 		</div>
 	{% endif %}
-	<div class="card mt-3" id="event-card-{{ event.id }}">
+	<div class="card mb-3 event-card" id="event-card-{{ event.id }}">
 		<div class="card-body">
 			<h4 class="card-title m-0" id="event-{{ event.id }}-name">{{ event.name }}</h4>
 			<p class="mt-2 mb-2 m-0" id="event-{{ event.id }}-location">
@@ -18,11 +18,13 @@
 			{% if event.description != null %}
 				<p class="card-text mt-2" id="event-{{ event.id }}-description">{{ event.description }}</p>
 			{% endif %}
-			{% if session.get('id') == event.admin.id %}
-				<div>
-					<i class="fas fa-sliders-h mt-2 event-setting-btn" data-bs-toggle="modal" data-bs-target="#eventSettingsModal" data-bs-editevent-name="{{ event.name }}" data-bs-editevent-location="{{ event.location }}" data-bs-editevent-start="{{ event.start|format_datetime(pattern='yyyy-MM-ddTHH:mm:ss') }}" data-bs-editevent-end="{{ event.end|format_datetime(pattern='yyyy-MM-ddTHH:mm:ss') }}" data-bs-editevent-privacy="{{ event.privacy }}" data-bs-editevent-description="{{ event.description }}" data-bs-editevent-id="{{ event.id }}"></i>
-					<i class="fas fa-trash mt-2 ml-2 event-delete-btn" data-delevent-id="{{ event.id }}"></i>
-				</div>
+			{% if session is defined %}
+				{% if session.get('id') == project.admin.id or session.get('id') in projectAdmins  %}
+					<div class="event-manage-btns">
+						<i class="fas fa-sliders-h mt-2 event-setting-btn" data-bs-toggle="modal" data-bs-target="#eventSettingsModal" data-bs-editevent-name="{{ event.name }}" data-bs-editevent-location="{{ event.location }}" data-bs-editevent-start="{{ event.start|format_datetime(pattern='yyyy-MM-ddTHH:mm:ss') }}" data-bs-editevent-end="{{ event.end|format_datetime(pattern='yyyy-MM-ddTHH:mm:ss') }}" data-bs-editevent-privacy="{{ event.privacy }}" data-bs-editevent-description="{{ event.description }}" data-bs-editevent-id="{{ event.id }}"></i>
+						<i class="fas fa-trash mt-2 ml-2 event-delete-btn" data-delevent-id="{{ event.id }}"></i>
+					</div>
+				{% endif %}
 			{% endif %}
 		</div>
 	</div>
