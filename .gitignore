@@ -29,3 +29,5 @@ package-lock.json
 
 responseUC.txt
 /src/response.json
+
+.htaccess

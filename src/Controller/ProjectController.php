@@ -12,16 +12,9 @@ use App\Entity\Post;
 use App\Entity\Project;
 use App\Entity\ProjectAdmin;
 use App\Entity\Seen;
-use App\Entity\User;
 use App\Form\AddPostType;
-use App\Form\EditPostType;
-use App\Form\FollowType;
-use App\Form\MemberType;
 use App\Form\NewEventType;
-use App\Form\NewProjectType;
 use App\Form\ProjectSettingsType;
-use App\Form\UnfollowType;
-use App\Form\UnmemberType;
 use App\ImageCrop\ImageCrop;
 use App\Memberships\Memberships;
 use App\ProjectCheck\ProjectCheck;
@@ -37,7 +30,6 @@ use App\Repository\UserRepository;
 use App\ValidateImage\ValidateImage;
 use DateTime;
 use DateTimeZone;
-use PhpParser\Node\Expr\AssignOp\Pow;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -52,7 +44,6 @@ use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
-use Symfony\Component\Validator\Constraints\ImageValidator;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
@@ -60,21 +51,23 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  */
 class ProjectController extends AbstractController
 {
-    private $session;
+    // JSON Endpoint pro úpravu příspěvků
 
     /**
      * @Route("/editPost", name="editPost", methods={"POST"})
      */
     public function editPost(Request $request, PostRepository $postRepository)
     {
+        // Kontrola, jestli je zvolaný request AJAXem
         if ($request->isXmlHttpRequest()) {
+            // Získání dat z requestu
             $data = $request->request->get('data');
             $text = $data[0];
             $privacy = $data[1];
             $id = $data[2];
 
             $post = $postRepository->find($id);
-
+            // Zpracování úpravy
             $result = "";
             if ($post->getPrivacy() == $privacy && $post->getText() == $text) {
                 $result = "nochange";
@@ -89,8 +82,8 @@ class ProjectController extends AbstractController
                 $post->setPrivacy($privacy);
                 $result = "success";
             }
-
-            $em = $this->getDoctrine()->getManager()->flush();
+            // Odeslání do DB
+            $this->getDoctrine()->getManager()->flush();
 
 
             $defaultContext = [
@@ -104,6 +97,7 @@ class ProjectController extends AbstractController
             $normalizers = [
                 new ObjectNormalizer(null, null, null, null, null, null, $defaultContext)
             ];
+            // Serializace a odeslání odpovědi
             $serializer = new Serializer($normalizers, $encoders);
             $response = $serializer->serialize($result, 'json');
             return new JsonResponse($response, 200, [], true);
@@ -114,6 +108,8 @@ class ProjectController extends AbstractController
             'message' => 'Not an AJAX request'
         ]);
     }
+
+    // JSON Endpoint pro mazání příspěvků
 
     /**
      * @Route("/deletePost", name="deletePost", methods={"POST"})
@@ -134,7 +130,7 @@ class ProjectController extends AbstractController
                 $result = "fail";
             }
 
-            $em = $this->getDoctrine()->getManager()->flush();
+            $this->getDoctrine()->getManager()->flush();
 
 
             $defaultContext = [
@@ -159,6 +155,8 @@ class ProjectController extends AbstractController
         ]);
     }
 
+    // JSON Endpoint pro úpravu událostí
+
     /**
      * @Route("/editEvent", name="editEvent", methods={"POST"})
      */
@@ -172,6 +170,7 @@ class ProjectController extends AbstractController
             $end = date_create($request->request->get('end'));
             $description = $request->request->get('description');
             $privacy = $request->request->get('privacy');
+
             if ($privacy == "false") {
                 $privacy = false;
             } elseif ($privacy == "true") {
@@ -238,6 +237,8 @@ class ProjectController extends AbstractController
         ]);
     }
 
+    // JSON Endpoint pro mazání událostí
+
     /**
      * @Route("/deleteEvent", name="deleteEvent", methods={"POST"})
      */
@@ -284,6 +285,8 @@ class ProjectController extends AbstractController
             'message' => 'Not an AJAX request'
         ]);
     }
+
+    // JSON Endpoint pro sledování
 
     /**
      * @Route("/follow", name="follow", methods={"POST"})
@@ -341,6 +344,8 @@ class ProjectController extends AbstractController
             'message' => 'Not an AJAX request'
         ], 401);
     }
+
+    // JSON Endpoint pro žádost o členství
 
     /**
      * @Route("/member", name="member", methods={"POST"})
@@ -400,6 +405,8 @@ class ProjectController extends AbstractController
         ], 401);
     }
 
+    // JSON Endpoint pro přijetí, nebo odmítnutí žádosti o členství
+
     /**
      * @Route("/acceptMember", name="acceptMember", methods={"POST"})
      */
@@ -454,6 +461,8 @@ class ProjectController extends AbstractController
         ], 401);
     }
 
+    // JSON Endpoint pro odebrání členství
+
     /**
      * @Route("/deleteMember", name="deleteMember", methods={"POST"})
      */
@@ -504,6 +513,8 @@ class ProjectController extends AbstractController
             'message' => 'Not an AJAX request'
         ], 401);
     }
+
+    // JSON Endpoint pro mazání obrázků v pozadí
 
     /**
      * @Route("/deleteHero", name="deleteHero", methods={"POST"})
@@ -558,6 +569,8 @@ class ProjectController extends AbstractController
         ], 401);
     }
 
+    // JSON Endpoint pro Získání všech zhládnutí příspěvku
+
     /**
      * @Route("/getPostSeens", name="getPostSeens", methods={"POST"})
      */
@@ -596,17 +609,22 @@ class ProjectController extends AbstractController
         ], 401);
     }
 
+    // JSON Endpoint pro vypsání projektu
+
     /**
      * @Route("/{id}", name="project")
      */
-    public function index($id, SessionInterface $session, ProjectRepository $projectRepository, UserRepository $userRepository, FollowRepository $followRepository, Request $request, MemberRepository $memberRepository, PostRepository $postRepository, SeenRepository $seenRepository, ValidatorInterface $validator, EventRepository $eventRepository, MailerInterface $mailer): Response
+    public function index($id, SessionInterface $session, ProjectRepository $projectRepository, UserRepository $userRepository, FollowRepository $followRepository, Request $request, MemberRepository $memberRepository, PostRepository $postRepository, SeenRepository $seenRepository, ValidatorInterface $validator, EventRepository $eventRepository, MailerInterface $mailer, MediaRepository $mediaRepository): Response
     {
         $this->session = $session;
-        $project = $projectRepository->findOneBy(['id' => $id]);
+        $project = $projectRepository->find($id); // Získání projektu z DB
 
+        // Kontrola, jestli je projekt v DB
         if ($project) {
+            // Kontrlova projektu
             $projectCheck = new ProjectCheck($project->getId(), $projectRepository);
             if ($projectCheck->isAccessible()) {
+                //
                 $color = new ColorTheme();
                 $palette = $color->colorPallette($project->getColor());
 
@@ -626,7 +644,7 @@ class ProjectController extends AbstractController
                     array_push($projectAdmins, $admin->getUser()->getId());
                 }
 
-                $projectMembersArray = $this->getDoctrine()->getRepository(Member::class)->findBy(['project' => $project]);
+                $projectMembersArray = $memberRepository->findBy(['project' => $project]);
 
                 $projectMembers = [];
                 foreach ($projectMembersArray as $member) {
@@ -647,20 +665,14 @@ class ProjectController extends AbstractController
                     }
 
                     if (!$followRepository->findOneBy(['follower' => $session->get('id'), 'project' => $project])) {
-                        //$followForm = $this->createForm(FollowType::class, $follow);
                         $followBtn = "follow";
                     } else {
-                        //$followForm = $this->createForm(UnfollowType::class, $follow);
                         $followBtn = "unfollow";
                     }
 
                     if (!$memberRepository->findOneBy(['member' => $user, 'project' => $project])) {
-
-
-                        //$memberForm = $this->createForm(MemberType::class, $newMember);
                         $memberBtn = "member";
                     } else {
-                        //$memberForm = $this->createForm(UnmemberType::class, $newMember);
                         $memberBtn = "unmember";
                     }
 
@@ -686,8 +698,6 @@ class ProjectController extends AbstractController
                             $fileError = "errr";
                         }
 
-                        // Zavolání entitty managera
-                        $em = $this->getDoctrine()->getManager();
                         // Zpracování obrázků v pozadí
                         $media = $request->files->get('project_settings')["medias"];
                         if ($media) {
@@ -779,30 +789,6 @@ class ProjectController extends AbstractController
                             }
 
                             if (empty($errors)) {
-                                //$reg_exUrl = "/(http|https)\:\/\/[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}(\/\S*)?/";
-                                /*$reg_exUrl = '#(?<!href\=[\'"])(https?|ftp|file)://[-A-Za-z0-9+&@\#/%()?=~_|$!:,.;]*[-A-Za-z0-9+&@\#/%()=~_|$]#';
-
-
-                                $text = $addPostForm->getData()->getText();
-
-                                //$s = preg_replace_callback('#(?<!href\=[\'"])(https?|ftp|file)://[-A-Za-z0-9+&@\#/%()?=~_|$!:,.;]*[-A-Za-z0-9+&@\#/%()=~_|$]#', autoDetectLinks(), $s);
-                                //dump($text);
-
-                                // gergre https://google.com fregerger https://seznam.cz
-
-                                if (preg_match_all($reg_exUrl, $text, $url)) {
-                                    $replace = [];
-                                    $regexArray = [];
-                                    for ($i = 0; $i < count($url[0]); $i++) {
-                                        array_push($regexArray, $url[0][$i]);
-                                        array_push($replace, '<a href="' . $url[0][$i] . '">' . $url[0][$i] . '</a>');
-                                    }
-
-                                    $text = str_replace($regexArray, $replace, $text);
-                                }*/
-
-
-                                //$post->setText($text);
                                 $em->persist($post);
                                 $em->flush();
                             }
@@ -888,9 +874,10 @@ class ProjectController extends AbstractController
                     $page = 1;
                 } else {
                     if (is_numeric($request->query->get('postpage')) && $request->query->get('postpage') <= $numberOfPages && $request->query->get('postpage') >= 1) {
-                        $page = $request->query->get('postpage');
+                        $page = (int)$request->query->get('postpage');
+                    } else {
+                        $page = 1;
                     }
-                    $page = 1;
                 }
                 $thisPageFirstPost = ($page - 1) * $resultsPerPage;
 
@@ -915,6 +902,23 @@ class ProjectController extends AbstractController
                     'currentmax' => $currentmax
                 ];
 
+                // Media k zobrazení
+
+                $allMedias = $mediaRepository->findProjectMedia($project);
+                $medias = [];
+
+                foreach ($allMedias as $media) {
+                    if ($media->getPost()->getDeleted() == 0) {
+                        if ($postsPrivacy == 1) {
+                            array_push($medias, $media);
+                        } else {
+                            if ($media->getPost()->getPrivacy() == 0) {
+                                array_push($medias, $media);
+                            }
+                        }
+                    }
+                }
+
                 if ($followBtn != "") {
                     return $this->render('project/index.html.twig', [
                         'controller_name' => 'ProjectController',
@@ -931,7 +935,8 @@ class ProjectController extends AbstractController
                         'memberBtn' => $memberBtn,
                         'newEventForm' => $newEventForm->createView(),
                         'errors' => $errors,
-                        'postPages' => $postPages
+                        'postPages' => $postPages,
+                        'medias' => $medias
                     ]);
                 } else {
                     return $this->render('project/index.html.twig', [

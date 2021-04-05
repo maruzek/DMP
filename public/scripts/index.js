@@ -472,6 +472,15 @@ if (searchUserInput != null) {
             userClass.innerHTML = response[i].class
             let tag = document.createElement('TD')
             tag.innerHTML = response[i].tag
+            let firstLogin = document.createElement('TD')
+            if(response[i].firstLogin != null) {
+              console.log(response[i].firstLogin.timestamp)
+              const options = { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric' }
+              let firstLoginDate = new Date(response[i].firstLogin.timestamp*1000).toLocaleDateString('cs-cs', options)
+              console.log(response[i].firstLogin)
+              console.log(firstLoginDate)
+              firstLogin.innerHTML = firstLoginDate
+            }
             let viewBtn = document.createElement('TD')
             viewBtn.innerHTML = '<a class="btn btn-success" href="/user/' + response[i].username + '" target="_blank">Zobrazit</a>'
             let editBtn = document.createElement('TD')
@@ -485,9 +494,11 @@ if (searchUserInput != null) {
             tr.appendChild(userClass)
             tr.appendChild(username)
             tr.appendChild(tag)
+            tr.appendChild(firstLogin)
             tr.appendChild(viewBtn)
             tr.appendChild(editBtn)
             tr.appendChild(delBtn)
+            
 
             tr.classList.add('testlist')
             document.querySelector('#allUsers-tbody').appendChild(tr)
@@ -1011,22 +1022,26 @@ if(delEventBtns != null) {
 
 // Media modal
 
-var mediaModal = document.getElementById('mediaModal')
-mediaModal.addEventListener('show.bs.modal', function (event) {
-  // Button that triggered the modal
-  var button = event.relatedTarget
-  // Extract info from data-bs-* attributes
-  var img = button.getAttribute('src')
-  // If necessary, you could initiate an AJAX request here
-  // and then do the updating in a callback.
-  //
-  // Update the modal's content.
-  mediaModal.querySelector('#media-modal-img').setAttribute('src', img)
-
-})
-
+const mediaModal = document.getElementById('mediaModal')
+if(mediaModal != null ) {
+  mediaModal.addEventListener('show.bs.modal', function (event) {
+    // Button that triggered the modal
+    var button = event.relatedTarget
+    // Extract info from data-bs-* attributes
+    var img = button.getAttribute('src')
+    // If necessary, you could initiate an AJAX request here
+    // and then do the updating in a callback.
+    //
+    // Update the modal's content.
+    mediaModal.querySelector('#media-modal-img').setAttribute('src', img)
+  
+  })
+}
 
 // Fotorama
 
-let postWidth = document.querySelector('.project-post-wrapper').offsetWidth
+let post = document.querySelector('.project-post-wrapper')
+if(post != null ) {
+  let postWidth = post.offsetWidth
 document.querySelector('.fotorama').setAttribute('data-minwidth', (postWidth*80)/100)
+}

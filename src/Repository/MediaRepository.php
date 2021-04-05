@@ -22,6 +22,17 @@ class MediaRepository extends ServiceEntityRepository
     // /**
     //  * @return Media[] Returns an array of Media objects
     //  */
+
+    public function findProjectMedia($project)
+    {
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.project = :project')
+            ->setParameter('project', $project)
+            ->andWhere('p.type=\'post\'')
+            ->orderBy('p.id', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
     /*
     public function findByExampleField($value)
     {

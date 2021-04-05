@@ -2,12 +2,15 @@
 
 namespace App\PostSeens;
 
+use App\Memberships\Memberships;
+
 class PostSeens
 {
     private $postRepository;
     private $userRepository;
     private $session;
     private $loggedUser;
+    private $userMember;
 
     public function __construct($postRepository, $userRepository, $session)
     {
@@ -17,6 +20,7 @@ class PostSeens
         if ($session->get('id') != null) {
             $this->loggedUser = $userRepository->find($session->get('id'));
         }
+        $this->userMember = new Memberships();
     }
 
     private function hasUserSeenIt($post, $user): bool
@@ -38,16 +42,22 @@ class PostSeens
         $allPosts = [];
 
         foreach ($this->loggedUser->getFollows() as $follow) {
-            foreach ($this->postRepository->findBy(['project' => $follow->getProject()]) as $post) {
-                if (!in_array($post, $allPosts)) {
+            foreach ($this->postRepository->findBy(['project' => $follow->getProject(), 'deleted' => false]) as $post) {
+                if (!in_array($post, $allPosts) && $post->getPrivacy() == 0) {
                     array_push($allPosts, $post);
                 }
             }
         }
         foreach ($this->loggedUser->getMembers() as $member) {
-            foreach ($this->postRepository->findBy(['project' => $member->getProject()]) as $post) {
+            foreach ($this->postRepository->findBy(['project' => $member->getProject(), 'deleted' => false]) as $post) {
                 if (!in_array($post, $allPosts)) {
-                    array_push($allPosts, $post);
+                    if ($post->getPrivacy() == 1) {
+                        if ($this->userMember->isUserMember($post->getProject(), $this->loggedUser)) {
+                            array_push($allPosts, $post);
+                        }
+                    } else {
+                        array_push($allPosts, $post);
+                    }
                 }
             }
         }

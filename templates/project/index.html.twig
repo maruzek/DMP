@@ -582,13 +582,13 @@
 
 							<!-- MEDIA -->
 							<div class="project-media row">
-								{% for img in project.media|reverse %}
-									{% if img.type == "post" and img.post.deleted == false %}
-										<div class="col-4 d-flex justify-constent-center align-items-center mt-3 mb-2">
-											<img src="/img/media/{{img.name}}" alt="" class="img-fluid" data-bs-toggle="modal" data-bs-target="#mediaModal" data-bs-medianame="{{ img.name }}">
-										</div>
-									{% endif %}
+								{% for img in medias %}
+									<div class="col-4 d-flex justify-constent-center align-items-center mt-3 mb-2">
+										<img src="/img/media/{{img.name}}" alt="" class="img-fluid" data-bs-toggle="modal" data-bs-target="#mediaModal" data-bs-medianame="{{ img.name }}">
+									</div>
 								{% endfor %}
+
+
 							</div>
 						</div>
 					</div>

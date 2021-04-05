@@ -3,8 +3,8 @@
 {% block body %}
 
 	{% for post in posts|reverse %}
-		<a href="{{ path('project.project', { id: post.project.id }) }}" class="nicelink">
-			<div class="project-post-wrapper bg-light" id="post-{{ post.id }}">
+		<div class="project-post-wrapper" style="background-color: #eee" id="post-{{ post.id }}">
+			<a href="{{ path('project.project', { id: post.project.id }) }}" class="nicelink">
 				<div class="post-textcontent">
 					<div class="project-post-profilepic">
 						<img src="/img/userimg/{{ post.author.image }}" alt="">
@@ -18,17 +18,16 @@
 						<p id="postText-{{ post.id }}">{{ post.text }}</p>
 					</div>
 				</div>
-				<div class="post-media d-block mx-auto">
-					<div class="fotorama mw-100">
-						{% for img in post.media %}
-							{% if img.type == "post" %}
-								<img src="/img/media/{{ img.name }}" class="d-block mw-100 h-50 mx-auto" alt="post media">
-							{% endif %}
-						{% endfor %}
-					</div>
+			</a>
+			<div class="post-media d-block mx-auto">
+				<div class="fotorama" data-width="100%" data-ratio="800/600" data-minwidth="500" data-maxwidth="1000" data-minheight="300" data-maxheight="100%">
+					{% for img in post.media %}
+						<img src="/img/media/{{ img.name }}" class="d-block mx-auto" alt="post media">
+					{% endfor %}
 				</div>
 			</div>
-		</a>
+		</div>
+
 	{% endfor %}
 
 	<p class="text-secondary text-center m-3">Vše zobrazeno!</p>

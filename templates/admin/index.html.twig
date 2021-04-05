@@ -155,11 +155,6 @@
 			</a>
 		</li>
 		<li class="nav-item flex-sm-fill" role="presentation">
-			<a class=" text-sm-center nav-link" data-bs-toggle="pill" href="#statistiky" role="tab" aria-controls="statistiky" aria-selected="true">
-				Statistiky
-			</a>
-		</li>
-		<li class="nav-item flex-sm-fill" role="presentation">
 			<a class=" text-sm-center nav-link" data-bs-toggle="pill" href="#uzivatele" role="tab" aria-controls="uzivatele" aria-selected="true">
 				Uživatelé
 			</a>
@@ -200,10 +195,10 @@
 						<button type="button" class="btn btn-success mb-3" id="newblockSubmit">Přidat nový blok</button>
 
 						<!--<select id="newblockPost" class="form-select mb-3" aria-label="Vybrat typ nového bloku">
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																											<option selected>Typ nového bloku</option>
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																											<option value="projekt">Projekt</option>
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																											<option value="post">Příspěvek</option>
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																										</select>-->
+																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																													<option selected>Typ nového bloku</option>
+																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																													<option value="projekt">Projekt</option>
+																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																													<option value="post">Příspěvek</option>
+																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																												</select>-->
 					</div>
 					{% for block in allIndexBlocksArray %}
 						{% if block.type == "project" %}
@@ -274,8 +269,6 @@
 					</div>
 
 				</div>
-
-				<div class="tab-pane fade" id="statistiky" role="tabpanel" aria-labelledby="statistiky">statistiky</div>
 				<div class="tab-pane fade" id="uzivatele" role="tabpanel" aria-labelledby="uzivatele">
 					<div class="form-floating mb-3 mt-3">
 						<input type="text" class="form-control" id="searchUserInput" placeholder="Hledat...">
@@ -290,6 +283,7 @@
 									<th scope="col">Třída</th>
 									<th scope="col">Uživatelské jméno</th>
 									<th scope="col">Tag</th>
+									<th scope="col">První přihlášení</th>
 									<th scope="col">Zobrazit profil</th>
 									<th scope="col">Spravovat</th>
 									<th scope="col">Smazat</th>

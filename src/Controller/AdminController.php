@@ -21,6 +21,7 @@ use App\Repository\ProjectAdminRepository;
 use App\Repository\ProjectRepository;
 use App\Repository\UserRepository;
 use DateTime;
+use DateTimeZone;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
@@ -37,6 +38,7 @@ use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
+use Symfony\Component\Validator\Constraints\Date;
 use Symfony\Flex\Unpack\Result;
 
 /**
@@ -603,8 +605,10 @@ class AdminController extends AbstractController
                     'firstname' => $user->getFirstname(),
                     'lastname' => $user->getLastname(),
                     'class' => $user->getClass(),
-                    'tag' => $user->getTag()
+                    'tag' => $user->getTag(),
+                    'firstLogin' => $user->getFirstLogin()
                 ];
+
 
                 array_push($results, $userArray);
             }
