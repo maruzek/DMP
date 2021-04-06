@@ -4,19 +4,17 @@ namespace App\PostSeens;
 
 use App\Memberships\Memberships;
 
+// Service pro zjišťování, co uživatel již viděl
+
 class PostSeens
 {
     private $postRepository;
-    private $userRepository;
-    private $session;
     private $loggedUser;
     private $userMember;
 
     public function __construct($postRepository, $userRepository, $session)
     {
         $this->postRepository = $postRepository;
-        $this->userRepository = $userRepository;
-        $this->session = $session;
         if ($session->get('id') != null) {
             $this->loggedUser = $userRepository->find($session->get('id'));
         }

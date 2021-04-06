@@ -2,6 +2,7 @@
 
 namespace App\ColorTheme;
 
+// Service, který uděluje barevné palety projektům
 class ColorTheme
 {
     public function colorPallette($color)

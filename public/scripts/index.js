@@ -216,8 +216,7 @@ if (deletePostTrigger != null) {
           if (response == "success") {
             let deletedPost = document.querySelector('#post-' + id).parentElement.remove()
             $("#toast-delpost-success").toast("show")
-          } else {
-          }
+          } else {}
         })
       }
     })
@@ -263,8 +262,7 @@ if (projDelBtn != null) {
             delProjTable.insertBefore(clone, delProjTable.childNodes[0])
             projectTr.remove()
             $("#toast-delproj-success").toast("show")
-          } else {
-          }
+          } else {}
         })
       }
     })
@@ -473,12 +471,15 @@ if (searchUserInput != null) {
             let tag = document.createElement('TD')
             tag.innerHTML = response[i].tag
             let firstLogin = document.createElement('TD')
-            if(response[i].firstLogin != null) {
-              console.log(response[i].firstLogin.timestamp)
-              const options = { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric' }
-              let firstLoginDate = new Date(response[i].firstLogin.timestamp*1000).toLocaleDateString('cs-cs', options)
-              console.log(response[i].firstLogin)
-              console.log(firstLoginDate)
+            if (response[i].firstLogin != null) {
+              const options = {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: 'numeric'
+              }
+              let firstLoginDate = new Date(response[i].firstLogin.timestamp * 1000).toLocaleDateString('cs-cs', options)
               firstLogin.innerHTML = firstLoginDate
             }
             let viewBtn = document.createElement('TD')
@@ -498,7 +499,7 @@ if (searchUserInput != null) {
             tr.appendChild(viewBtn)
             tr.appendChild(editBtn)
             tr.appendChild(delBtn)
-            
+
 
             tr.classList.add('testlist')
             document.querySelector('#allUsers-tbody').appendChild(tr)
@@ -568,6 +569,91 @@ if (editUserModal != null) {
     const delimgBtn = editUserModal.querySelector('.admin-deluser-img')
     const deldescBtn = editUserModal.querySelector('.admin-deluser-desc')
 
+    const editUserPostsTable = editUserModal.querySelector('#deletedPostsTable-tbody')
+    $.ajax({
+      type: "POST",
+      url: "/admin/getUserDeletedPosts",
+      data: {
+        id: id
+      }
+    }).then((response) => {
+
+      for (let i = 0; i < response.length; i++) {
+        const options = {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: 'numeric',
+          minute: 'numeric'
+        }
+
+        const post = response[i];
+
+        let tr = document.createElement("TR")
+
+        let id = document.createElement('TD')
+        id.innerHTML = response[i].id
+        let text = document.createElement('TD')
+        text.innerHTML = response[i].text
+        let project = document.createElement('TD')
+        project.innerHTML = response[i].project
+
+        let posted = document.createElement('TD')
+        posted.innerHTML = new Date(response[i].posted.timestamp * 1000).toLocaleDateString('cs-cs', options)
+        let privacy = document.createElement('TD')
+        if (privacy == 1) {
+          privacy.innerHTML = 'ANO'
+        } else {
+          privacy.innerHTML = 'NE'
+        }
+
+        let restoreBtn = document.createElement('TD')
+        restoreBtn.innerHTML = '<button class="btn btn-danger delete-user-post" data-delete-user-post="' + post.id + '">Obnovit</button>'
+
+        tr.appendChild(id)
+        tr.appendChild(text)
+        tr.appendChild(project)
+        tr.appendChild(privacy)
+        tr.appendChild(posted)
+        tr.appendChild(restoreBtn)
+
+        tr.setAttribute('id', 'restorePostTr-' + post.id)
+
+        editUserPostsTable.appendChild(tr)
+
+        let deleteUserPostBtns = document.querySelectorAll('.delete-user-post')
+        for (let k = 0; k < deleteUserPostBtns.length; k++) {
+          const element = deleteUserPostBtns[k];
+
+          element.addEventListener('click', () => {
+            const postId = element.getAttribute('data-delete-user-post')
+
+            $.ajax({
+              type: "POST",
+              url: "/admin/restorePost",
+              data: {
+                id: postId
+              }
+            }).then((response) => {
+              if (response == "success") {
+                $('#toast-delUserPost-success').toast('show')
+                document.querySelector('#restorePostTr-' + post.id).remove()
+              } else if (response == "dbfail") {
+                $('#toast-delUserPost-dbfail').toast('show')
+              }
+            }).catch((error) => {
+              console.error(error)
+            })
+          })
+        }
+      }
+
+
+    }).catch((error) => {
+      console.error(error)
+    })
+
+
     delimgBtn.addEventListener('click', () => {
       $.ajax({
         type: "POST",
@@ -626,63 +712,26 @@ if (newBlockBtn != null) {
     $('.newblockSettings').slideDown('slow')
   })
 
-  const newBlockType = document.querySelector('#newblockType')
   const newblockProject = document.querySelector('#newblockProject')
-  const newblockPost = document.querySelector('#newblockPostInput')
   const newblockSubmit = document.querySelector('#newblockSubmit')
 
-  newBlockType.addEventListener('change', (e) => {
-    if (e.target.value == "project") {
-      if (newblockPost.style.display != "none") {
-        $('#newblockPost').slideUp('slow')
+  newblockSubmit.addEventListener('click', () => {
+    let newblockProjectValue = newblockProject.value
+    $.ajax({
+      type: "POST",
+      url: "/admin/addNewBlock",
+      data: {
+        id: newblockProjectValue,
+        type: "project"
       }
-      $('#newblockProject').slideDown('slow')
-      $('#newblockSubmit').slideDown('slow')
-    } else if (e.target.value == "post") {
-      if (newblockProject.style.display != "none") {
-        $('#newblockProject').slideUp('slow')
+    }).then((response) => {
+
+      if (response == "success") {
+        $('.newblockSettings').slideUp('slow')
+        $('#toast-newIndexBlock-success').toast('show')
       }
-      $('#newblockPost').slideDown('slow')
-      $('#newblockSubmit').slideDown('slow')
-    }
-
-    newblockSubmit.addEventListener('click', () => {
-      let newblockPostValue = newblockPost.value
-      let newblockProjectValue = newblockProject.value
-      let newBlockTypeValue = newBlockType.value
-      if (newBlockTypeValue == "project") {
-        $.ajax({
-          type: "POST",
-          url: "/admin/addNewBlock",
-          data: {
-            id: newblockProjectValue,
-            type: "project"
-          }
-        }).then((response) => {
-
-          if (response == "success") {
-            $('.newblockSettings').slideUp('slow')
-          }
-        }).catch((error) => {
-          console.error(error)
-        })
-      } else if (newBlockTypeValue == "post") {
-        $.ajax({
-          type: "POST",
-          url: "/admin/addNewBlock",
-          data: {
-            id: newblockPostValue,
-            type: "post"
-          }
-        }).then((response) => {
-
-          if (response == "success") {
-            $('.newblockSettings').slideUp('slow')
-          }
-        }).catch((error) => {
-          console.error(error)
-        })
-      }
+    }).catch((error) => {
+      console.error(error)
     })
   })
 }
@@ -941,7 +990,7 @@ if (eventSettingsModal != null) {
     startForm.value = start
     endForm.value = end
     descriptionForm.value = description
-    
+
     if (privacy == 1) {
       privacyForm.setAttribute('checked', 'true')
     } else {
@@ -971,11 +1020,17 @@ if (eventSettingsModal != null) {
 
           document.querySelector('#event-' + id + '-name').textContent = nameForm.value
           document.querySelector('#event-' + id + '-location').innerHTML = '<i class="fas fa-map-marker"></i> ' + locationForm.value
-          const options = { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' }
+          const options = {
+            year: 'numeric',
+            month: 'numeric',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric'
+          }
           const newdateStart = new Date(startForm.value)
           const newdateEnd = new Date(endForm.value)
-          document.querySelector('#event-'+id+'-date').innerHTML = newdateStart.toLocaleDateString('cs-cs', options) + ' až ' + newdateEnd.toLocaleDateString('cs-cs', options)
-          document.querySelector('#event-'+id+'-description').innerHTML = descriptionForm.value
+          document.querySelector('#event-' + id + '-date').innerHTML = newdateStart.toLocaleDateString('cs-cs', options) + ' až ' + newdateEnd.toLocaleDateString('cs-cs', options)
+          document.querySelector('#event-' + id + '-description').innerHTML = descriptionForm.value
         } else if (response['result'] == "nochange") {
           $("#toast-editevent-nochange").toast("show")
         }
@@ -991,12 +1046,12 @@ if (eventSettingsModal != null) {
 
 const delEventBtns = document.querySelectorAll('.event-delete-btn')
 
-if(delEventBtns != null) {
+if (delEventBtns != null) {
   for (let i = 0; i < delEventBtns.length; i++) {
     const element = delEventBtns[i];
-    
+
     element.addEventListener('click', () => {
-      if(confirm('Opravdu chcete tuto událost smazat?')) {
+      if (confirm('Opravdu chcete tuto událost smazat?')) {
         const id = element.getAttribute('data-delevent-id')
 
         $.ajax({
@@ -1009,12 +1064,11 @@ if(delEventBtns != null) {
           if (response == "success") {
             $("#toast-editevent-success").toast("show")
 
-            document.querySelector('#event-card-'+id).parentElement.remove()
+            document.querySelector('#event-card-' + id).parentElement.remove()
           } else if (response['result'] == "nochange") {
             $("#toast-editevent-nochange").toast("show")
           }
         })
-      } else {
       }
     })
   }
@@ -1023,7 +1077,7 @@ if(delEventBtns != null) {
 // Media modal
 
 const mediaModal = document.getElementById('mediaModal')
-if(mediaModal != null ) {
+if (mediaModal != null) {
   mediaModal.addEventListener('show.bs.modal', function (event) {
     // Button that triggered the modal
     var button = event.relatedTarget
@@ -1034,14 +1088,40 @@ if(mediaModal != null ) {
     //
     // Update the modal's content.
     mediaModal.querySelector('#media-modal-img').setAttribute('src', img)
-  
+
   })
 }
 
 // Fotorama
 
 let post = document.querySelector('.project-post-wrapper')
-if(post != null ) {
+if (post != null) {
   let postWidth = post.offsetWidth
-document.querySelector('.fotorama').setAttribute('data-minwidth', (postWidth*80)/100)
+  const fotorama = document.querySelectorAll('.fotorama')
+  for (let i = 0; i < fotorama.length; i++) {
+    const element = fotorama[i];
+    element.setAttribute('data-minwidth', (postWidth * 80) / 100)
+  }
+}
+
+// Mazání Všeho obsahu
+
+const delAllBtn = document.querySelector('#mainDelBtn')
+
+if (delAllBtn != null) {
+
+  delAllBtn.addEventListener('click', () => {
+    if (confirm('Tato akce již nepůjde navrátit a obsah se smaže z databáze. Chcete pokračovat?')) {
+      $.ajax({
+        type: "POST",
+        url: "/admin/deleteAllContent"
+      }).then((response) => {
+        if (response == "success") {
+          $("#toast-delAllContent-success").toast("show")
+        } else if (response == "dbfail") {
+          $("#toast-delAllContent-dbfail").toast("show")
+        }
+      })
+    }
+  })
 }

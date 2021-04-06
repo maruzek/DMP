@@ -6,6 +6,9 @@ use App\Repository\PostRepository;
 use App\Repository\ProjectRepository;
 use App\Repository\UserRepository;
 
+// Service pro hledání ve vyhledávači
+// spolopracuje jen s SearchController
+
 class Search
 {
     private $userRepository;

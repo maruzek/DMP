@@ -1,7 +1,11 @@
 footer {
-    height: 10vh;
+    height: 5vh;
 
     display: flex;
     justify-content: center;
     align-items: center;
+
+    p {
+        margin: 0;
+    }
 }

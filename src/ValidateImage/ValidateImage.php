@@ -4,13 +4,14 @@ namespace App\ValidateImage;
 
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
+// service, který validuje obrázky
+
 class ValidateImage
 {
     public function isImgValid($file): string
     {
         /** @var UploadedFile $file */
         $ext = $file->guessClientExtension();
-        $exxt = $file->getClientOriginalExtension();
         if ($ext == "jpg" || $ext == "jpeg") {
             $im = imagecreatefromjpeg($file);
         } elseif ($ext == "png") {
@@ -26,7 +27,7 @@ class ValidateImage
         $filesize = $file->getSize();
 
         if ($ext == "jpg" || $ext == "jpeg" || $ext == "png") {
-            if ($filesize <= 1000000) {
+            if ($filesize <= 2000000) {
                 if ($width <= 2000 && $height <= 2000) {
                     return "success";
                 } else {

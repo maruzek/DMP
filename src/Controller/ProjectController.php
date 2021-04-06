@@ -9,7 +9,6 @@ use App\Entity\Follow;
 use App\Entity\Media;
 use App\Entity\Member;
 use App\Entity\Post;
-use App\Entity\Project;
 use App\Entity\ProjectAdmin;
 use App\Entity\Seen;
 use App\Form\AddPostType;
@@ -29,7 +28,6 @@ use App\Repository\SeenRepository;
 use App\Repository\UserRepository;
 use App\ValidateImage\ValidateImage;
 use DateTime;
-use DateTimeZone;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -410,7 +408,7 @@ class ProjectController extends AbstractController
     /**
      * @Route("/acceptMember", name="acceptMember", methods={"POST"})
      */
-    public function acceptMember(Request $request, ProjectRepository $projectRepository, SessionInterface $session, MemberRepository $memberRepository)
+    public function acceptMember(Request $request, ProjectRepository $projectRepository, MemberRepository $memberRepository)
     {
         if ($request->isXmlHttpRequest()) {
             $projectid = $request->request->get('project');
@@ -519,7 +517,7 @@ class ProjectController extends AbstractController
     /**
      * @Route("/deleteHero", name="deleteHero", methods={"POST"})
      */
-    public function deleteHero(Request $request, ProjectRepository $projectRepository, SessionInterface $session, MemberRepository $memberRepository, UserRepository $userRepository, ProjectAdminRepository $projectAdminRepository, MediaRepository $mediaRepository)
+    public function deleteHero(Request $request, ProjectRepository $projectRepository, SessionInterface $session, UserRepository $userRepository, ProjectAdminRepository $projectAdminRepository, MediaRepository $mediaRepository)
     {
         if ($request->isXmlHttpRequest()) {
             $heroid = $request->request->get('id');
@@ -574,7 +572,7 @@ class ProjectController extends AbstractController
     /**
      * @Route("/getPostSeens", name="getPostSeens", methods={"POST"})
      */
-    public function getPostSeens(Request $request, PostRepository $postRepository, SessionInterface $session, SeenRepository $seenRepository, UserRepository $userRepository, ProjectAdminRepository $projectAdminRepository, MediaRepository $mediaRepository)
+    public function getPostSeens(Request $request, PostRepository $postRepository, SeenRepository $seenRepository)
     {
         if ($request->isXmlHttpRequest()) {
             $postid = $request->request->get('id');
@@ -614,7 +612,7 @@ class ProjectController extends AbstractController
     /**
      * @Route("/{id}", name="project")
      */
-    public function index($id, SessionInterface $session, ProjectRepository $projectRepository, UserRepository $userRepository, FollowRepository $followRepository, Request $request, MemberRepository $memberRepository, PostRepository $postRepository, SeenRepository $seenRepository, ValidatorInterface $validator, EventRepository $eventRepository, MailerInterface $mailer, MediaRepository $mediaRepository): Response
+    public function index($id, SessionInterface $session, ProjectRepository $projectRepository, UserRepository $userRepository, FollowRepository $followRepository, Request $request, MemberRepository $memberRepository, PostRepository $postRepository, SeenRepository $seenRepository, ValidatorInterface $validator, MailerInterface $mailer, MediaRepository $mediaRepository): Response
     {
         $this->session = $session;
         $project = $projectRepository->find($id); // Získání projektu z DB
@@ -624,26 +622,28 @@ class ProjectController extends AbstractController
             // Kontrlova projektu
             $projectCheck = new ProjectCheck($project->getId(), $projectRepository);
             if ($projectCheck->isAccessible()) {
-                //
+                // Zavolání služby pro získání berevné palety projektu
                 $color = new ColorTheme();
                 $palette = $color->colorPallette($project->getColor());
 
-                $imgValidator = new ValidateImage();
-                $memberships = new Memberships();
+                $imgValidator = new ValidateImage();    // Validuje obrázek
+                $memberships = new Memberships();       //Kontroluje členství uživatele
                 $postsPrivacy = 0;
-                $em = $this->getDoctrine()->getManager();
+                $em = $this->getDoctrine()->getManager();       // Zavolání entity managera
 
-                $errors = [];
+                $errors = [];   // pole pro errory
 
                 $followBtn = "";
                 $memberBtn = "";
 
+                // Vyhledání všech administrátorů projektu
                 $projectAdminsArray = $this->getDoctrine()->getRepository(ProjectAdmin::class)->findBy(['project' => $project]);
                 $projectAdmins = [];
                 foreach ($projectAdminsArray as $admin) {
                     array_push($projectAdmins, $admin->getUser()->getId());
                 }
 
+                // Vyhledání všech členů projektu
                 $projectMembersArray = $memberRepository->findBy(['project' => $project]);
 
                 $projectMembers = [];
@@ -655,27 +655,31 @@ class ProjectController extends AbstractController
 
                 $posts = [];
 
+                // Pokud je uživatel přihlášený
                 if ($session->get('username') != "") {
                     $user = $userRepository->find($session->get('id'));
-
+                    // Kontroluje členství uživatele
                     if ($memberships->isUserMember($project, $user)) {
                         $postsPrivacy = 1;
                     } else {
                         $postsPrivacy = 0;
                     }
 
+                    // Vytvoření tlačítka pro sledování
                     if (!$followRepository->findOneBy(['follower' => $session->get('id'), 'project' => $project])) {
                         $followBtn = "follow";
                     } else {
                         $followBtn = "unfollow";
                     }
 
+                    // Vytvoření tlačítka pro členství
                     if (!$memberRepository->findOneBy(['member' => $user, 'project' => $project])) {
                         $memberBtn = "member";
                     } else {
                         $memberBtn = "unmember";
                     }
 
+                    // form s nastavením projektu
                     $settingsForm = $this->createForm(ProjectSettingsType::class, $project);
                     $fileError = "";
                     $settingsForm->handleRequest($request);
@@ -720,7 +724,7 @@ class ProjectController extends AbstractController
 
                         // Mazání obrázků v pozadí
 
-                        $heroImages = $project->getMedia();
+                        $heroImages = $mediaRepository->findBy(['type' => 'hero', 'project' => $project]);
                         $heroImagesArray = [];
 
                         for ($i = 0; $i < count($heroImages); $i++) {
@@ -757,7 +761,6 @@ class ProjectController extends AbstractController
                         if (count($validator->validate($post)) > 0) {
                             array_push($errors, 'Došlo k chybě. Pravděpodobně je váš příspěvek delší než 1000 znaků');
                         } else {
-                            $em = $this->getDoctrine()->getManager();
                             $media = $request->files->get('add_post')['media'];
                             if ($media) {
                                 /** @var UploadedFile $file */
@@ -788,10 +791,12 @@ class ProjectController extends AbstractController
                                 }
                             }
 
+                            // Pokud nenasla žádná chyba, zapíše do DB a refreshne stránku
                             if (empty($errors)) {
                                 $em->persist($post);
                                 $em->flush();
                             }
+
                             unset($post);
                             unset($addPostForm);
                             $post = new Post();
@@ -802,21 +807,7 @@ class ProjectController extends AbstractController
                         }
                     }
 
-                    // SEEN
-                    date_default_timezone_set('Europe/Prague');
-                    $seenPosts = $postRepository->findBy(['project' => $project]);
-                    foreach ($seenPosts as $post) {
-                        if (!$seenRepository->findOneBy(['user' => $user, 'post' => $post])) {
-                            $seen = new Seen();
-                            $seen->setPost($post);
-                            $seen->setUser($user);
-                            $seen->setDate(DateTime::createFromFormat('Y-m-d H:i:s', date('Y-m-d H:i:s')));
 
-                            $em = $this->getDoctrine()->getManager();
-                            $em->persist($seen);
-                            $em->flush();
-                        }
-                    }
 
                     // EVENTS
                     $event = new Event();
@@ -902,6 +893,24 @@ class ProjectController extends AbstractController
                     'currentmax' => $currentmax
                 ];
 
+                // Odeslání zobrazení
+                if ($session->get('username') != null) {
+                    date_default_timezone_set('Europe/Prague');
+                    $seenPosts = $postRepository->findBy(['project' => $project]);
+                    foreach ($seenPosts as $post) {
+                        if (!$seenRepository->findOneBy(['user' => $user, 'post' => $post])) {
+                            $seen = new Seen();
+                            $seen->setPost($post);
+                            $seen->setUser($user);
+                            $seen->setDate(DateTime::createFromFormat('Y-m-d H:i:s', date('Y-m-d H:i:s')));
+
+                            $em = $this->getDoctrine()->getManager();
+                            $em->persist($seen);
+                            $em->flush();
+                        }
+                    }
+                }
+
                 // Media k zobrazení
 
                 $allMedias = $mediaRepository->findProjectMedia($project);
@@ -919,6 +928,7 @@ class ProjectController extends AbstractController
                     }
                 }
 
+                // Render Twigem
                 if ($followBtn != "") {
                     return $this->render('project/index.html.twig', [
                         'controller_name' => 'ProjectController',
@@ -947,7 +957,9 @@ class ProjectController extends AbstractController
                         'projectAdmins' => $projectAdmins,
                         'projectMembers' => $projectMembers,
                         'errors' => $errors,
-                        'posts' => $posts
+                        'posts' => $posts,
+                        'postPages' => $postPages,
+                        'medias' => $medias
                     ]);
                 }
             }

@@ -10,7 +10,7 @@
 		<div class="post-textcontent">
 			<div class="project-post-profilepic">
 				<a href="{{ path('user.profile', { username: post.author.username }) }}">
-					<img src="/img/userimg/{{ post.author.image }}" alt="">
+					<img src="{{ asset('img/userimg/' ~ post.author.image) }}" alt="">
 				</a>
 			</div>
 			<div class="project-post-content w-100">
@@ -22,26 +22,32 @@
 						<span class="small">{{ post.postedDate|format_datetime(pattern='d. M. yyyy HH:mm') }}</span>
 					</p>
 				</a>
-				{% if post.author.id in projectAdmins or post.author.id == project.admin.id %}
-					<p id="postText-{{ post.id }}">{{ post.text|anchor|raw }}</p>
-				{% else %}
-					<p id="postText-{{ post.id }}">{{ post.text }}</p>
+				{% if projectAdmins is defined %}
+					{% if post.author.id in projectAdmins or post.author.id == project.admin.id %}
+						<p id="postText-{{ post.id }}">{{ post.text|anchor|raw }}</p>
+					{% else %}
+						<p id="postText-{{ post.id }}">{{ post.text }}</p>
+					{% endif %}
 				{% endif %}
+
 			</div>
-			{% if post.author.id == session.get('id') or session.get('id') in projectAdmins or session.get('id') == project.admin.id %}
-				<p class="m-1">
-					<i class="fas fa-pen editPostModalTrigger" data-bs-toggle="modal" data-bs-target="#editPostModal" data-bs-editpost-text="{{ post.text }}" data-bs-editpost-private="{{ post.privacy }}" data-bs-editpost-id="{{ post.id }}" data-edit-post-id="{{ post.id }}"></i>
-				</p>
-				<p class="m-1">
-					<i class="fas fa-trash post-card-trash-icon" id="delPostTrigger" data-deletepost-id="{{ post.id }}"></i>
-				</p>
+			{% if projectAdmins is defined %}
+				{% if post.author.id == session.get('id') or session.get('id') in projectAdmins or session.get('id') == project.admin.id %}
+					<p class="m-1">
+						<i class="fas fa-pen editPostModalTrigger" data-bs-toggle="modal" data-bs-target="#editPostModal" data-bs-editpost-text="{{ post.text }}" data-bs-editpost-private="{{ post.privacy }}" data-bs-editpost-id="{{ post.id }}" data-edit-post-id="{{ post.id }}"></i>
+					</p>
+					<p class="m-1">
+						<i class="fas fa-trash post-card-trash-icon" id="delPostTrigger" data-deletepost-id="{{ post.id }}"></i>
+					</p>
+				{% endif %}
 			{% endif %}
+
 		</div>
 		<div class="post-media d-block mx-auto">
 			<div class="fotorama" data-width="100%" data-ratio="800/600" data-minwidth="500" data-maxwidth="1000" data-minheight="300" data-maxheight="100%">
 				{% for img in post.media %}
 					{% if img.type == "post" %}
-						<img src="/img/media/{{ img.name }}" class="d-block mx-auto" alt="post media">
+						<img src="{{ asset('img/media/' ~ img.name) }}" class="d-block mx-auto" alt="post media">
 					{% endif %}
 				{% endfor %}
 			</div>

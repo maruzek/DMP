@@ -18,7 +18,7 @@
 					<div class="col">
 						<a href="{{ path('user.profile', {username: user.username}) }}" class="search-user-link">
 							<div class="card h-100">
-								<img src="/img/userimg/{{ user.image }}" class="card-img-top w-25 mx-auto d-block mt-3" alt="pp" style="border-radius: 50%">
+								<img src="{{ asset('img/userimg/' ~ user.image) }}" class="card-img-top w-25 mx-auto d-block mt-3" alt="pp" style="border-radius: 50%">
 								<div class="card-body">
 									<h5 class="card-title text-center">{{ user.firstname ~ ' ' ~ user.lastname }}</h5>
 								</div>
@@ -37,7 +37,7 @@
 					<div class="col">
 						<a href="{{ path('project.project', {id: project.id}) }}" class="search-project-link">
 							<div class="card h-100">
-								<img src="/img/projectimg/{{ project.image }}" class="card-img-top w-25 mx-auto d-block mt-3" alt="pp">
+								<img src="{{ asset('img/projectimg/' ~ project.image) }}" class="card-img-top w-25 mx-auto d-block mt-3" alt="pp">
 								<div class="card-body">
 									<h5 class="card-title text-center">{{ project.name }}</h5>
 									<p class="card-text text-center">{{ project.admin.firstname  ~ ' ' ~ project.admin.lastname }}</p>
@@ -74,7 +74,7 @@
 	{% else %}
 		<h1 class="text-center m-3">Nic tu není 😢</h1>
 		<p class="text-center">Můžete hledat znovu, nebo se
-			<a href="/">vrátit na hlavní stránku</a>
+			<a href="{{ path('main') }}">vrátit na hlavní stránku</a>
 		</p>
 	{% endif %}
 

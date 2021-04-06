@@ -1,13 +1,24 @@
 {% extends "base.html.twig" %}
 
+{% block errors %}
+	<div class="pt-3">
+		{% for error in errors %}
+			<div class="alert alert-danger alert-dismissible fade show" role="alert">
+				{{ error }}
+				<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+			</div>
+		{% endfor %}
+	</div>
+{% endblock %}
+
 {% block body %}
 	<div class="row mt-3">
 		<div class="col-sm-4 profile-col">
-			<img src="/img/userimg/{{ user.image }}" alt="" class="img-fluid project-img mb-3 mx-auto d-block">
+			<img src="{{ asset('img/userimg/') ~ user.image}}" alt="" class="img-fluid project-img mb-3 mx-auto d-block">
 			<h3 class="m-0">{{ user.firstname ~ ' ' ~ user.lastname }}</h3>
 			<span class="badge bg-primary">{{ user.tag }}</span>
 			<h5 class="m-0 mt-1" style="font-weight: normal">{{ user.class }}</h5>
-			{% if user.description != null %}
+			{% if user.description != null and errors|length == 0 %}
 				<p class="profile-desc">{{ user.description }}</p>
 			{% else %}
 				<p class="profile-desc" style="color: #aaa">
@@ -61,15 +72,31 @@
 							<em>Tento uživatel zatím nepřispěl žádným příspěvkem</em>
 						</p>
 					{% endif %}
-					{% for post in user.posts %}
+					{% for post in publicPosts %}
 						{% if post.privacy == false and post.deleted == false and post.project.deleted == false %}
-							<div class="user-post-card">
-								<img src="/img/projectimg/{{ post.project.image }}" alt="" class="img-fluid">
-								<div class="user-post-class-text">
-									<a href="{{ path('project.project', {id: post.project.id}) }}" class="nicelink">
-										<h5 class="m-0">{{ post.project.name }}</h5>
-									</a>
-									<p>{{ post.text }}</p>
+							<div class="project-post-wrapper" style="background-color:#eee" id="post-{{ post.id }}">
+								<div class="post-textcontent">
+									<div class="project-post-profilepic">
+										<img src="{{ asset('img/projectimg/' ~ post.project.image) }}" alt="">
+									</div>
+									<div class="project-post-content w-100">
+										<a href="{{ path('project.project', { id: post.project.id }) }}" class="nicelink">
+											<p class="project-post-author w-100">{{ post.project.name }}
+												<br>
+												<span class="small">{{ post.postedDate|format_datetime(pattern='d. M. yyyy HH:mm') }}</span>
+											</p>
+										</a>
+										<p id="postText-{{ post.id }}">{{ post.text }}</p>
+									</div>
+								</div>
+								<div class="post-media d-block mx-auto">
+									<div class="fotorama" data-width="100%" data-ratio="800/600" data-minwidth="500" data-maxwidth="1000" data-minheight="300" data-maxheight="100%">
+										{% for img in post.media %}
+											{% if img.type == "post" %}
+												<img src="{{ asset('img/media/' ~ img.name) }}" class="d-block mx-auto" alt="post media">
+											{% endif %}
+										{% endfor %}
+									</div>
 								</div>
 							</div>
 						{% endif %}
@@ -80,7 +107,7 @@
 						{% if member.project.deleted == false %}
 							<a href="{{ path('project.project', {id: member.project.id}) }}" class="nicelink">
 								<div class="user-project-card">
-									<img src="/img/projectimg/{{ member.project.image }}" alt="" class="img-fluid">
+									<img src="{{ asset('img/projectimg/' ~ member.project.image) }}" alt="" class="img-fluid">
 									<div class="user-project-class-text">
 										<h3 class="m-0">{{ member.project.name }}</h3>
 									</div>
@@ -92,50 +119,4 @@
 			</div>
 		</div>
 	</div>
-{% endblock %}
-
-{% block js %}
-	<script>
-
-		$imageCrop = $('#uplimg2').croppie({
-enableExif: true,
-viewport: {
-width: 300,
-height: 300,
-type: 'square'
-},
-boundary: {
-width: 400,
-height: 400
-}
-})
-
-$('#user_settings_attach2').on('change', function () {
-let reader = new FileReader()
-reader.addEventListener('load', (e) => {
-$imageCrop.croppie('bind', {url: e.target.result}).then(() => {})
-})
-reader.readAsDataURL(this.files[0])
-})
-const userSettingsForm = document.querySelector('#userSettingsForm')
-const newDesc = document.querySelector('#userdesc')
-userSettingsForm.addEventListener('submit', () => {
-$imageCrop.croppie('result', {
-type: 'canvas',
-size: 'viewport'
-}).then((response) => {
-$.ajax({
-url: "/userSettings",
-type: "POST",
-data: {
-"image": response,
-"desc": newDesc
-},
-success: (data) => {
-console.log(data)
-}
-})
-})
-})
-	</script>
 {% endblock %}

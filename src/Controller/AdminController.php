@@ -8,21 +8,16 @@ use App\Entity\Media;
 use App\Entity\Member;
 use App\Entity\Project;
 use App\Entity\ProjectAdmin;
-use App\Form\AddAdminType;
 use App\Form\NewAbsAdminType;
 use App\Form\NewProjectType;
 use App\Form\ProjectSettingsType;
 use App\ImageCrop\ImageCrop;
-use App\ProjectCheck\ProjectCheck;
-use App\Repository\EventRepository;
 use App\Repository\IndexBlockRepository;
 use App\Repository\PostRepository;
 use App\Repository\ProjectAdminRepository;
 use App\Repository\ProjectRepository;
 use App\Repository\UserRepository;
 use DateTime;
-use DateTimeZone;
-use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -30,42 +25,40 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
-use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\Mime\Address;
-use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
-use Symfony\Component\Validator\Constraints\Date;
-use Symfony\Flex\Unpack\Result;
+
+// Controller pro administrátorské prostředí
 
 /**
  * @Route("/admin", name="admin.")
  */
 class AdminController extends AbstractController
 {
-    private $session;
     private $auth;
+
+    // konstruktor
 
     public function __construct(SessionInterface $session, UserRepository $userRepository)
     {
+        // Service pro ověření uživatele
         $this->auth = new Authentication($session, $userRepository);
     }
+
+    // Hlavní stránka admin. prostření
 
     /**
      * @Route("/", name="index")
      */
     public function index(SessionInterface $session, ProjectRepository $projectRepository, UserRepository $userRepository, Request $request, IndexBlockRepository $indexBlockRepository): Response
     {
-        $this->session = $session;
-        //$auth = new Authentication($session->get('id'));
-        //$auth = new Authentication($session, $userRepository);
+        // ověření, zda je uživ. admin
         if ($this->auth->isAbsAdmin()) {
-            $user = $userRepository->find($session->get('id'));
             $em = $this->getDoctrine()->getManager();
-
+            // Získání index bloků
             $allProjects = $projectRepository->findAll();
             $allIndexBlocksArray = $indexBlockRepository->findAll();
             $projectIndexBlocks = [];
@@ -73,13 +66,11 @@ class AdminController extends AbstractController
             foreach ($allIndexBlocksArray as $block) {
                 if ($block->getType() == "project") {
                     array_push($projectIndexBlocks, $block->getProject()->getId());
-                } else if ($block->getType() == "post") {
-                    array_push($postIndexBlocks, $block->getPost()->getId());
                 }
             }
             $allUsers = $userRepository->findAll();
 
-            // New Admin
+            // Přidání nového abs. správce
             $newAdminForm = $this->createForm(NewAbsAdminType::class);
             $newAdminForm->handleRequest($request);
             if ($newAdminForm->isSubmitted()) {
@@ -88,7 +79,7 @@ class AdminController extends AbstractController
                 $newAdminUsername = explode('(', $selected);
                 $newAdminUsername = explode(',', $newAdminUsername[1]);
                 $newAdminUsername = $newAdminUsername[0];
-                //echo $userdata;
+
                 $newAdminUser = $userRepository->findOneBy(['username' => trim($newAdminUsername)]);
 
                 if ($newAdminUser->getRole() == "admin") {
@@ -109,21 +100,22 @@ class AdminController extends AbstractController
                 'newAdminForm' => $newAdminForm->createView()
             ]);
         }
+
+        return new Response('', 401);
     }
+
+    // Výpis všech projektů
 
 
     /**
      * @Route("/projekty", name="projects")
      */
-    public function projects(SessionInterface $session, ProjectRepository $projectRepository, UserRepository $userRepository, Request $request)
+    public function projects(SessionInterface $session, ProjectRepository $projectRepository)
     {
-        $this->session = $session;
+        // Získání všech projektů k výpisu
 
-        //$auth = new Authentication($session->get('id'));
-        //$auth = new Authentication($session, $userRepository);
         if ($this->auth->isAbsAdmin()) {
             $projects = $projectRepository->findAll();
-
 
             return $this->render('admin/projects.html.twig', [
                 'session' => $session,
@@ -131,27 +123,28 @@ class AdminController extends AbstractController
             ]);
         }
 
-        return $this->render('error/401.html.twig', [
-            'session' => $session
-        ], new Response('', 401));
+        return new Response('', 401);
     }
+
+    // Vápis jednotlivých projeků
 
     /**
      * @Route("/projekt/{id}", name="project")
      */
     public function project($id, SessionInterface $session, ProjectRepository $projectRepository, UserRepository $userRepository, Request $request, ProjectAdminRepository $projectAdminRepository)
     {
-        $this->session = $session;
-        //$auth = new Authentication($session->get('id'));
-        //$auth = new Authentication($session, $userRepository);
+        // Nastevení projektu
         $project = $projectRepository->find($id);
         if ($this->auth->isAbsAdmin() && $project != null) {
 
             $user = $userRepository->find($session->get('id'));
             $basicSettingsForm = $this->createForm(ProjectSettingsType::class, $project);
 
-            $status = "";
+            // Zavolání entitty managera
+            $em = $this->getDoctrine()->getManager();
 
+            $status = "";
+            // Základní nastevení
             $basicSettingsForm->handleRequest($request);
             if ($basicSettingsForm->isSubmitted()) {
                 // Zpracování profilového obrázku
@@ -171,8 +164,6 @@ class AdminController extends AbstractController
                     }
                 }
 
-                // Zavolání entitty managera
-                $em = $this->getDoctrine()->getManager();
                 // Zpracování obrázků v pozadí
                 $media = $request->files->get('project_settings')["medias"];
                 if ($media) {
@@ -230,7 +221,7 @@ class AdminController extends AbstractController
                 }
             }
 
-            // Nový admin
+            // Nový admin projetk
 
             $newAdmin = new ProjectAdmin();
             $newAdmin->setProject($project);
@@ -260,7 +251,6 @@ class AdminController extends AbstractController
                 $newAdminUsername = explode('(', $userdata['user']);
                 $newAdminUsername = explode(',', $newAdminUsername[1]);
                 $newAdminUsername = $newAdminUsername[0];
-                //echo $userdata;
                 $newAdminUser = $userRepository->findOneBy(['username' => trim($newAdminUsername)]);
                 if (!$projectAdminRepository->findOneBy(['user' => $newAdminUser, 'project' => $project])) {
                     $newAdmin->setUser($newAdminUser);
@@ -292,19 +282,17 @@ class AdminController extends AbstractController
             ], new Response('', 404));
         }
 
-        return $this->render('error/401.html.twig', [
-            'session' => $session
-        ], new Response('', 401));
+        return new Response('', 401);
     }
+
+    // Vytváření nového projektu
 
     /**
      * @Route("/novyprojekt", name="newProject")
      */
-    public function newProject(SessionInterface $session, ProjectRepository $projectRepository, UserRepository $userRepository, Request $request)
+    public function newProject(SessionInterface $session, UserRepository $userRepository, Request $request)
     {
-        $this->session = $session;
-        //$auth = new Authentication($session->get('id'));
-        //$auth = new Authentication($session, $userRepository);
+        // Vytváření nového projetku
         if ($this->auth->isAbsAdmin()) {
             $project = new Project();
             $form = $this->createForm(NewProjectType::class, $project);
@@ -320,21 +308,11 @@ class AdminController extends AbstractController
                 if ($file) {
                     $img = new ImageCrop($file, $this->getParameter('project_pic'), $this->getDoctrine()->getManager());
                     $img->cropProjectImage($project, "new");
-                    /*ext = $file->guessClientExtension();
-                    if ($ext == "jpeg" || $ext == "jpg" || $ext == "png" || $ext == "gif") {
-                        $filename = md5(uniqid()) . '.' . $file->guessClientExtension();
-                        $file->move(
-                            $this->getParameter('project_pic'),
-                            $filename
-                        );
-                        $project->setImage($filename);
-                    } else {
-                        $fileError = "badext";
-                    }*/
                 }
 
                 $userdata = $request->request->get('new_project')['mainAdmin'];
 
+                // Rozparování našeprávače
                 $newAdminUsername = explode('(', $userdata);
                 $newAdminUsername = explode(',', $newAdminUsername[1]);
                 $newAdminUsername = $newAdminUsername[0];
@@ -343,6 +321,7 @@ class AdminController extends AbstractController
                 $project->setAdmin($newAdmin);
                 $project->setCreated(DateTime::createFromFormat('Y-m-d H:i:s', date('Y-m-d H:i:s')));
 
+                // Vytvoření členství pro admina
                 $member = new Member();
                 $member->setProject($project);
                 $member->setMember($newAdmin);
@@ -368,10 +347,10 @@ class AdminController extends AbstractController
             ]);
         }
 
-        return $this->render('error/401.html.twig', [
-            'session' => $session
-        ], new Response('', 401));
+        return new Response('', 401);
     }
+
+    // JSON Endpoint pro získání uživatelů
 
     /**
      * @Route("/getPossibleAdmins", name="getPossibleAdmins", methods={"POST"})
@@ -435,6 +414,8 @@ class AdminController extends AbstractController
         ], 500);
     }
 
+    // JSON Endpoint pro odstranění adminů z projektu
+
     /**
      * @Route("/delAdminFromProject", name="delAdminFromProject", methods={"POST", "GET"})
      */
@@ -481,6 +462,8 @@ class AdminController extends AbstractController
             'message' => 'Not an AJAX request'
         ], 500);
     }
+
+    // JSON Endpoint pro odstranění projektu
 
     /**
      * @Route("/delProject", name="delProject", methods={"POST"})
@@ -537,6 +520,8 @@ class AdminController extends AbstractController
         ], 500);
     }
 
+    // JSON Endpoint pro změnu hlavního admina projektu
+
     /**
      * @Route("/changeMainAdmin", name="changeMainAdmin", methods={"POST"})
      */
@@ -588,10 +573,12 @@ class AdminController extends AbstractController
         ], 500);
     }
 
+    // JSON Endpoint pro hlednání všech uživatelů
+
     /**
      * @Route("/searchAllUsers", name="searchAllUsers", methods={"POST"})
      */
-    public function searchAllUsers(Request $request, ProjectRepository $projectRepository, UserRepository $userRepository)
+    public function searchAllUsers(Request $request, UserRepository $userRepository)
     {
         if ($request->isXmlHttpRequest() && $this->auth->isAbsAdmin()) {
             $input = $request->request->get('input');
@@ -639,6 +626,8 @@ class AdminController extends AbstractController
             'message' => 'Not an AJAX request'
         ], 500);
     }
+
+    // JSON Endpoint pro úpravu uživatele
 
     /**
      * @Route("/editUser", name="editUser", methods={"POST"})
@@ -705,6 +694,8 @@ class AdminController extends AbstractController
         ], 500);
     }
 
+    // JSON Endpoint pro odstranění uživatele
+
     /**
      * @Route("/delUser", name="delUser", methods={"POST"})
      */
@@ -751,10 +742,12 @@ class AdminController extends AbstractController
         ], 500);
     }
 
+    // JSON Endpoint pro přidání nového bloku na hlavní stranu projektu
+
     /**
      * @Route("/addNewBlock", name="addNewBlock", methods={"POST"})
      */
-    public function addNewBlock(Request $request, ProjectRepository $projectRepository, UserRepository $userRepository, IndexBlockRepository $indexBlockRepository, PostRepository $postRepository)
+    public function addNewBlock(Request $request, ProjectRepository $projectRepository, IndexBlockRepository $indexBlockRepository, PostRepository $postRepository)
     {
         if ($request->isXmlHttpRequest() && $this->auth->isAbsAdmin()) {
             $id = $request->request->get('id');
@@ -827,10 +820,12 @@ class AdminController extends AbstractController
         ], 500);
     }
 
+    // JSON Endpoint pro odstranění index blocku
+
     /**
      * @Route("/deleteIndexBlock", name="deleteIndexBlock", methods={"POST"})
      */
-    public function deleteIndexBlock(Request $request, ProjectRepository $projectRepository, UserRepository $userRepository, IndexBlockRepository $indexBlockRepository, PostRepository $postRepository)
+    public function deleteIndexBlock(Request $request, IndexBlockRepository $indexBlockRepository)
     {
         if ($request->isXmlHttpRequest() && $this->auth->isAbsAdmin()) {
             $id = $request->request->get('id');
@@ -876,6 +871,8 @@ class AdminController extends AbstractController
             'message' => 'Not an AJAX request'
         ], 500);
     }
+
+    // JSON Endpoint pro odstranění hlavního admina aplikace
 
     /**
      * @Route("/deleteAbsAdmin", name="deleteAbsAdmin", methods={"POST"})
@@ -926,12 +923,158 @@ class AdminController extends AbstractController
         ], 500);
     }
 
+    // JSON Endpoint pro smazání contentu, který pro tuto akci byl označen v DB
+
     /**
-     * @Route("/info", name="info")
+     * @Route("/deleteAllContent", name="deleteAllContent", methods={"POST"})
      */
-    public function info()
+    public function deleteAllContent(Request $request, ProjectRepository $projectRepository, PostRepository $postRepository)
     {
-        phpinfo();
-        print_r(gd_info());
+        if ($request->isXmlHttpRequest() && $this->auth->isAbsAdmin()) {
+            $result = "";
+            $em = $this->getDoctrine()->getManager();
+
+            $projects = $projectRepository->findBy(['deleted' => true]);
+            foreach ($projects as $project) {
+                foreach ($project->getPosts() as $post) {
+                    $post->setDeleted(true);
+                }
+
+                $em->remove($project);
+            }
+
+            $posts = $postRepository->findBy(['deleted' => true]);
+
+            foreach ($posts as $post) {
+                $em->remove($post);
+            }
+
+            if (!$em->flush()) {
+                $result = "success";
+            } else {
+                $result = "dbfail";
+            }
+
+            $defaultContext = [
+                AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => function ($object, $format, $context) {
+                    return $object->getId();
+                },
+            ];
+            $encoders = [
+                new JsonEncoder()
+            ];
+            $normalizers = [
+                new ObjectNormalizer(null, null, null, null, null, null, $defaultContext)
+            ];
+            $serializer = new Serializer($normalizers, $encoders);
+            $response = $serializer->serialize($result, 'json');
+            return new JsonResponse($response, 200, [], true);
+        } else if (!$this->auth->isAbsAdmin()) {
+            return new JsonResponse([
+                'type' => "error",
+                'message' => 'You are not an admin'
+            ], 401);
+        }
+
+        return new JsonResponse([
+            'type' => "error",
+            'message' => 'Not an AJAX request'
+        ], 500);
+    }
+
+    // JSON Endpoint pro Obnovení příspěvků uživatele
+
+    /**
+     * @Route("/getUserDeletedPosts", name="getUserDeletedPosts", methods={"POST"})
+     */
+    public function getUserDeletedPosts(Request $request, UserRepository $userRepository, PostRepository $postRepository)
+    {
+        if ($request->isXmlHttpRequest() && $this->auth->isAbsAdmin()) {
+            $user = $userRepository->find($request->request->get('id'));
+            $posts = $postRepository->findBy(['author' => $user, 'deleted' => true]);
+            $result = [];
+            foreach ($posts as $post) {
+                if ($post->getProject()->getDeleted() == false) {
+                    array_push($result, [
+                        'id' => $post->getId(),
+                        'text' => $post->getText(),
+                        'project' => $post->getProject()->getName(),
+                        'privacy' => $post->getPrivacy(),
+                        'posted' => $post->getPostedDate()
+                    ]);
+                }
+            }
+
+            $defaultContext = [
+                AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => function ($object, $format, $context) {
+                    return $object->getId();
+                },
+            ];
+            $encoders = [
+                new JsonEncoder()
+            ];
+            $normalizers = [
+                new ObjectNormalizer(null, null, null, null, null, null, $defaultContext)
+            ];
+            $serializer = new Serializer($normalizers, $encoders);
+            $response = $serializer->serialize($result, 'json');
+            return new JsonResponse($response, 200, [], true);
+        } else if (!$this->auth->isAbsAdmin()) {
+            return new JsonResponse([
+                'type' => "error",
+                'message' => 'You are not an admin'
+            ], 401);
+        }
+
+        return new JsonResponse([
+            'type' => "error",
+            'message' => 'Not an AJAX request'
+        ], 500);
+    }
+
+    // JSON Endpoint pro obnovu příspěvku
+
+    /**
+     * @Route("/restorePost", name="restorePost", methods={"POST"})
+     */
+    public function restorePost(Request $request, PostRepository $postRepository)
+    {
+        if ($request->isXmlHttpRequest() && $this->auth->isAbsAdmin()) {
+            $post = $postRepository->find($request->request->get('id'));
+            $result = "";
+
+            $post->setDeleted(false);
+
+            if (!$this->getDoctrine()->getManager()->flush()) {
+                $result = "success";
+            } else {
+                $result = "dbfail";
+            }
+
+            $defaultContext = [
+                AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => function ($object, $format, $context) {
+                    return $object->getId();
+                },
+            ];
+            $encoders = [
+                new JsonEncoder()
+            ];
+            $normalizers = [
+                new ObjectNormalizer(null, null, null, null, null, null, $defaultContext)
+            ];
+            $serializer = new Serializer($normalizers, $encoders);
+            $response = $serializer->serialize($result, 'json');
+            return new JsonResponse($response, 200, [], true);
+        } else if (!$this->auth->isAbsAdmin()) {
+            return new JsonResponse([
+                'type' => "error",
+                'message' => 'You are not an admin'
+            ], 401);
+        }
+
+        return new JsonResponse([
+            'type' => "error",
+            'message' => 'Not an AJAX request'
+        ], 500);
     }
 }

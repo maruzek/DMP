@@ -5,6 +5,9 @@ namespace App\Twig;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
 
+// Vlastní rozšíření Twigu
+// Automaticky rozezává linky v příspěvku
+
 class AppExtension extends AbstractExtension
 {
     public function getFilters()

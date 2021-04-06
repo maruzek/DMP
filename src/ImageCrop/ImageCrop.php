@@ -7,12 +7,15 @@ use App\Entity\Project;
 use App\Entity\User;
 use DateTime;
 
+// Service pro ořezávání nahrávaných obrázků
+
 class ImageCrop
 {
     private $file;
-    private $entity;
     private $path;
     private $em;
+
+    // Konstruktor
 
     public function __construct($file, $path, $em)
     {
@@ -20,6 +23,9 @@ class ImageCrop
         $this->path = $path;
         $this->em = $em;
     }
+
+    // Metoda pro ořezávání profilového obrázku projetku
+    // Automaticky najde střed a ten ořízde do poměru 1:1
 
     public function cropProjectImage(Project $project, $type = null)
     {
@@ -42,7 +48,6 @@ class ImageCrop
                     $crop = imagecrop($im, ['x' => $x / 4, 'y' => 0, 'width' => $y, 'height' => $y]);
                 }
             } else if ($x < $y) {
-                //! ORIGINAL
                 if (($y / 4) + $x > $y) {
                     $ind = 1;
                     while ((($y / 4) + $x) - $ind >= $y) {
@@ -115,6 +120,8 @@ class ImageCrop
         return true;
     }
 
+    // Metoda pro scalování obrázku v pozadí projetku
+
     public function scaleBgImage(Project $project, User $user, $type = null)
     {
         $ext = $this->file->guessClientExtension();
@@ -148,6 +155,9 @@ class ImageCrop
         }
     }
 
+    // Metoda pro ořezávání profilového obrázku uživatele
+    // Automaticky najde střed a ten ořízde do poměru 1:1
+
     public function cropUserImage(User $user)
     {
         $ext = $this->file->guessClientExtension();
@@ -170,7 +180,6 @@ class ImageCrop
                         $crop = imagecrop($im, ['x' => $x / 4, 'y' => 0, 'width' => $y, 'height' => $y]);
                     }
                 } else if ($x < $y) {
-                    //! ORIGINAL
                     if (($y / 4) + $x > $y) {
                         $ind = 1;
                         while ((($y / 4) + $x) - $ind >= $y) {

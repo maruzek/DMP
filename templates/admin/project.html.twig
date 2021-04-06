@@ -108,7 +108,7 @@
 							{% if media.type == "hero" %}
 								<tr>
 									<td>
-										<img src="/img/media/{{ media.name }}" alt="" class="img-fluid">
+										<img src="{{ asset('img/media/' ~ media.name) }}" alt="" class="img-fluid">
 									</td>
 									<td>
 										<button type="button" class="btn btn-danger delhero" id="delhero-{{ media.id }}">

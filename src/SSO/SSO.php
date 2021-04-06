@@ -2,9 +2,13 @@
 
 namespace App\SSO;
 
+// Service parsující data z SSO školy
+
 class SSO
 {
     private $response;
+
+    // konstruktor
 
     public function __construct($response)
     {
@@ -22,7 +26,6 @@ class SSO
             }
 
             if ($parsed[0] == "name") {
-                //! ODSTRANIT
                 if ($parsed[1][0] == "x") {
                     $lastname = explode('.', $parsed[1])[1];
                     $firstname = explode('.', $parsed[1])[0];
@@ -72,8 +75,6 @@ class SSO
                     }
                 }
             }
-
-
 
             $this->response = $data;
         }

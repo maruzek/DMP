@@ -2,6 +2,8 @@
 
 namespace App\Memberships;
 
+// Service pro ověření, zda je uživatel členem daného projektu 
+
 class Memberships
 {
     public function isUserMember($project, $user)

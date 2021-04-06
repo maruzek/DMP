@@ -1,0 +1,178 @@
+.
+├── composer.json                       // Soubor s informaceli a seznamem všech balíčků systému Composer
+├── composer.lock                       // Zde jsou balíčky uzamčeny
+├── config                              // V této složce se nachází konfigurace Symfony a dalších balíčků
+│   ├── bundles.php
+│   ├── packages                        // Nastavení jednotlivých balíčků
+│   │   ├── cache.yaml
+│   │   ├── dev
+│   │   │   ├── debug.yaml
+│   │   │   ├── monolog.yaml
+│   │   │   └── web_profiler.yaml
+│   │   ├── doctrine_migrations.yaml
+│   │   ├── doctrine.yaml
+│   │   ├── framework.yaml
+│   │   ├── mailer.yaml
+│   │   ├── notifier.yaml
+│   │   ├── prod
+│   │   │   ├── deprecations.yaml
+│   │   │   ├── doctrine.yaml
+│   │   │   ├── monolog.yaml
+│   │   │   └── routing.yaml
+│   │   ├── routing.yaml
+│   │   ├── security.yaml
+│   │   ├── sensio_framework_extra.yaml
+│   │   ├── test
+│   │   │   ├── framework.yaml
+│   │   │   ├── monolog.yaml
+│   │   │   ├── twig.yaml
+│   │   │   ├── validator.yaml
+│   │   │   └── web_profiler.yaml
+│   │   ├── translation.yaml
+│   │   ├── twig.yaml
+│   │   └── validator.yaml
+│   ├── preload.php
+│   ├── routes
+│   │   ├── annotations.yaml
+│   │   └── dev
+│   │       ├── framework.yaml
+│   │       └── web_profiler.yaml
+│   ├── routes.yaml
+│   └── services.yaml
+├── migrations                          // Všechny mgrace, tedy updaty DB
+│   ├── Version20210213154906.php
+│   ├── Version20210215163956.php
+│   ├── Version20210215164257.php
+│   ├── Version20210217182714.php
+│   ├── Version20210218131900.php
+│   ├── Version20210218180756.php
+│   ├── Version20210218180859.php
+│   ├── Version20210218181103.php
+│   ├── Version20210218181129.php
+│   ├── Version20210219072242.php
+│   ├── Version20210325193609.php
+│   ├── Version20210325194146.php
+│   ├── Version20210401141720.php
+│   ├── Version20210401171727.php
+│   └── Version20210401172342.php
+├── public                              // Složka, ke teré má přístup webový server
+│   ├── img                             // Složka s obrázky
+│   │   ├── auta-1.jpeg
+│   │   ├── auta-4.jpeg
+│   │   ├── banner2.jpg
+│   │   ├── logo1.jpg
+│   │   ├── media
+│   │   ├── projectimg
+│   │   ├── skola1.jpg
+│   │   └── userimg
+│   │       └── default.png
+│   ├── index.php                       // Hlavní soubor, na který směřují všechny dotazy z prohlížeče
+│   ├── scripts                         // Složka s JS
+│   │   ├── index.js                    // Hlavní JS soubor
+│   │   ├── jQuery.js                   // jQuery
+│   │   ├── jquery-ui.js                // jQuery UI
+│   │   └── jquery-ui.min.js            // jQuery UI
+│   └── styles                          // Složka s SCSS a CSS    
+│       ├── _admin.scss
+│       ├── _footer.scss
+│       ├── jquery-ui.min.css
+│       ├── _project.scss
+│       ├── _search.scss
+│       ├── style.css
+│       ├── style.css.map
+│       ├── style.scss
+│       └── _user.scss
+├── src                                 // Složka s Hlavním kódem aplikace
+│   ├── Authentication                  // Service k ověření uživatele
+│   │   └── Authentication.php
+│   ├── ColorTheme                      // Serivce pro barevnou paletu projektů
+│   │   └── ColorTheme.php
+│   ├── Controller                      // Složka se všecmi kontroléry
+│   │   ├── AdminController.php
+│   │   ├── LoginController.php
+│   │   ├── MainController.php
+│   │   ├── ProjectController.php
+│   │   ├── SearchController.php
+│   │   └── UserController.php
+│   ├── Entity                          // Složka se všemi entitamy
+│   │   ├── Event.php
+│   │   ├── Follow.php
+│   │   ├── IndexBlock.php
+│   │   ├── Media.php
+│   │   ├── Member.php
+│   │   ├── Post.php
+│   │   ├── ProjectAdmin.php
+│   │   ├── Project.php
+│   │   ├── Seen.php
+│   │   └── User.php
+│   ├── Form                            // Složka se všemi formuláři
+│   │   ├── AddAdminType.php
+│   │   ├── AddPostType.php
+│   │   ├── NewAbsAdminType.php
+│   │   ├── NewEventType.php
+│   │   ├── NewProjectType.php
+│   │   ├── ProjectSettingsType.php
+│   │   ├── SearchType.php
+│   │   └── UserSettingsType.php
+│   ├── ImageCrop                       // Service sloužící k ořezání obrázků
+│   │   └── ImageCrop.php
+│   ├── Kernel.php                      
+│   ├── Memberships                     // Service sloužící k ověření, zda je uživatel členem daného projektu
+│   │   └── Memberships.php
+│   ├── PostSeens                       // Service sloužící k zjištění toho, co uživatel ještě neviděl a na opak
+│   │   └── PostSeens.php
+│   ├── ProjectCheck                    // Service k prověření projektů
+│   │   └── ProjectCheck.php
+│   ├── Repository                      // Složka s repozitáři (tedy 'službami' sloužící k heldání v DB)
+│   │   ├── EventRepository.php
+│   │   ├── FollowRepository.php
+│   │   ├── IndexBlockRepository.php
+│   │   ├── MediaRepository.php
+│   │   ├── MemberRepository.php
+│   │   ├── PostRepository.php
+│   │   ├── ProjectAdminRepository.php
+│   │   ├── ProjectRepository.php
+│   │   ├── SeenRepository.php
+│   │   └── UserRepository.php
+│   ├── Search                          // Service k hlednání v searchbaru
+│   │   └── Search.php
+│   ├── SSO                             // Service k parsování SSO dat
+│   │   └── SSO.php
+│   ├── Twig                            // Vlastní rozšíření Twigu
+│   │   └── AppExtension.php
+│   └── ValidateImage                   // Service sloužící k ověření obrázků
+│       └── ValidateImage.php
+├── symfony.lock                        // Speciální soubor symfony, která ovládá mechanismus přístupu k jednotlivým balíčkům
+├── templates                           // Šablony pro vytváření HTML
+│   ├── admin                       
+│   │   ├── index.html.twig             // Hl. str. admin. prostředí
+│   │   ├── newproject.html.twig        // Nový projekt
+│   │   ├── project.html.twig           // projekt
+│   │   └── projects.html.twig          // Výpis projektů
+│   ├── base.html.twig                  // Základní šablona, od které se odvíjí všechny ostatní
+│   ├── bundles                         // složka s errory
+│   │   └── TwigBundle
+│   │       └── Exception
+│   │           ├── error401.html.twig
+│   │           ├── error403.html.twig
+│   │           ├── error404.html.twig
+│   │           └── error.html.twig
+│   ├── email                           // složka s emaily
+│   │   └── newevent.html.twig          // upozornení na novou událost
+│   ├── list.html.twig                  // seznam všech projektů
+│   ├── logged.html.twig                // Hl. str. pokud je uživatel přihlášený
+│   ├── main.html.twig                  // Hl. str. pokud uživatel není přihlášený    
+│   ├── project                         
+│   │   ├── event.html.twig             // šablona události
+│   │   ├── eventmodal.html.twig        // šablona pro modal sloužící k úpravě události
+│   │   ├── index.html.twig             // Hlavní šlablona pro projekt
+│   │   └── post.html.twig              // šablona pro příspěvek
+│   ├── search                          
+│   │   └── index.html.twig             // šablona pro vyhledávání
+│   └── user                            
+│       ├── index.html.twig             // šablona pro uživ. profil
+│       └── projects.html.twig          // šablona pro projeky, kterých je uživ. členem
+├── var                                 // složka s logem a cachí
+|   ├── cache
+│   └── log
+└── vendor

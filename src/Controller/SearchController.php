@@ -8,22 +8,21 @@ use App\Repository\UserRepository;
 use App\Search\Search;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Annotation\Route;
 
+
+// Controller pro hledání 
+
 class SearchController extends AbstractController
 {
-    private $session;
-
     /**
-     * @Route("/search/", name="search")
+     * @Route("/search", name="search")
      */
     public function index(SessionInterface $session, UserRepository $userRepository, ProjectRepository $projectRepository, PostRepository $postRepository, Request $request)
     {
-        $this->session = $session;
-        $query = $request->query->get('q');
-        $searchObj = new Search($userRepository, $postRepository, $projectRepository);
+        $query = $request->query->get('q');     // Hledaný výraz
+        $searchObj = new Search($userRepository, $postRepository, $projectRepository);      // Přivolání hledacího servisu 
         $searchQ = $searchObj->doSearch($query);
         if ($searchQ != null) {
             $searchUsers = $searchQ[0];
@@ -35,7 +34,7 @@ class SearchController extends AbstractController
             $searchProjects = "";
         }
 
-
+        // render
         return $this->render('search/index.html.twig', [
             'controller_name' => 'SearchController',
             'session' => $session,

@@ -20,12 +20,12 @@
 		<div class="carousel slide hero-slider" data-bs-ride="carousel" data-bs-interval="4000">
 			<div class="carousel-inner">
 				<div class="carousel-item active">
-					<img src="/img/skola1.jpg" class="d-block w-100" alt="">
+					<img src="{{ asset('img/skola1.jpg') }}" class="d-block w-100" alt="">
 				</div>
 				{% for img in project.media %}
 					{% if img.type == "hero" %}
 						<div class="carousel-item">
-							<img src="/img/media/{{ img.name }}" class="d-block w-100" alt="">
+							<img src="{{ asset('img/media/' ~ img.name) }}" class="d-block w-100" alt="">
 						</div>
 					{% endif %}
 				{% endfor %}
@@ -203,71 +203,10 @@
 	{% if project is defined %}
 
 		<div class="project-content">
-
-			{% if followStatus is defined %}
-
-				{% if followStatus != ''%}
-					{% if followStatus == "success" %}
-						<div class="alert alert-success alert-dismissible fade show" role="alert">
-							Začali jste sledovat
-							{{ project.name }}
-							<button type="button" class="btn-close" aria-label="Close" data-bs-dismiss="alert"></button>
-						</div>
-
-					{% elseif followStatus == "unfollowed" %}
-						<div class="alert alert-success alert-dismissible fade show" role="alert">
-							Přestali jste sledovat
-							{{ project.name }}
-							<button type="button" class="btn-close" aria-label="Close" data-bs-dismiss="alert"></button>
-
-						</div>
-					{% endif %}
-				{% endif %}
-
-				{% if memberStatus != ''%}
-					{% if memberStatus == "newmember" %}
-						<div class="alert alert-success alert-dismissible fade show" role="alert">
-							Požádali jste o členství v
-							{{ project.name }}
-							<button type="button" class="btn-close" aria-label="Close" data-bs-dismiss="alert"></button>
-
-						</div>
-
-					{% elseif memberStatus == "unmember" %}
-						<div class="alert alert-success alert-dismissible fade show" role="alert">
-							Už nejste členem
-							{{ project.name }}
-							<button type="button" class="btn-close" aria-label="Close" data-bs-dismiss="alert"></button>
-
-						</div>
-					{% endif %}
-				{% endif %}
-
-				{% if mediaError != '' %}
-					{% if mediaError == "badext" %}
-						<div class="alert alert-danger alert-dismissible fade show" role="alert">
-							Nahrávaný obrázek není podporovaného formátu. Podporované formáty:
-							<b>jpg, jpeg, png, gif</b>.
-							<button type="button" class="btn-close" aria-label="Close" data-bs-dismiss="alert"></button>
-
-						</div>
-					{% endif %}
-
-					{% if mediaError == "badheight" %}
-						<div class="alert alert-danger alert-dismissible fade show" role="alert">
-							Nahrávaný obrázek nemá požadovanou velikost. Obrázek musí být vysoký přesně
-							<b>480px</b>.
-							<button type="button" class="btn-close" aria-label="Close" data-bs-dismiss="alert"></button>
-
-						</div>
-					{% endif %}
-				{% endif %}
-			{% endif %}
-
-			<div class="row project-body pt-3">
+			<div class="row project-body pt-3 pb-4">
 				<div class="col-lg-4">
 					<div class="profile-col" style="background-color: {{ palette.row }}">
-						<img src="/img/projectimg/{{ project.image }}" alt="" class="img-fluid project-img mb-3 mx-auto d-block">
+						<img src="{{ asset('img/projectimg/' ~ project.image) }}" alt="" class="img-fluid project-img mb-3 mx-auto d-block">
 						<h3 class="m-0">{{ project.name }}</h3>
 						<span class="badge bg-dark">
 							{{ project.tag }}
@@ -391,7 +330,7 @@
 								{% endif %}
 							{% endfor %}
 
-							<nav aria-label="Pagination">
+							<nav aria-label="Pagination" class="mt-3">
 								<ul class="pagination justify-content-center">
 									{% if postPages.current != 1 %}
 										<li class="page-item">
@@ -415,27 +354,30 @@
 
 
 									{% for i in postPages.currentmin..postPages.currentmax %}
-										{% if postPages.current != i %}
-											<li class="page-item">
-												<a class="page-link" href="?postpage={{ i }}">{{ i }}</a>
-											</li>
-										{% else %}
-											<li class="page-item disabled">
-												<a class="page-link" href="?postpage={{ i }}">{{ i }}</a>
-											</li>
+										{% if i != 0 %}
+											{% if postPages.current != i %}
+												<li class="page-item">
+													<a class="page-link" href="?postpage={{ i }}">{{ i }}</a>
+												</li>
+											{% else %}
+												<li class="page-item disabled">
+													<a class="page-link" href="?postpage={{ i }}">{{ i }}</a>
+												</li>
+											{% endif %}
 										{% endif %}
 									{% endfor %}
 
-									{% if postPages.current != postPages.max %}
-										<li class="page-item">
-											<a class="page-link" href="?postpage={{ postPages.max }}">Poslední</a>
-										</li>
-									{% else %}
-										<li class="page-item disabled">
-											<a class="page-link" href="?postpage={{ postPages.max }}">Poslední</a>
-										</li>
+									{% if postPages.currentmax != 0 %}
+										{% if postPages.current != postPages.max %}
+											<li class="page-item">
+												<a class="page-link" href="?postpage={{ postPages.max }}">Poslední</a>
+											</li>
+										{% else %}
+											<li class="page-item disabled">
+												<a class="page-link" href="?postpage={{ postPages.max }}">Poslední</a>
+											</li>
+										{% endif %}
 									{% endif %}
-
 
 									{% if postPages.current < postPages.max %}
 										<li class="page-item">
@@ -584,7 +526,7 @@
 							<div class="project-media row">
 								{% for img in medias %}
 									<div class="col-4 d-flex justify-constent-center align-items-center mt-3 mb-2">
-										<img src="/img/media/{{img.name}}" alt="" class="img-fluid" data-bs-toggle="modal" data-bs-target="#mediaModal" data-bs-medianame="{{ img.name }}">
+										<img src="{{ asset('img/media/' ~ img.name) }}" alt="" class="img-fluid" data-bs-toggle="modal" data-bs-target="#mediaModal" data-bs-medianame="{{ img.name }}">
 									</div>
 								{% endfor %}
 
@@ -675,7 +617,8 @@
 				<div class="modal-dialog modal-dialog-centered">
 					<div class="modal-content">
 						<div class="modal-header">
-							<h5 class="modal-title" id="settingsModalLabel">Upravit profil</h5>
+							<h5 class="modal-title" id="settingsModalLabel">Upravit
+								{{ project.tag }}</h5>
 							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 						</div>
 						<div class="modal-body modal-project-settings modal-dialog-scrollable">
@@ -715,7 +658,7 @@
 											{% if media.type == "hero" %}
 												<tr class="mt-5">
 													<td>
-														<img src="/img/media/{{ media.name }}" alt="" class="img-fluid">
+														<img src="{{ asset('img/media/' ~ media.name) }}" alt="" class="img-fluid">
 													</td>
 													<td>
 														<button type="button" class="btn btn-danger delhero" id="delhero-{{ media.id }}">

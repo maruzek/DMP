@@ -13,34 +13,26 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Annotation\Route;
 
-
+// Controller pro přihlašování
 class LoginController extends AbstractController
 {
-    private $session;
-
     /**
      * @Route("/login", name="login")
      */
     public function index(Request $request, SessionInterface $session, UserRepository $userRepository): Response
     {
-        // set the base url for the SSO application
+        // Základní URL pro SSO
         $ssoUrlBase = "https://titan.spsostrov.cz/ssogw/";
-        // Normal version
-        //$callbackUrl = "http://" . $_SERVER['HTTP_HOST'] . $_SERVER['REDIRECT_URL'];
+
         $callbackUrl = $this->generateUrl('login', [], Router::ABSOLUTE_URL);
 
-        // Wedos version
-        //$callbackUrl = "https://dmp.martinruzek.eu/login";
 
-        #create the service token
-        $service = base64_encode($callbackUrl);
+        $service = base64_encode($callbackUrl);     // Vytvoření tokenu pro přihlášení
 
         $ssoUrl = "";
 
+        // Pokud je ticket již vytvořen (to se stane, když je sem uživatel přesměrován z titanu)
         if ($request->query->get('ticket')) {
-            //if the ticket parameter is set, it means that SSO Application already
-            //redirected back
-
             $token = $request->query->get('ticket');
 
             $ssoUserDataRequestingUrl = $ssoUrlBase .
@@ -49,7 +41,7 @@ class LoginController extends AbstractController
                 "&ticket=" .
                 urlencode($token);
 
-            //get the user data
+            // Získání dat
             $data = file_get_contents($ssoUserDataRequestingUrl);
 
             $responseFile = file_get_contents(__DIR__ . '/../response.json');
@@ -64,12 +56,15 @@ class LoginController extends AbstractController
             $json = json_encode($json);
             file_put_contents(__DIR__ . '/../response.json', $json);
 
+            // Zavolání služby, která se stará o Zpracování dat uživatele 
+
             $sso = new SSO($data);
             $ssoData = $sso->getAllData();
 
-            $userDB = $userRepository->findOneBy(['username' => $ssoData['login']]);
+            $userDB = $userRepository->findOneBy(['username' => $ssoData['login']]);        // kontrola DB pokud již uživatel v DB aplikace existuje
 
             if (!$userDB) {
+                // Pokud ne, vytvoří se jeho záznam
                 $user = new User();
 
                 $user
@@ -86,30 +81,25 @@ class LoginController extends AbstractController
             } else {
                 $user = $userDB;
             }
+            // Zapsání do session
 
-            $this->session = $session;
+            $session->set('username', $ssoData['login']);
+            $session->set('class', $ssoData['class']);
+            $session->set('firstName', $ssoData['firstname']);
+            $session->set('lastName', $ssoData['lastname']);
+            $session->set('role', $user->getRole());
+            $session->set('tag', $ssoData['tag']);
+            $session->set('id', $user->getId());
+            $session->set('user', $user);
 
-            $this->session->set('username', $ssoData['login']);
-            $this->session->set('class', $ssoData['class']);
-            $this->session->set('firstName', $ssoData['firstname']);
-            $this->session->set('lastName', $ssoData['lastname']);
-            $this->session->set('role', $user->getRole());
-            $this->session->set('tag', $ssoData['tag']);
-            $this->session->set('id', $user->getId());
-            $this->session->set('user', $user);
-
-            return $this->redirect('/');
+            return $this->redirectToRoute('main');   // Přesměrování na hlavní stránku aplikace
         } else {
+            // Pokud uživatel nemá vytvořený token, SSO mu ho na této adrese vytvoří
             $ssoUrl = $ssoUrlBase . "?service=" . urlencode($service);
 
             return $this->redirect($ssoUrl);
         }
 
-        return $this->redirect('/');
-
-        /*return $this->render('login/index.html.twig', [
-            'controller_name' => 'LoginController',
-            'session' => $session
-        ]);*/
+        return $this->redirectToRoute('main');
     }
 }

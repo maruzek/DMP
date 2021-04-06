@@ -22,10 +22,13 @@
 					<div class="showcase-ib">
 						<div class="row">
 							<div class="col-4">
-								<img src="/img/projectimg/{{ ib.project.image }}" alt="" class="img-fluid round-img d-block mx-auto">
-								<h3>{{ ib.project.name }}</h3>
-								<p>{{ ib.project.description }}</p>
+								<a href="{{ path('project.project', {id: ib.project.id}) }}" class="nicelink">
+									<img src="/img/projectimg/{{ ib.project.image }}" alt="" class="img-fluid round-img d-block mx-auto">
+									<h3>{{ ib.project.name }}</h3>
+									<p>{{ ib.project.description }}</p>
+								</a>
 							</div>
+
 							<div class="col-8">
 								<div class="fotorama">
 									{% for img in ib.project.media %}
@@ -36,26 +39,11 @@
 								</div>
 							</div>
 						</div>
+						<a href="{{ path('project.project', {id: ib.project.id}) }}" class="btn btn-primary d-block mx-auto m-3">Navštívit</a>
 					</div>
 				{% endif %}
 			{% endif %}
 
 		{% endfor %}
 	</div>
-
-	<!--<div class="landing">
-																																																															{% if session.get('username') != "" %}
-																																																																<h1 class="text-center">Přihlášen</h1>
-																																																													
-																																																																<h4>
-																																																																	{{ session.get('username') }}
-																																																																</h4>
-																																																															{% else %}
-																																																													
-																																																																<h1 class="text-center">Prosím přihlaste se pro přístup k aplikaci</h1>
-																																																																<a href="/login">
-																																																																	<button type="button" class="btn btn-outline-danger m-2">Přihlásit se</button>
-																																																																</a>
-																																																															{% endif %}
-																																																														</div>-->
 {% endblock %}

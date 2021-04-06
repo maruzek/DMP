@@ -3,41 +3,41 @@
 namespace App\Controller;
 
 use App\ColorTheme\ColorTheme;
-use App\Form\SearchType;
 use App\PostSeens\PostSeens;
 use App\Repository\IndexBlockRepository;
 use App\Repository\PostRepository;
 use App\Repository\ProjectRepository;
 use App\Repository\UserRepository;
-use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
+
+// Hlavní controller
 
 class MainController extends AbstractController
 {
-    private $session;
     private $postSeens;
 
+    // Konstruktor
     public function __construct(PostRepository $postRepository, UserRepository $userRepository, SessionInterface $session)
     {
         $this->postSeens = new PostSeens($postRepository, $userRepository, $session);
     }
 
+    // Hlavní stránka (index)
+
     /**
      * @Route("/", name="main")
      */
-    public function index(SessionInterface $session, IndexBlockRepository $indexBlockRepository, PostRepository $postRepository, UserRepository $userRepository)
+    public function index(SessionInterface $session, IndexBlockRepository $indexBlockRepository, UserRepository $userRepository)
     {
-        $this->session = $session;
-
+        // kontrola, zda je uživatel přihlášený
         if ($session->get('username') != null) {
             $user = $userRepository->find($session->get('id'));
 
             $color = new ColorTheme();
             $palette = $color->colorPallette('white');
+            // pokud je přihlášený, vyrenderuje se temaplte 'logged', který vypisuje příspěvky, které uživatel ještě neviděl
 
             return $this->render('logged.html.twig', [
                 'controller_name' => 'MainController',
@@ -47,13 +47,15 @@ class MainController extends AbstractController
             ]);
         }
 
-
+        // Pokdu přihlášen není, vypíše se hlavní statická stránka (spolu s index bloky)
         return $this->render('main.html.twig', [
             'controller_name' => 'MainController',
             'session' => $session,
             'indexBlocks' => $indexBlockRepository->findAll()
         ]);
     }
+
+    // Route na seznam všech projektů
 
     /**
      * @Route("/seznam", name="list")

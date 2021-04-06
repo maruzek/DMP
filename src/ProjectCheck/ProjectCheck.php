@@ -4,6 +4,8 @@ namespace App\ProjectCheck;
 
 use App\Repository\ProjectRepository;
 
+// service, který kontroluje, zda je porjekt smazaný a je přístupný
+
 class ProjectCheck
 {
     private $project;
