@@ -80,6 +80,9 @@ class LoginController extends AbstractController
                 $em->flush();
             } else {
                 $user = $userDB;
+                if ($user->getDeactivated()) {
+                    return $this->redirectToRoute('main', ['deactivated' => true]);
+                }
             }
             // Zapsání do session
 

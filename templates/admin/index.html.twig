@@ -168,6 +168,25 @@
 			Index block byl úspěšně přidán (pro jeho zobrazení obnovte stránku)
 		</div>
 	</div>
+
+
+	<div class="toast position-absolute mt-5 top-0 start-0" id="toast-deactivate-success">
+		<div class="toast-header">
+			<strong class="me-auto">Uživatelé 4. ročníků</strong>
+		</div>
+		<div class="toast-body">
+			Všichni uživatelé byli úspěšně deaktivováni
+		</div>
+	</div>
+
+	<div class="toast position-absolute mt-5 top-0 start-0" id="toast-deactivate-dbfail">
+		<div class="toast-header">
+			<strong class="me-auto">Uživatelé 4. ročníků</strong>
+		</div>
+		<div class="toast-body">
+			Někde se stala chyba, zkuste to prosím znovu později
+		</div>
+	</div>
 {% endblock %}
 {# block, který má šíři celé stránky #}
 {% block fluid %}
@@ -326,6 +345,7 @@
 				</div>
 				<div class="tab-pane fade" id="delete" role="tabpanel" aria-labelledby="delete">
 					<button class="btn btn-danger m-3" id="mainDelBtn">Vymazat všechen obsah určený ke smazání</button>
+					<button class="btn btn-danger m-3" id="deactivateUsers">Deaktivovat účty všech studentů ve 4. ročníku</button>
 				</div>
 			</div>
 

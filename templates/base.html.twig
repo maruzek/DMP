@@ -82,35 +82,45 @@
 				</div>
 			</div>
 		</nav>
-		<div class="container-fluid position-fixed top-0 start-0" style="z-index: 9999999"> {% block abs %}{% endblock %}
+		<div class="container-fluid position-fixed top-0 start-0" style="z-index: 9999999">
+			{% block abs %}
+				{% if deactivated is defined %}
+					{% if deactivated == true %}
+						<div class="alert alert-danger mt-5" role="alert">
+							Váš účet byl deaktivován správcem aplikace
+						</div>
+					{% endif %}
+				{% endif %}
+
+			{% endblock %}
+		</div>
+		<div class="container-fluid p-0 m-0"> {% block fluid %}{% endblock %}
 			</div>
-			<div class="container-fluid p-0 m-0"> {% block fluid %}{% endblock %}
+
+			<div class="container-fluid" style="{% block style %}{% endblock %}; min-height: 94vh">
+				<div class="container"> {% block errors %}{% endblock %}{% block body %}{% endblock %}
+					</div>
 				</div>
 
-				<div class="container-fluid" style="{% block style %}{% endblock %}; min-height: 94vh">
-					<div class="container"> {% block errors %}{% endblock %}{% block body %}{% endblock %}
-						</div>
-					</div>
 
+				{% block footer %}
+					<footer class="container-fluid" id="footer">
+						<p>Vytvořeno v roce 2021 Martinem Růžkem, studentem SPŠ Ostrov, jako dlouhodobá maturitní práce</p>
+					</footer>
+				{% endblock %}
 
-					{% block footer %}
-						<footer class="container-fluid" id="footer">
-							<p>Vytvořeno v roce 2021 Martinem Růžkem, studentem SPŠ Ostrov, jako dlouhodobá maturitní práce</p>
-						</footer>
-					{% endblock %}
+				{% block javascripts %}
+					<script src="{{ asset('scripts/jQuery.js') }}"></script>
+					<script src="{{ asset('scripts/jquery-ui.js') }}"></script>
+					<script src="{{ asset('scripts/index.js') }}"></script>
+					<script src="https://kit.fontawesome.com/868ac28d90.js" crossorigin="anonymous"></script>
+					<script src="{{ asset('scripts/bootstrap.bundle.min.js') }}"></script>
+					<script src="https://cdnjs.cloudflare.com/ajax/libs/fotorama/4.6.4/fotorama.js"></script>
 
-					{% block javascripts %}
-						<script src="{{ asset('scripts/jQuery.js') }}"></script>
-						<script src="{{ asset('scripts/jquery-ui.js') }}"></script>
-						<script src="{{ asset('scripts/index.js') }}"></script>
-						<script src="https://kit.fontawesome.com/868ac28d90.js" crossorigin="anonymous"></script>
-						<script src="{{ asset('scripts/bootstrap.bundle.min.js') }}"></script>
-						<script src="https://cdnjs.cloudflare.com/ajax/libs/fotorama/4.6.4/fotorama.js"></script>
+				{% endblock %}
 
-					{% endblock %}
-
-					{% block js %}{% endblock %}
-				</body>
-			</html>
-		</body>
-	</html>
+				{% block js %}{% endblock %}
+			</body>
+		</html>
+	</body>
+</html>

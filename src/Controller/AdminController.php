@@ -935,6 +935,7 @@ class AdminController extends AbstractController
             $em = $this->getDoctrine()->getManager();
 
             $projects = $projectRepository->findBy(['deleted' => true]);
+            $delMedia = [];
             foreach ($projects as $project) {
                 foreach ($project->getPosts() as $post) {
                     $post->setDeleted(true);
@@ -946,6 +947,13 @@ class AdminController extends AbstractController
             $posts = $postRepository->findBy(['deleted' => true]);
 
             foreach ($posts as $post) {
+                $medias = $post->getMedia();
+                foreach ($medias as $media) {
+                    if (file_exists($this->getParameter('media') . $media->getName())) {
+                        unlink('img/media/' . $media->getName());
+                    }
+                    $em->remove($media);
+                }
                 $em->remove($post);
             }
 
@@ -1044,6 +1052,55 @@ class AdminController extends AbstractController
             $result = "";
 
             $post->setDeleted(false);
+
+            if (!$this->getDoctrine()->getManager()->flush()) {
+                $result = "success";
+            } else {
+                $result = "dbfail";
+            }
+
+            $defaultContext = [
+                AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => function ($object, $format, $context) {
+                    return $object->getId();
+                },
+            ];
+            $encoders = [
+                new JsonEncoder()
+            ];
+            $normalizers = [
+                new ObjectNormalizer(null, null, null, null, null, null, $defaultContext)
+            ];
+            $serializer = new Serializer($normalizers, $encoders);
+            $response = $serializer->serialize($result, 'json');
+            return new JsonResponse($response, 200, [], true);
+        } else if (!$this->auth->isAbsAdmin()) {
+            return new JsonResponse([
+                'type' => "error",
+                'message' => 'You are not an admin'
+            ], 401);
+        }
+
+        return new JsonResponse([
+            'type' => "error",
+            'message' => 'Not an AJAX request'
+        ], 500);
+    }
+
+    // JSON Endpoint pro deaktivaci účtů
+
+    /**
+     * @Route("/deactivateUsers", name="deactivateUsers", methods={"POST"})
+     */
+    public function deactivateUsers(Request $request, UserRepository $userRepository)
+    {
+        if ($request->isXmlHttpRequest() && $this->auth->isAbsAdmin()) {
+            $users = $userRepository->findAll();
+
+            foreach ($users as $user) {
+                if (substr($user->getClass(), -1) == '4') {
+                    $user->setDeactivated(true);
+                }
+            }
 
             if (!$this->getDoctrine()->getManager()->flush()) {
                 $result = "success";

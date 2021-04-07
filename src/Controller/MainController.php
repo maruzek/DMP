@@ -9,6 +9,7 @@ use App\Repository\PostRepository;
 use App\Repository\ProjectRepository;
 use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
@@ -29,8 +30,14 @@ class MainController extends AbstractController
     /**
      * @Route("/", name="main")
      */
-    public function index(SessionInterface $session, IndexBlockRepository $indexBlockRepository, UserRepository $userRepository)
+    public function index(Request $request, SessionInterface $session, IndexBlockRepository $indexBlockRepository, UserRepository $userRepository)
     {
+        // Pokud je uživatel deaktivoaný
+        $deactivated = false;
+        if ($request->query->get('deactivated') == 1) {
+            $deactivated = true;
+        }
+
         // kontrola, zda je uživatel přihlášený
         if ($session->get('username') != null) {
             $user = $userRepository->find($session->get('id'));
@@ -51,7 +58,8 @@ class MainController extends AbstractController
         return $this->render('main.html.twig', [
             'controller_name' => 'MainController',
             'session' => $session,
-            'indexBlocks' => $indexBlockRepository->findAll()
+            'indexBlocks' => $indexBlockRepository->findAll(),
+            'deactivated' => $deactivated
         ]);
     }
 

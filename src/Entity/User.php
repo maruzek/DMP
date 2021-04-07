@@ -103,6 +103,11 @@ class User
      */
     private $firstLogin;
 
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    private $deactivated = false;
+
     public function __construct()
     {
         $this->projects = new ArrayCollection();
@@ -433,6 +438,18 @@ class User
     public function setFirstLogin(?\DateTimeInterface $firstLogin): self
     {
         $this->firstLogin = $firstLogin;
+
+        return $this;
+    }
+
+    public function getDeactivated()
+    {
+        return $this->deactivated;
+    }
+
+    public function setDeactivated($deactivated): self
+    {
+        $this->deactivated = $deactivated;
 
         return $this;
     }

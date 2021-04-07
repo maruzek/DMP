@@ -1125,3 +1125,28 @@ if (delAllBtn != null) {
     }
   })
 }
+
+// Deactivate users
+
+const deactivateUsersBtn = document.querySelector('#deactivateUsers')
+
+if(deactivateUsersBtn != null) {
+  deactivateUsersBtn.addEventListener('click', () => {
+    if(confirm('Opravdu chcete deaktivovat uživatele 4. ročníků? Tato akce nepůjde vrátit!')) {
+      $.ajax({
+        type: "POST",
+        url: "/admin/deactivateUsers"
+      }).then((response) => {
+
+        if (response == "success") {
+          $('#toast-deactivate-success').toast('show')
+        } else if (response == "dbfail") {
+          $('#toast-deactivate-dbfail').toast('show')
+        } 
+
+      }).catch((error) => {
+        console.error(error)
+      })
+    }
+  })
+}
