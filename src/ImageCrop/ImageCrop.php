@@ -40,7 +40,6 @@ class ImageCrop
                 if (($x / 4) + $y > $x) {
                     $ind = 1;
                     while ((($x / 4) + $y) - $ind >= $x) {
-                        echo $ind;
                         $ind++;
                     }
                     $crop = imagecrop($im, ['x' => ($x / 4) - $ind, 'y' => 0, 'width' => $y, 'height' => $y]);
@@ -77,7 +76,6 @@ class ImageCrop
                 if (($x / 4) + $y > $x) {
                     $ind = 1;
                     while ((($x / 4) + $y) - $ind >= $x) {
-                        echo $ind;
                         $ind++;
                     }
                     $crop = imagecrop($im, ['x' => ($x / 4) - $ind, 'y' => 0, 'width' => $y, 'height' => $y]);
@@ -172,7 +170,6 @@ class ImageCrop
                     if (($x / 4) + $y > $x) {
                         $ind = 1;
                         while ((($x / 4) + $y) - $ind >= $x) {
-                            echo $ind;
                             $ind++;
                         }
                         $crop = imagecrop($im, ['x' => ($x / 4) - $ind, 'y' => 0, 'width' => $y, 'height' => $y]);
@@ -209,7 +206,6 @@ class ImageCrop
                     if (($x / 4) + $y > $x) {
                         $ind = 1;
                         while ((($x / 4) + $y) - $ind >= $x) {
-                            echo $ind;
                             $ind++;
                         }
                         $crop = imagecrop($im, ['x' => ($x / 4) - $ind, 'y' => 0, 'width' => $y, 'height' => $y]);

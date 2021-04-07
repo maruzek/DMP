@@ -561,6 +561,7 @@ if (editUserModal != null) {
         id: id
       }
     }).then((response) => {
+      editUserPostsTable.innerHTML = ""
 
       for (let i = 0; i < response.length; i++) {
         const options = {
@@ -585,7 +586,7 @@ if (editUserModal != null) {
         let posted = document.createElement('TD')
         posted.innerHTML = new Date(response[i].posted.timestamp * 1000).toLocaleDateString('cs-cs', options)
         let privacy = document.createElement('TD')
-        if (privacy == 1) {
+        if (post.privacy == 1) {
           privacy.innerHTML = 'ANO'
         } else {
           privacy.innerHTML = 'NE'
