@@ -472,7 +472,8 @@ class ProjectController extends AbstractController
             $project = $projectRepository->find((int)$projectid);
             $user = $userRepository->find($memberID);
             $member = $memberRepository->findOneBy(['member' => $user, 'project' => $project]);
-            $admin = $userRepository->find($session->get('id'));
+            $loggedUser = $userRepository->find($session->get('id'));
+            $admin = $projectAdminRepository->findOneBy(['user' => $loggedUser, 'project' => $project]);
             $admins = $projectAdminRepository->findBy(['project' => $project]);
 
             $result = "";

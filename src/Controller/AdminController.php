@@ -13,6 +13,7 @@ use App\Form\NewProjectType;
 use App\Form\ProjectSettingsType;
 use App\ImageCrop\ImageCrop;
 use App\Repository\IndexBlockRepository;
+use App\Repository\MemberRepository;
 use App\Repository\PostRepository;
 use App\Repository\ProjectAdminRepository;
 use App\Repository\ProjectRepository;
@@ -106,7 +107,6 @@ class AdminController extends AbstractController
 
     // Výpis všech projektů
 
-
     /**
      * @Route("/projekty", name="projects")
      */
@@ -126,12 +126,12 @@ class AdminController extends AbstractController
         return new Response('', 401);
     }
 
-    // Vápis jednotlivých projeků
+    // Výpis jednotlivých projeků
 
     /**
      * @Route("/projekt/{id}", name="project")
      */
-    public function project($id, SessionInterface $session, ProjectRepository $projectRepository, UserRepository $userRepository, Request $request, ProjectAdminRepository $projectAdminRepository)
+    public function project($id, SessionInterface $session, ProjectRepository $projectRepository, UserRepository $userRepository, Request $request, ProjectAdminRepository $projectAdminRepository, MemberRepository $memberRepository)
     {
         // Nastevení projektu
         $project = $projectRepository->find($id);
@@ -254,13 +254,15 @@ class AdminController extends AbstractController
                 $newAdminUser = $userRepository->findOneBy(['username' => trim($newAdminUsername)]);
                 if (!$projectAdminRepository->findOneBy(['user' => $newAdminUser, 'project' => $project])) {
                     $newAdmin->setUser($newAdminUser);
-                    $newMember = new Member;
-                    $newMember->setAccepted(true);
-                    $newMember->setMember($newAdminUser);
-                    $newMember->setProject($project);
-                    $em = $this->getDoctrine()->getManager();
+                    if (!$memberRepository->findOneBy(['project' => $project, 'member' => $newAdminUser])) {
+                        $newMember = new Member;
+                        $newMember->setAccepted(true);
+                        $newMember->setMember($newAdminUser);
+                        $newMember->setProject($project);
+
+                        $em->persist($newMember);
+                    }
                     $em->persist($newAdmin);
-                    $em->persist($newMember);
                     $em->flush();
                     $status = "success";
                     return $this->redirect($request->getUri());

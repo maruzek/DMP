@@ -141,16 +141,12 @@ const editPostModalTrigger = document.querySelectorAll('.editPostModalTrigger')
 const editPostModal = document.querySelector('#editPostModal')
 if (editPostModal != null) {
   editPostModal.addEventListener('show.bs.modal', function (event) {
-    // Button that triggered the modal
     let button = event.relatedTarget
-    // Extract info from data-bs-* attributes
+
     let text = button.getAttribute('data-bs-editpost-text')
     let privatel = button.getAttribute('data-bs-editpost-private')
     let id = button.getAttribute('data-bs-editpost-id')
-    // If necessary, you could initiate an AJAX request here
-    // and then do the updating in a callback.
-    //
-    // Update the modal's content. var modalBodyInput = editPostModal.querySelector('.modal-body input')
+
     let modalBodyTextArea = editPostModal.querySelector('#message-text')
     let modalBodyCheck = editPostModal.querySelector('#privacyCheck')
     let submitBtn = editPostModal.querySelector('#editpost-submit')
@@ -517,14 +513,8 @@ if (searchUserInput != null) {
 const delUserModal = document.getElementById('modalDelUser')
 if (delUserModal != null) {
   delUserModal.addEventListener('show.bs.modal', function (event) {
-    // Button that triggered the modal
     const button = event.relatedTarget
-    // Extract info from data-bs-* attributes
     const id = button.getAttribute('data-bs-userid')
-    // If necessary, you could initiate an AJAX request here
-    // and then do the updating in a callback.
-    //
-    // Update the modal's content.
     const confirmBtn = delUserModal.querySelector('.admin-deluser-confirm')
 
     confirmBtn.addEventListener('click', () => {
@@ -558,14 +548,8 @@ if (delUserModal != null) {
 const editUserModal = document.getElementById('editUserModal')
 if (editUserModal != null) {
   editUserModal.addEventListener('show.bs.modal', function (event) {
-    // Button that triggered the modal
     const button = event.relatedTarget
-    // Extract info from data-bs-* attributes
     const id = button.getAttribute('data-bs-userid')
-    // If necessary, you could initiate an AJAX request here
-    // and then do the updating in a callback.
-    //
-    // Update the modal's content.
     const delimgBtn = editUserModal.querySelector('.admin-deluser-img')
     const deldescBtn = editUserModal.querySelector('.admin-deluser-desc')
 
@@ -764,6 +748,7 @@ if (delMemberBtn != null) {
         } else if (response == "nonadmin" || response == "dbfail") {
           $('#toast-memberdel-fail').toast('show');
         }
+        console.log(response)
 
       }).catch((error) => {
         console.error(error)
@@ -806,13 +791,8 @@ let seensModal = document.getElementById('seensModal')
 
 if (seensModal != null) {
   seensModal.addEventListener('show.bs.modal', function (event) {
-    // Button that triggered the modal
     const button = event.relatedTarget
-    // Extract info from data-bs-* attributes
     const postid = button.getAttribute('data-bs-postid')
-    // If necessary, you could initiate an AJAX request here
-    // and then do the updating in a callback.
-    //
 
     const tbody = seensModal.querySelector('#seens-modal-tbody')
     tbody.innerHTML = ''
@@ -964,9 +944,7 @@ const eventSettingsModal = document.querySelector("#eventSettingsModal")
 if (eventSettingsModal != null) {
 
   eventSettingsModal.addEventListener('show.bs.modal', function (event) {
-    // Button that triggered the modal
     let button = event.relatedTarget
-    // Extract info from data-bs-* attributes
     let name = button.getAttribute('data-bs-editevent-name')
     let privacy = button.getAttribute('data-bs-editevent-privacy')
     let location = button.getAttribute('data-bs-editevent-location')
@@ -975,10 +953,6 @@ if (eventSettingsModal != null) {
     let description = button.getAttribute('data-bs-editevent-description')
     const id = button.getAttribute('data-bs-editevent-id')
 
-    // If necessary, you could initiate an AJAX request here
-    // and then do the updating in a callback.
-    //
-    // Update the modal's content. var modalBodyInput = editPostModal.querySelector('.modal-body input')
     let nameForm = eventSettingsModal.querySelector('#editevent-name')
     let privacyForm = eventSettingsModal.querySelector('#editevent-privacy')
     let locationForm = eventSettingsModal.querySelector('#editevent-location')
@@ -1079,14 +1053,8 @@ if (delEventBtns != null) {
 const mediaModal = document.getElementById('mediaModal')
 if (mediaModal != null) {
   mediaModal.addEventListener('show.bs.modal', function (event) {
-    // Button that triggered the modal
     var button = event.relatedTarget
-    // Extract info from data-bs-* attributes
     var img = button.getAttribute('src')
-    // If necessary, you could initiate an AJAX request here
-    // and then do the updating in a callback.
-    //
-    // Update the modal's content.
     mediaModal.querySelector('#media-modal-img').setAttribute('src', img)
 
   })
@@ -1130,20 +1098,18 @@ if (delAllBtn != null) {
 
 const deactivateUsersBtn = document.querySelector('#deactivateUsers')
 
-if(deactivateUsersBtn != null) {
+if (deactivateUsersBtn != null) {
   deactivateUsersBtn.addEventListener('click', () => {
-    if(confirm('Opravdu chcete deaktivovat uživatele 4. ročníků? Tato akce nepůjde vrátit!')) {
+    if (confirm('Opravdu chcete deaktivovat uživatele 4. ročníků? Tato akce nepůjde vrátit!')) {
       $.ajax({
         type: "POST",
         url: "/admin/deactivateUsers"
       }).then((response) => {
-
         if (response == "success") {
           $('#toast-deactivate-success').toast('show')
         } else if (response == "dbfail") {
           $('#toast-deactivate-dbfail').toast('show')
-        } 
-
+        }
       }).catch((error) => {
         console.error(error)
       })

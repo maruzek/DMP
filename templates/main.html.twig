@@ -10,7 +10,7 @@
 		<p>Najdete zde nejzajímavější informace o projektech a kroužcích na naší škole</p>
 
 		<div>
-			<a href="/seznam" class="btn btn-primary">Zobrazit vše</a>
+			<a href="{{ path('list') }}" class="btn btn-primary">Zobrazit vše</a>
 			<a href="#showcase" class="btn btn-danger m-2">Ukázat výběr</a>
 		</div>
 	</div>
@@ -23,7 +23,7 @@
 						<div class="row">
 							<div class="col-4">
 								<a href="{{ path('project.project', {id: ib.project.id}) }}" class="nicelink">
-									<img src="/img/projectimg/{{ ib.project.image }}" alt="" class="img-fluid round-img d-block mx-auto">
+									<img src="{{ asset('img/projectimg/' ~ ib.project.image ) }}" alt="" class="img-fluid round-img d-block mx-auto">
 									<h3>{{ ib.project.name }}</h3>
 									<p>{{ ib.project.description }}</p>
 								</a>
@@ -33,7 +33,7 @@
 								<div class="fotorama">
 									{% for img in ib.project.media %}
 										{% if img.type == "hero" %}
-											<img src="/img/media/{{ img.name }}" class="d-block mw-100 h-50 mx-auto" alt="post media">
+											<img src="{{ asset('img/media/' ~ img.name) }}" class="d-block mw-100 h-50 mx-auto" alt="post media">
 										{% endif %}
 									{% endfor %}
 								</div>

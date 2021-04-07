@@ -33,11 +33,18 @@ class SSO
                     $data["lastname"] = $lastname;
                     $data["firstname"] = $firstname;
                 } else {
-                    $lastname = explode(' ', $parsed[1])[1];
-                    $firstname = explode(' ', $parsed[1])[0];
+                    $explode = explode(' ', $parsed[1]);
+                    $name = [];
+                    for ($i = 0; $i < count($explode); $i++) {
+                        if (str_contains($explode[$i], '.')) {
+                            continue;
+                        } else {
+                            array_push($name, $explode[$i]);
+                        }
+                    }
 
-                    $data["lastname"] = $lastname;
-                    $data["firstname"] = $firstname;
+                    $data["lastname"] = $name[1];
+                    $data["firstname"] = $name[0];
                 }
             } else {
                 $class = "";
@@ -50,7 +57,6 @@ class SSO
                         if (date('n') <= 12 && date('n') >= 9) {
                             $classNum = (int)date('y') - ($classYear - 1);
                         } else {
-                            //$classNum = 3;
                             $classNum = (int)date('y') - ($classYear);
                         }
 
@@ -71,7 +77,7 @@ class SSO
                     if ($parsed[1] == "ucitele") {
                         $data["tag"] = "učitel";
                     } else {
-                        $data["tag"] = "sudent";
+                        $data["tag"] = "sutdent";
                     }
                 }
             }
@@ -79,6 +85,8 @@ class SSO
             $this->response = $data;
         }
     }
+
+    // Odeslání dat do konstruktoru
 
     public function getAllData(): array
     {

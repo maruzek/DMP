@@ -44,18 +44,6 @@ class LoginController extends AbstractController
             // Získání dat
             $data = file_get_contents($ssoUserDataRequestingUrl);
 
-            $responseFile = file_get_contents(__DIR__ . '/../response.json');
-            $json = json_decode($responseFile, true);
-
-            $newResponse = [
-                'date' => date('Y-m-d H:i:s'),
-                'response' => $data
-            ];
-
-            array_push($json, $newResponse);
-            $json = json_encode($json);
-            file_put_contents(__DIR__ . '/../response.json', $json);
-
             // Zavolání služby, která se stará o Zpracování dat uživatele 
 
             $sso = new SSO($data);
