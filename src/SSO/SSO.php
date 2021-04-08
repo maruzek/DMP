@@ -77,7 +77,7 @@ class SSO
                     if ($parsed[1] == "ucitele") {
                         $data["tag"] = "učitel";
                     } else {
-                        $data["tag"] = "sutdent";
+                        $data["tag"] = "student";
                     }
                 }
             }
